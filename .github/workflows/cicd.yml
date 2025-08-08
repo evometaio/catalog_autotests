@@ -15,6 +15,13 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v4
 
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          sparse-checkout: "history"
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -36,8 +43,14 @@ jobs:
           sudo tar -zxvf allure-2.24.0.tgz -C /usr/local
           echo "/usr/local/allure-2.24.0/bin" >> $GITHUB_PATH
 
+      - name: Prepare directories
+        run: |
+          mkdir -p ${{ env.ALLURE_RESULTS_DIR }}/history
+          [ -d "gh-pages/history" ] && cp -R gh-pages/history/* ${{ env.ALLURE_RESULTS_DIR }}/history/ || echo "No history found"
+
       - name: Run tests
-        run: xvfb-run -a pytest --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: |
+          xvfb-run -a pytest --alluredir=${{ env.ALLURE_RESULTS_DIR }}
 
       - name: Generate Allure report
         run: |
@@ -46,7 +59,7 @@ jobs:
       - name: Verify report generation
         run: |
           [ -d "${{ env.ALLURE_REPORT_DIR }}" ] || exit 1
-          [ -f "${{ env.ALLURE_REPORT_DIR }}/index.html" ] || exit 1
+          [ -f "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" ] || exit 1
 
       - name: Parse test results
         id: allure-stats
@@ -63,7 +76,6 @@ jobs:
           SKIPPED=$(jq -r '.statistic.skipped // 0' "$SUMMARY_FILE")
           BROKEN=$(jq -r '.statistic.broken // 0' "$SUMMARY_FILE")
           CANCELED=$(jq -r '.statistic.canceled // 0' "$SUMMARY_FILE")
-
           {
             echo "TOTAL=$TOTAL"
             echo "PASSED=$PASSED"
@@ -73,13 +85,21 @@ jobs:
             echo "CANCELED=$CANCELED"
           } >> $GITHUB_OUTPUT
 
+      - name: Update Allure history
+        if: success() || failure()
+        run: |
+          [ -d "${{ env.ALLURE_REPORT_DIR }}/history" ] && \
+            cp -R ${{ env.ALLURE_REPORT_DIR }}/history/* gh-pages/history/ || \
+            echo "No history to update"
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
-          folder: ${{ env.ALLURE_REPORT_DIR }}
+          folder: ${{ env.ALLURE_REPORT_DIR }}   # деплоим прямо в корень
           clean: true
+          clean-exclude: "history"
 
       - name: Determine final status
         id: final-status
@@ -87,7 +107,6 @@ jobs:
         run: |
           FAILED=${{ steps.allure-stats.outputs.FAILED || 0 }}
           BROKEN=${{ steps.allure-stats.outputs.BROKEN || 0 }}
-
           if [ "$FAILED" -gt 0 ] || [ "$BROKEN" -gt 0 ]; then
             echo "FINAL_STATUS=❌ ОШИБКИ" >> $GITHUB_OUTPUT
             echo "FINAL_MESSAGE=⚠️ <b>Требуется проверка упавших тестов!</b>" >> $GITHUB_OUTPUT
@@ -106,21 +125,21 @@ jobs:
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
             <b>🚀 Результаты тестов</b>
-
+            
             <b>Проект:</b> ${{ github.repository }}
             <b>Ветка:</b> ${{ github.ref_name }}
             <b>Статус:</b> ${{ steps.final-status.outputs.EMOJI }}
-
+            
             <b>📈 Статистика</b> (${{ steps.allure-stats.outputs.TOTAL }} тестов):
             <code>│</code> • ✅ <b>Успешных:</b> ${{ steps.allure-stats.outputs.PASSED }}
             <code>│</code> • ❌ <b>Упавших:</b> ${{ steps.allure-stats.outputs.FAILED }}
             <code>│</code> • ⏩ <b>Пропущенных:</b> ${{ steps.allure-stats.outputs.SKIPPED }}
             ${{ steps.allure-stats.outputs.BROKEN != '0' && '<code>│</code> • 🛠 <b>Сломанных:</b> ' || '' }}${{ steps.allure-stats.outputs.BROKEN }}
-
+            
             <b>🔗 Ссылки</b>:
             <code>│</code> • <a href="https://${{ github.repository_owner }}.github.io/${{ github.repository }}/">Allure Report</a>
             <code>│</code> • <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
-
+            
             ${{ steps.final-status.outputs.FINAL_MESSAGE }}
           format: html
           disable_web_page_preview: true
