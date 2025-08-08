@@ -1,0 +1,2 @@
+Request: POST https://jsonplaceholder.typicode.com/posts
+Response: 201

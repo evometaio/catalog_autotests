@@ -1,0 +1,2 @@
+Request: GET https://jsonplaceholder.typicode.com/posts/999999
+Response: 404
