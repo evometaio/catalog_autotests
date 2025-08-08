@@ -31,7 +31,7 @@ class TestHomepage:
         self.home_page.open_homepage()
         
         # Проверяем заголовок
-        self.home_page.should_have_title("QUBE Developmen")
+        self.home_page.should_have_title("QUBE Developmen444")
 
     
     @pytest.mark.regression
