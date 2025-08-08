@@ -53,10 +53,12 @@ jobs:
           xvfb-run -a pytest --alluredir=${{ env.ALLURE_RESULTS_DIR }}
 
       - name: Generate Allure report
+        if: always()
         run: |
           allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }} || echo "Allure report generation failed"
 
       - name: Ensure summary.json exists
+        if: always()
         run: |
           mkdir -p "${{ env.ALLURE_REPORT_DIR }}/widgets"
           if [ ! -f "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" ]; then
@@ -88,19 +90,19 @@ jobs:
           } >> $GITHUB_OUTPUT
 
       - name: Update Allure history
-        if: success() || failure()
+        if: always()
         run: |
           [ -d "${{ env.ALLURE_REPORT_DIR }}/history" ] && \
             cp -R ${{ env.ALLURE_REPORT_DIR }}/history/* gh-pages/history/ || \
             echo "No history to update"
 
       - name: Deploy to GitHub Pages
+        if: always()
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
           folder: allure-report
-          target-folder: autotests
           clean: true
           clean-exclude: "history"
 
