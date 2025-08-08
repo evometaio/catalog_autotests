@@ -140,7 +140,7 @@ jobs:
             <code>│</code> • ✅ <b>Успешных:</b> ${{ steps.allure-stats.outputs.PASSED }}
             <code>│</code> • ❌ <b>Упавших:</b> ${{ steps.allure-stats.outputs.FAILED }}
             <code>│</code> • ⏩ <b>Пропущенных:</b> ${{ steps.allure-stats.outputs.SKIPPED }}
-            ${{ steps.allure-stats.outputs.BROKEN != '0' && '<code>│</code> • 🛠 <b>Сломанных:</b> ' || '' }}${{ steps.allure-stats.outputs.BROKEN }}
+            ${{ steps.allure-stats.outputs.BROKEN != '0' && format('<code>│</code> • 🛠 <b>Сломанных:</b> {0}', steps.allure-stats.outputs.BROKEN) || '' }}
             
             <b>🔗 Ссылки</b>:
             <code>│</code> • <a href="https://${{ github.repository_owner }}.github.io/autotests/">Allure Report</a>
