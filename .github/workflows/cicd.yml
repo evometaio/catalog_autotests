@@ -35,6 +35,15 @@ jobs:
           playwright install chromium
           playwright install-deps
 
+      # Установка Allure CLI перед использованием
+      - name: Install Allure CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-jre
+          curl -o allure-2.24.0.tgz -Ls https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.24.0/allure-commandline-2.24.0.tgz
+          sudo tar -zxvf allure-2.24.0.tgz -C /usr/local
+          echo "/usr/local/allure-2.24.0/bin" >> $GITHUB_PATH
+
       - name: Prepare directories
         run: |
           mkdir -p ${{ env.ALLURE_RESULTS_DIR }}/history
@@ -48,28 +57,27 @@ jobs:
         if: success() || failure()
         run: |
           if [ -d "${{ env.ALLURE_RESULTS_DIR }}" ]; then
-            allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }}
+            /usr/local/allure-2.24.0/bin/allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }}
           else
             echo "Error: Allure results directory not found!"
             exit 1
           fi
 
-      - name: Install Allure CLI
-        if: success() || failure()
+      - name: Verify report generation
         run: |
-          curl -o allure-2.24.0.tgz -Ls https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.24.0/allure-commandline-2.24.0.tgz
-          tar -zxvf allure-2.24.0.tgz -C /usr/local
-          echo "/usr/local/allure-2.24.0/bin" >> $GITHUB_PATH
+          [ -d "${{ env.ALLURE_REPORT_DIR }}" ] || exit 1
+          [ -f "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" ] || exit 1
 
       - name: Parse test results
         id: allure-stats
         if: always()
         run: |
-          apt-get update && apt-get install -y jq
+          sudo apt-get update && sudo apt-get install -y jq
           
           SUMMARY_FILE="${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
-          [ -f "$SUMMARY_FILE" ] || \
+          if [ ! -f "$SUMMARY_FILE" ]; then
             echo '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' > "$SUMMARY_FILE"
+          fi
 
           TOTAL=$(jq -r '.statistic.total // 0' "$SUMMARY_FILE")
           PASSED=$(jq -r '.statistic.passed // 0' "$SUMMARY_FILE")
@@ -132,7 +140,7 @@ jobs:
             
             <b>Проект:</b> ${{ github.repository }}
             <b>Ветка:</b> ${{ github.ref_name }}
-            <b>Статус:</b> ${{ steps.allure-stats.outputs.FAILED == '0' && '✅' || '❌' }}
+            <b>Статус:</b> ${{ steps.final-status.outputs.EMOJI }}
             
             <b>📈 Статистика</b> (${{ steps.allure-stats.outputs.TOTAL }} тестов):
             <code>│</code> • ✅ <b>Успешных:</b> ${{ steps.allure-stats.outputs.PASSED }}
@@ -141,8 +149,8 @@ jobs:
             ${{ steps.allure-stats.outputs.BROKEN != '0' && '<code>│</code> • 🛠 <b>Сломанных:</b> ' || '' }}${{ steps.allure-stats.outputs.BROKEN }}
             
             <b>🔗 Ссылки</b>:
-            <code>│</code> • <a href="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/">Allure Report</a>
-            <code>│</code> • <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
+            <code>│</code> • <a href="https://${{ github.repository_owner }}.github.io/${{ github.repository }}/${{ env.ALLURE_REPORT_DIR }}/">Allure Report</a>
+            <code>│</code> • <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
             
             ${{ steps.final-status.outputs.FINAL_MESSAGE }}
           format: html
