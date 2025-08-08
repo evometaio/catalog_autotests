@@ -104,7 +104,7 @@ class TestAPIExample:
     @pytest.mark.regression
     @pytest.mark.api
     @allure.severity(allure.severity_level.MINOR)
-    @allure.step("Тест обработки ошибок")
+    @allure.step("Тест обработки ошибок1")
     def test_error_handling(self):
         """Тест обработки ошибок API."""
         self.api_client.base_url = "https://jsonplaceholder.typicode.com"
