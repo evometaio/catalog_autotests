@@ -63,7 +63,7 @@ jobs:
       if: always()
     
     - name: Upload Allure report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: allure-report-quick
         path: reports/allure-report/
