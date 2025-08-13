@@ -8,8 +8,8 @@ make setup
 
 ### 2. Настройка окружения
 ```bash
-# Скопируйте env.example в .env
-cp env.example .env
+# Скопируйте env в .env
+cp env .env
 
 # Отредактируйте .env файл
 BASE_URL=https://virtualtours.qbd.ae/map

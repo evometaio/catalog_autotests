@@ -13,14 +13,3 @@ PROD_BASE_URL=https://virtualtours.qbd.ae/map
 # Настройки браузера
 HEADLESS=true
 
-# Примеры использования:
-# 
-# Для DEV окружения:
-# BASE_URL=https://qube-dev-next.evometa.io/map
-# 
-# Для PROD окружения:
-# BASE_URL=https://virtualtours.qbd.ae/map
-# 
-# Или используйте команды make:
-# make test-dev    # тесты на DEV
-# make test-prod   # тесты на PROD

@@ -142,7 +142,7 @@ jobs:
             <code>│</code> • ⏩ <b>Пропущенных:</b> ${{ steps.allure-stats.outputs.SKIPPED }}
             
             <b>🔗 Ссылки</b>:
-            <code>│</code> • <a href="https://${{ github.repository_owner }}.github.io/autotests/">Allure Report</a>
+            <code>│</code> • <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/">Allure Report</a>
             <code>│</code> • <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
             
             ${{ steps.final-status.outputs.FINAL_MESSAGE }}
