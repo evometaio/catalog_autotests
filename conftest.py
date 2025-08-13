@@ -3,14 +3,6 @@ import pytest
 import os
 from datetime import datetime
 from playwright.sync_api import Page
-from utils.logger import setup_logger
-
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_logging():
-    """Настройка логирования для всей сессии тестов."""
-    setup_logger("autotests", "INFO")
-    yield
 
 
 @pytest.fixture(autouse=True)
@@ -47,10 +39,7 @@ def browser_context_args(browser_context_args):
     """Настройки контекста браузера."""
     return {
         **browser_context_args,
-        "viewport": {
-            "width": 1920,
-            "height": 1080,
-        },
+        "viewport": {"width": 1920, "height": 1080},
         "ignore_https_errors": True,
     }
 
@@ -59,20 +48,15 @@ def browser_context_args(browser_context_args):
 def browser_type_launch_args():
     """Аргументы запуска браузера."""
     return {
-        "headless": True,
-        "args": [
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-gpu",
-        ]
+        "headless": os.getenv("HEADLESS", "true").lower() == "true",
+        "args": ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"]
     }
 
 
-@pytest.fixture
-def api_client():
-    """Фикстура для API клиента."""
-    from utils.api_client import APIClient
-    return APIClient()
+@pytest.fixture(scope="session")
+def base_url():
+    """Фикстура для базового URL - требуется pytest-playwright."""
+    return os.getenv("BASE_URL", "https://virtualtours.qbd.ae/map")
 
 
 @pytest.fixture
@@ -83,20 +67,50 @@ def fake():
 
 
 @pytest.fixture
-def test_data():
-    """Фикстура с тестовыми данными."""
-    from faker import Faker
-    fake = Faker(['ru_RU', 'en_US'])
-    
-    return {
-        "valid_user": {
-            "username": fake.user_name(),
-            "email": fake.email(),
-            "password": fake.password(length=12),
-            "first_name": fake.first_name(),
-            "last_name": fake.last_name(),
-        }
-    }
+def dev_base_url():
+    """Фикстура для DEV окружения."""
+    return os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map")
+
+
+@pytest.fixture
+def prod_base_url():
+    """Фикстура для PROD окружения."""
+    return os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
+
+
+@pytest.fixture
+def current_environment():
+    """Фикстура для определения текущего окружения."""
+    base_url = os.getenv("BASE_URL", "")
+    if "dev" in base_url.lower() or "qube-dev" in base_url:
+        return "dev"
+    elif "prod" in base_url.lower() or "virtualtours" in base_url:
+        return "prod"
+    else:
+        return "unknown"
+
+
+@pytest.fixture
+def home_page(page: Page):
+    """Фикстура для главной страницы - использует POM."""
+    from pages.home_page import HomePage
+    base_url = os.getenv("BASE_URL", "https://virtualtours.qbd.ae/map")
+    return HomePage(page, base_url)
+
+
+@pytest.fixture
+def home_page_dev(page: Page, dev_base_url):
+    """Фикстура для главной страницы DEV окружения."""
+    from pages.home_page import HomePage
+    return HomePage(page, dev_base_url)
+
+
+@pytest.fixture
+def home_page_prod(page: Page, prod_base_url):
+    """Фикстура для главной страницы PROD окружения."""
+    from pages.home_page import HomePage
+    return HomePage(page, prod_base_url)
+
 
 # Хук для обработки результатов тестов
 def pytest_runtest_makereport(item, call):
@@ -104,3 +118,13 @@ def pytest_runtest_makereport(item, call):
     if call.when == "call":
         # Сохраняем результат для использования в фикстурах
         item.rep_call = call
+
+
+def pytest_addoption(parser):
+    """Добавляет дополнительные опции командной строки."""
+    parser.addoption(
+        "--environment",
+        action="store",
+        default="dev",
+        help="Окружение для тестирования (dev/prod)"
+    )

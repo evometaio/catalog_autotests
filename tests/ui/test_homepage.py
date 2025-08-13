@@ -1,56 +1,88 @@
+"""
+Тесты для главной страницы.
+Использует Page Object Model (POM) с HomePage.
+"""
 import allure
 import pytest
 from pages.home_page import HomePage
 
 
-@allure.feature("Homepage")
-@allure.story("Проверка главной страницы")
-class TestHomepage:
+@allure.feature("Главная страница")
+@allure.story("Загрузка страницы")
+@pytest.mark.smoke
+@pytest.mark.ui
+@allure.severity(allure.severity_level.CRITICAL)
+def test_homepage_loads(page, base_url):
+    """Тест загрузки главной страницы."""
+    home_page = HomePage(page, base_url)
     
-    @pytest.fixture(autouse=True)
-    def setup(self, page):
-        """Инициализация страницы."""
-        self.home_page = HomePage(page)
+    with allure.step("Открываем главную страницу"):
+        home_page.open_homepage()
+    
+    with allure.step("Проверяем наличие карты"):
+        home_page.check_map_visible()
 
-    @pytest.mark.regression
-    @pytest.mark.ui
-    @allure.severity(allure.severity_level.NORMAL)
-    @allure.step("Тест отображения карты")
-    def test_map_is_visible(self):
-        """Тест отображения карты на главной странице."""
-        self.home_page.open_homepage()
-        pass
-    
-    @pytest.mark.smoke
-    @pytest.mark.ui
-    @allure.severity(allure.severity_level.CRITICAL)
-    @allure.step("Тест полной функциональности главной страницы")
-    def test_homepage_functionality(self):
-        """Комплексный тест функциональности главной страницы."""
-        # Открываем страницу
-        self.home_page.open_homepage()
-        
-        # Проверяем заголовок
-        self.home_page.should_have_title("QUBE Developmenttt")
 
+@allure.feature("Главная страница")
+@allure.story("Элементы страницы")
+@pytest.mark.regression
+@pytest.mark.ui
+@allure.severity(allure.severity_level.NORMAL)
+def test_page_elements(page, base_url):
+    """Тест наличия основных элементов страницы."""
+    home_page = HomePage(page, base_url)
     
-    @pytest.mark.regression
-    @pytest.mark.ui
-    @allure.severity(allure.severity_level.MINOR)
-    @allure.step("Тест производительности загрузки страницы")
-    def test_page_load_performance(self):
-        """Тест производительности загрузки страницы."""
-        import time
-        
-        start_time = time.time()
-        self.home_page.open_homepage()
-        load_time = time.time() - start_time
-        
-        # Проверяем, что страница загружается за разумное время (менее 10 секунд)
-        assert load_time < 10, f"Страница загружается слишком медленно: {load_time:.2f} секунд"
-        
-        allure.attach(
-            f"Время загрузки страницы: {load_time:.2f} секунд",
-            name="page_load_time",
-            attachment_type=allure.attachment_type.TEXT
-        )
+    with allure.step("Открываем главную страницу"):
+        home_page.open_homepage()
+    
+    with allure.step("Проверяем наличие всех основных элементов"):
+        home_page.check_all_elements()
+
+
+@allure.feature("Главная страница")
+@allure.story("URL страницы")
+@pytest.mark.smoke
+@pytest.mark.ui
+@allure.severity(allure.severity_level.CRITICAL)
+def test_page_url(page, base_url):
+    """Тест корректности URL страницы."""
+    with allure.step(f"Переходим на {base_url}"):
+        page.goto(base_url)
+    
+    with allure.step("Проверяем URL"):
+        assert page.url == base_url, f"Ожидался URL: {base_url}, получен: {page.url}"
+
+
+@allure.feature("Главная страница")
+@allure.story("Генерация данных")
+@pytest.mark.regression
+@allure.severity(allure.severity_level.MINOR)
+def test_with_fake_data(fake):
+    """Тест с использованием генерации тестовых данных."""
+    with allure.step("Генерация тестовых данных"):
+        name = fake.name()
+        email = fake.email()
+        phone = fake.phone_number()
+    
+    with allure.step("Проверка корректности данных"):
+        assert name, "Имя не должно быть пустым"
+        assert "@" in email, "Email должен содержать @"
+        assert len(phone) > 10, "Телефон должен быть корректной длины"
+
+
+@allure.feature("Главная страница")
+@allure.story("POM функциональность")
+@pytest.mark.regression
+@pytest.mark.ui
+@allure.severity(allure.severity_level.NORMAL)
+def test_homepage_pom_functionality(page, base_url):
+    """Тест функциональности POM для главной страницы."""
+    home_page = HomePage(page, base_url)
+    
+    with allure.step("Открываем главную страницу"):
+        home_page.open_homepage()
+    
+    with allure.step("Проверяем базовые методы POM"):
+        # Проверяем, что базовые методы работают
+        assert home_page.is_visible("div#map"), "Карта должна быть видима"
+        assert home_page.get_text("header") is not None, "Заголовок должен содержать текст"

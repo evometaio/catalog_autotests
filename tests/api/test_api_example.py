@@ -1,142 +1,133 @@
+"""
+Простой API тест.
+Использует базовые requests без лишних абстракций.
+"""
 import allure
 import pytest
-from utils.api_client import APIClient
+import requests
 
 
-@allure.feature("API Testing")
-@allure.story("Пример API тестов")
-class TestAPIExample:
+@allure.feature("API")
+@allure.story("Базовые запросы")
+@pytest.mark.smoke
+@pytest.mark.api
+@allure.severity(allure.severity_level.CRITICAL)
+def test_api_health_check():
+    """Тест проверки здоровья API."""
+    with allure.step("Отправляем GET запрос"):
+        response = requests.get("https://httpbin.org/status/200", timeout=10)
     
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """Инициализация API клиента."""
-        self.api_client = APIClient()
+    with allure.step("Проверяем статус ответа"):
+        assert response.status_code == 200, f"Ожидался статус 200, получен: {response.status_code}"
+
+
+@allure.feature("API")
+@allure.story("POST запросы")
+@pytest.mark.smoke
+@pytest.mark.api
+@allure.severity(allure.severity_level.CRITICAL)
+def test_api_post_request():
+    """Тест POST запроса."""
+    test_data = {"name": "test", "value": 123}
     
-    @pytest.mark.smoke
-    @pytest.mark.api
-    @allure.severity(allure.severity_level.CRITICAL)
-    @allure.step("Тест GET запроса")
-    def test_get_request(self):
-        """Тест GET запроса к публичному API."""
-        # Используем JSONPlaceholder как пример публичного API
-        self.api_client.base_url = "https://jsonplaceholder.typicode.com"
-        
-        response = self.api_client.get("posts/1")
-        
-        # Проверяем статус код
-        self.api_client.expect_status_code(response, 200)
-        
-        # Проверяем структуру ответа
-        data = response.json()
-        assert "id" in data
-        assert "title" in data
-        assert "body" in data
-        assert "userId" in data
-        
-        # Проверяем конкретные значения
-        assert data["id"] == 1
-        assert data["userId"] == 1
+    with allure.step("Отправляем POST запрос с данными"):
+        response = requests.post(
+            "https://httpbin.org/post",
+            json=test_data,
+            timeout=10
+        )
     
-    @pytest.mark.smoke
-    @pytest.mark.api
-    @allure.severity(allure.severity_level.CRITICAL)
-    @allure.step("Тест POST запроса")
-    def test_post_request(self):
-        """Тест POST запроса к публичному API."""
-        self.api_client.base_url = "https://jsonplaceholder.typicode.com"
+    with allure.step("Проверяем ответ"):
+        assert response.status_code == 200, f"Ожидался статус 200, получен: {response.status_code}"
         
-        post_data = {
-            "title": "Test Post",
-            "body": "This is a test post",
-            "userId": 1
-        }
-        
-        response = self.api_client.post("posts", json=post_data)
-        
-        # Проверяем статус код (201 для создания)
-        self.api_client.expect_status_code(response, 201)
-        
-        # Проверяем ответ
-        data = response.json()
-        assert data["title"] == post_data["title"]
-        assert data["body"] == post_data["body"]
-        assert data["userId"] == post_data["userId"]
-        assert "id" in data  # Должен быть создан новый ID
+        response_data = response.json()
+        assert response_data["json"]["name"] == "test", "Имя не соответствует ожидаемому"
+        assert response_data["json"]["value"] == 123, "Значение не соответствует ожидаемому"
+
+
+@allure.feature("API")
+@allure.story("Обработка ошибок")
+@pytest.mark.regression
+@pytest.mark.api
+@allure.severity(allure.severity_level.NORMAL)
+def test_api_error_handling():
+    """Тест обработки ошибок API."""
+    with allure.step("Отправляем запрос к несуществующему эндпоинту"):
+        try:
+            response = requests.get("https://httpbin.org/status/404", timeout=10)
+            assert response.status_code == 404, f"Ожидался статус 404, получен: {response.status_code}"
+        except requests.exceptions.RequestException as e:
+            allure.attach(
+                str(e),
+                name="error_details",
+                attachment_type=allure.attachment_type.TEXT
+            )
+            raise
+
+
+@allure.feature("API")
+@allure.story("Валидация данных")
+@pytest.mark.regression
+@pytest.mark.api
+@allure.severity(allure.severity_level.NORMAL)
+def test_api_data_validation():
+    """Тест валидации данных API."""
+    test_data = {
+        "string": "test_string",
+        "number": 42,
+        "boolean": True,
+        "array": [1, 2, 3],
+        "object": {"key": "value"}
+    }
     
-    @pytest.mark.regression
-    @pytest.mark.api
-    @allure.severity(allure.severity_level.NORMAL)
-    @allure.step("Тест PUT запроса")
-    def test_put_request(self):
-        """Тест PUT запроса к публичному API."""
-        self.api_client.base_url = "https://jsonplaceholder.typicode.com"
-        
-        update_data = {
-            "id": 1,
-            "title": "Updated Title",
-            "body": "Updated body content",
-            "userId": 1
-        }
-        
-        response = self.api_client.put("posts/1", json=update_data)
-        
-        # Проверяем статус код
-        self.api_client.expect_status_code(response, 200)
-        
-        # Проверяем обновленные данные
-        data = response.json()
-        assert data["title"] == update_data["title"]
-        assert data["body"] == update_data["body"]
+    with allure.step("Отправляем POST запрос с различными типами данных"):
+        response = requests.post(
+            "https://httpbin.org/post",
+            json=test_data,
+            timeout=10
+        )
     
-    @pytest.mark.regression
-    @pytest.mark.api
-    @allure.severity(allure.severity_level.NORMAL)
-    @allure.step("Тест DELETE запроса")
-    def test_delete_request(self):
-        """Тест DELETE запроса к публичному API."""
-        self.api_client.base_url = "https://jsonplaceholder.typicode.com"
-        
-        response = self.api_client.delete("posts/1")
-        
-        # Проверяем статус код
-        self.api_client.expect_status_code(response, 200)
+    with allure.step("Проверяем статус ответа"):
+        assert response.status_code == 200, f"Ожидался статус 200, получен: {response.status_code}"
     
-    @pytest.mark.regression
-    @pytest.mark.api
-    @allure.severity(allure.severity_level.MINOR)
-    @allure.step("Тест обработки ошибок1")
-    def test_error_handling(self):
-        """Тест обработки ошибок API."""
-        self.api_client.base_url = "https://jsonplaceholder.typicode.com"
+    with allure.step("Проверяем валидацию полученных данных"):
+        response_data = response.json()
+        received_data = response_data["json"]
         
-        # Запрос к несуществующему ресурсу
-        response = self.api_client.get("posts/999999")
-        
-        # Проверяем статус код 404
-        self.api_client.expect_status_code(response, 404)
+        # Проверяем, что все данные получены корректно
+        assert received_data["string"] == "test_string", "Строка не соответствует ожидаемой"
+        assert received_data["number"] == 42, "Число не соответствует ожидаемому"
+        assert received_data["boolean"] == True, "Булево значение не соответствует ожидаемому"
+        assert received_data["array"] == [1, 2, 3], "Массив не соответствует ожидаемому"
+        assert received_data["object"] == {"key": "value"}, "Объект не соответствует ожидаемому"
+
+
+@allure.feature("API")
+@allure.story("Производительность")
+@pytest.mark.regression
+@pytest.mark.api
+@allure.severity(allure.severity_level.MINOR)
+def test_api_performance():
+    """Тест производительности API."""
+    import time
     
-    @pytest.mark.regression
-    @pytest.mark.api
-    @allure.severity(allure.severity_level.MINOR)
-    @allure.step("Тест с параметрами запроса")
-    def test_query_parameters(self):
-        """Тест GET запроса с параметрами."""
-        self.api_client.base_url = "https://jsonplaceholder.typicode.com"
+    with allure.step("Измеряем время ответа API"):
+        start_time = time.time()
+        response = requests.get("https://httpbin.org/delay/1", timeout=15)
+        end_time = time.time()
         
-        params = {
-            "userId": 1,
-            "_limit": 3
-        }
+        response_time = end_time - start_time
+    
+    with allure.step("Проверяем статус ответа"):
+        assert response.status_code == 200, f"Ожидался статус 200, получен: {response.status_code}"
+    
+    with allure.step("Проверяем время ответа"):
+        # API должен ответить в разумное время (не более 5 секунд)
+        assert response_time < 5.0, f"Время ответа слишком велико: {response_time:.2f}с"
         
-        response = self.api_client.get("posts", params=params)
-        
-        # Проверяем статус код
-        self.api_client.expect_status_code(response, 200)
-        
-        # Проверяем количество постов
-        data = response.json()
-        assert len(data) <= 3  # Ограничение по _limit
-        
-        # Проверяем, что все посты принадлежат пользователю с userId=1
-        for post in data:
-            assert post["userId"] == 1
+        # Прикрепляем время ответа к отчету
+        allure.attach(
+            f"Время ответа API: {response_time:.2f} секунд",
+            name="response_time",
+            attachment_type=allure.attachment_type.TEXT
+        )

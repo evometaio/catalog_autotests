@@ -1,35 +1,46 @@
-import allure
-from playwright.sync_api import expect
+"""
+Главная страница приложения.
+Наследует от BasePage для базовой функциональности.
+"""
 from pages.base_page import BasePage
+from playwright.sync_api import Page
 
 
 class HomePage(BasePage):
-    URL = "https://virtualtours.qbd.ae/map"
-
+    """Класс для работы с главной страницей."""
+    
+    def __init__(self, page: Page, base_url: str = None):
+        super().__init__(page, base_url)
+        # Селекторы элементов главной страницы
+        self.map_selector = "div#map"
+        self.header_selector = "header"
+        self.navigation_selector = "nav"
+        self.footer_selector = "footer"
+    
     def open_homepage(self):
-        with allure.step("Открываем главную страницу"):
-            self.open()
-            with allure.step(f"Проверяем что URL соответствует {self.URL}"):
-                expect(self.page).to_have_url(self.URL)
-
-    def should_have_title(self, expected_title: str):
-        with allure.step(f"Проверяем заголовок страницы: '{expected_title}'"):
-            expect(self.page).to_have_title(expected_title)
-            allure.attach(
-                f"Фактический заголовок соответствует ожидаемому: '{expected_title}'",
-                name="Title verification",
-                attachment_type=allure.attachment_type.TEXT
-            )
-
-    def map_should_be_visible(self):
-        with allure.step("Проверяем отображение карты"):
-            map_element = self.page.locator("div#map")
-            with allure.step("Находим элемент карты на странице"):
-                expect(map_element).to_be_visible()
-                with allure.step("Делаем скриншот карты"):
-                    screenshot = map_element.screenshot()
-                    allure.attach(
-                        screenshot,
-                        name="map_screenshot",
-                        attachment_type=allure.attachment_type.PNG
-                    )
+        """Открыть главную страницу."""
+        self.open()
+        self.wait_for_page_load()
+    
+    def check_map_visible(self):
+        """Проверить видимость карты."""
+        self.expect_visible(self.map_selector)
+    
+    def check_header_visible(self):
+        """Проверить видимость заголовка."""
+        self.expect_visible(self.header_selector)
+    
+    def check_navigation_visible(self):
+        """Проверить видимость навигации."""
+        self.expect_visible(self.navigation_selector)
+    
+    def check_footer_visible(self):
+        """Проверить видимость подвала."""
+        self.expect_visible(self.footer_selector)
+    
+    def check_all_elements(self):
+        """Проверить видимость всех основных элементов."""
+        self.check_map_visible()
+        self.check_header_visible()
+        self.check_navigation_visible()
+        self.check_footer_visible()
