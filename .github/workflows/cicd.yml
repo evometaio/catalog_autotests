@@ -69,7 +69,6 @@ jobs:
           python -m playwright install ${{ matrix.browser }}
           python -m playwright install-deps
 
-      # ==== Install Allure ====
       - name: Install Allure (Ubuntu)
         if: runner.os == 'Linux'
         run: |
@@ -95,22 +94,16 @@ jobs:
           $allureArchive = "$env:TEMP\allure-$allureVersion.tgz"
 
           Invoke-WebRequest -Uri $allureUrl -OutFile $allureArchive
-
-          # Extract
           tar -xzf $allureArchive -C C:\
-
-          # Add to PATH
           $allureDir = "C:\allure-$allureVersion"
           echo "$allureDir\bin" >> $env:GITHUB_PATH
-
           Remove-Item $allureArchive -Force
 
-      # ==== Run tests ====
       - name: Run tests
         run: |
           pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
         env:
-          PROD_BASE_URL: ${{ env.PROD_BASE_URL }}
+          PROD_BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
 
       - name: Generate Allure report
         run: |
@@ -138,6 +131,17 @@ jobs:
             <b>Проект:</b> ${{ github.repository }}
             <b>Ветка:</b> ${{ github.ref_name }}
             <b>Окружение:</b> ${{ github.event.inputs.environment }}
+            
+            <b>Статусы по ОС и браузерам:</b>
+            <code>│</code> • Ubuntu + Chromium: ${{ needs.test.result == 'success' && '✅' || '❌' }}
+            <code>│</code> • Ubuntu + Firefox: ${{ needs.test.result == 'success' && '✅' || '❌' }}
+            <code>│</code> • Ubuntu + WebKit: ${{ needs.test.result == 'success' && '✅' || '❌' }}
+            <code>│</code> • Windows + Chromium: ${{ needs.test.result == 'success' && '✅' || '❌' }}
+            <code>│</code> • Windows + Firefox: ${{ needs.test.result == 'success' && '✅' || '❌' }}
+            <code>│</code> • Windows + WebKit: ${{ needs.test.result == 'success' && '✅' || '❌' }}
+            <code>│</code> • macOS + Chromium: ${{ needs.test.result == 'success' && '✅' || '❌' }}
+            <code>│</code> • macOS + Firefox: ${{ needs.test.result == 'success' && '✅' || '❌' }}
+            <code>│</code> • macOS + WebKit: ${{ needs.test.result == 'success' && '✅' || '❌' }}
             
             <b>Ссылка на Allure:</b> <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/">отчет</a>
             <b>Ссылка на Actions:</b> <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
