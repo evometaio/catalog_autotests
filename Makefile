@@ -30,34 +30,17 @@ setup: ## Настройка проекта
 # Основные команды тестирования
 test: ## Запустить все тесты
 	@echo "$(GREEN)🧪 Запуск всех тестов...$(NC)"
-	$(PYTEST) -v --alluredir=reports/allure-results
+	$(PYTEST) -sv --alluredir=reports/allure-results
 
 test-ui: ## Запустить UI тесты
 	@echo "$(GREEN)🖥️ Запуск UI тестов...$(NC)"
-	$(PYTEST) tests/ui/ -v --alluredir=reports/allure-results
+	$(PYTEST) tests/ui/ -sv --alluredir=reports/allure-results
 
 test-api: ## Запустить API тесты
 	@echo "$(GREEN)🔌 Запуск API тестов...$(NC)"
-	$(PYTEST) tests/api/ -v --alluredir=reports/allure-results
+	$(PYTEST) tests/api/ -sv --alluredir=reports/allure-results
 
-# Команды для разных окружений
-test-dev: ## Запустить тесты на DEV окружении
-	@echo "$(GREEN)🔧 Запуск тестов на DEV окружении...$(NC)"
-	@echo "$(YELLOW)URL: https://qube-dev-next.evometa.io/map$(NC)"
-	BASE_URL=https://qube-dev-next.evometa.io/map $(PYTEST) -v --alluredir=reports/allure-results
 
-test-prod: ## Запустить тесты на PROD окружении
-	@echo "$(GREEN)🚀 Запуск тестов на PROD окружении...$(NC)"
-	@echo "$(YELLOW)URL: https://virtualtours.qbd.ae/map$(NC)"
-	BASE_URL=https://virtualtours.qbd.ae/map $(PYTEST) -v --alluredir=reports/allure-results
-
-test-ui-dev: ## Запустить UI тесты на DEV окружении
-	@echo "$(GREEN)🖥️ Запуск UI тестов на DEV окружении...$(NC)"
-	BASE_URL=https://qube-dev-next.evometa.io/map $(PYTEST) tests/ui/ -v --alluredir=reports/allure-results
-
-test-ui-prod: ## Запустить UI тесты на PROD окружении
-	@echo "$(GREEN)🖥️ Запуск UI тестов на PROD окружении...$(NC)"
-	BASE_URL=https://virtualtours.qbd.ae/map $(PYTEST) tests/ui/ -v --alluredir=reports/allure-results
 
 # Отчеты
 report: ## Сгенерировать отчет

@@ -55,8 +55,8 @@ def browser_type_launch_args():
 
 @pytest.fixture(scope="session")
 def base_url():
-    """Фикстура для базового URL - требуется pytest-playwright."""
-    return os.getenv("BASE_URL", "https://virtualtours.qbd.ae/map")
+    """Фикстура для production URL - требуется pytest-playwright."""
+    return os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
 
 
 @pytest.fixture
@@ -67,49 +67,10 @@ def fake():
 
 
 @pytest.fixture
-def dev_base_url():
-    """Фикстура для DEV окружения."""
-    return os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map")
-
-
-@pytest.fixture
-def prod_base_url():
-    """Фикстура для PROD окружения."""
-    return os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
-
-
-@pytest.fixture
-def current_environment():
-    """Фикстура для определения текущего окружения."""
-    base_url = os.getenv("BASE_URL", "")
-    if "dev" in base_url.lower() or "qube-dev" in base_url:
-        return "dev"
-    elif "prod" in base_url.lower() or "virtualtours" in base_url:
-        return "prod"
-    else:
-        return "unknown"
-
-
-@pytest.fixture
-def home_page(page: Page):
-    """Фикстура для главной страницы - использует POM."""
-    from pages.home_page import HomePage
-    base_url = os.getenv("BASE_URL", "https://virtualtours.qbd.ae/map")
-    return HomePage(page, base_url)
-
-
-@pytest.fixture
-def home_page_dev(page: Page, dev_base_url):
-    """Фикстура для главной страницы DEV окружения."""
-    from pages.home_page import HomePage
-    return HomePage(page, dev_base_url)
-
-
-@pytest.fixture
-def home_page_prod(page: Page, prod_base_url):
-    """Фикстура для главной страницы PROD окружения."""
-    from pages.home_page import HomePage
-    return HomePage(page, prod_base_url)
+def map_page(page: Page, base_url):
+    """Фикстура для страницы карты - использует POM."""
+    from pages.map_page import MapPage
+    return MapPage(page, base_url)
 
 
 # Хук для обработки результатов тестов
@@ -118,13 +79,3 @@ def pytest_runtest_makereport(item, call):
     if call.when == "call":
         # Сохраняем результат для использования в фикстурах
         item.rep_call = call
-
-
-def pytest_addoption(parser):
-    """Добавляет дополнительные опции командной строки."""
-    parser.addoption(
-        "--environment",
-        action="store",
-        default="dev",
-        help="Окружение для тестирования (dev/prod)"
-    )

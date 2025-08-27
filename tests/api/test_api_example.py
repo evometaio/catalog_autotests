@@ -1,7 +1,3 @@
-"""
-Простой API тест.
-Использует базовые requests без лишних абстракций.
-"""
 import allure
 import pytest
 import requests
@@ -9,6 +5,7 @@ import requests
 
 @allure.feature("API")
 @allure.story("Базовые запросы")
+@pytest.mark.skip(reason="Пример теста")
 @pytest.mark.smoke
 @pytest.mark.api
 @allure.severity(allure.severity_level.CRITICAL)
@@ -23,6 +20,7 @@ def test_api_health_check():
 
 @allure.feature("API")
 @allure.story("POST запросы")
+@pytest.mark.skip(reason="Пример теста")
 @pytest.mark.smoke
 @pytest.mark.api
 @allure.severity(allure.severity_level.CRITICAL)
@@ -47,6 +45,7 @@ def test_api_post_request():
 
 @allure.feature("API")
 @allure.story("Обработка ошибок")
+@pytest.mark.skip(reason="Пример теста")
 @pytest.mark.regression
 @pytest.mark.api
 @allure.severity(allure.severity_level.NORMAL)
@@ -67,6 +66,7 @@ def test_api_error_handling():
 
 @allure.feature("API")
 @allure.story("Валидация данных")
+@pytest.mark.skip(reason="Пример теста")
 @pytest.mark.regression
 @pytest.mark.api
 @allure.severity(allure.severity_level.NORMAL)
@@ -104,6 +104,7 @@ def test_api_data_validation():
 
 @allure.feature("API")
 @allure.story("Производительность")
+@pytest.mark.skip(reason="Пример теста")
 @pytest.mark.regression
 @pytest.mark.api
 @allure.severity(allure.severity_level.MINOR)
