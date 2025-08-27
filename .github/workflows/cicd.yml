@@ -1,23 +1,65 @@
 name: Tests CI Pipeline
 
-on: [push]
+on: 
+  push:
+    branches: [main, develop, feature/*, bugfix/*, hotfix/*]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Окружение для тестирования'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+        - prod
+        - dev
+      browsers:
+        description: 'Браузеры для тестирования'
+        required: false
+        default: 'chromium'
+        type: choice
+        options:
+        - chromium
+        - firefox
+        - webkit
+        - all
+      run_type:
+        description: 'Тип запуска тестов'
+        required: false
+        default: 'regression'
+        type: choice
+        options:
+        - smoke
+        - regression
+        - full
 
 env:
   ALLURE_REPORT_DIR: "allure-report"
   ALLURE_RESULTS_DIR: "allure-results"
+  PROD_BASE_URL: "https://virtualtours.qbd.ae/map"
+  DEV_BASE_URL: "https://qube-dev-next.evometa.io/map"
 
 jobs:
-  tests:
+  test-prod:
     runs-on: ${{ matrix.os }}
+    if: |
+      github.event_name == 'workflow_dispatch' && inputs.environment == 'prod' || 
+      github.ref == 'refs/heads/main' || 
+      github.event_name == 'push' || 
+      github.event_name == 'pull_request'
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: ${{ github.ref == 'refs/heads/main' && fromJSON('["ubuntu-latest", "windows-latest", "macos-latest"]') || fromJSON('["ubuntu-latest"]') }}
+        browser: ${{ github.ref == 'refs/heads/main' && fromJSON('["chromium", "firefox", "webkit"]') || fromJSON('["chromium"]') }}
 
     steps:
       - name: Checkout main repository
         uses: actions/checkout@v4
 
       - name: Checkout gh-pages branch
+        if: github.ref == 'refs/heads/main'
         uses: actions/checkout@v4
         with:
           ref: gh-pages
@@ -34,10 +76,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install allure-pytest pytest-playwright
-          playwright install chromium
+          playwright install ${{ matrix.browser }}
           playwright install-deps
 
-      - name: Install Allure CLI
+      - name: Install Allure CLI (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y default-jre
@@ -45,14 +88,34 @@ jobs:
           sudo tar -zxvf allure-2.24.0.tgz -C /usr/local
           echo "/usr/local/allure-2.24.0/bin" >> $GITHUB_PATH
 
+      - name: Install Allure CLI (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install allure
+          echo "$env:ChocolateyInstall\bin" >> $env:GITHUB_PATH
+
+      - name: Install Allure CLI (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install allure
+          echo "/opt/homebrew/bin" >> $GITHUB_PATH
+
       - name: Prepare directories
         run: |
           mkdir -p ${{ env.ALLURE_RESULTS_DIR }}/history
-          [ -d "gh-pages/history" ] && cp -R gh-pages/history/* ${{ env.ALLURE_RESULTS_DIR }}/history/ || echo "No history found"
+          if [ -d "gh-pages/history" ]; then
+            cp -R gh-pages/history/* ${{ env.ALLURE_RESULTS_DIR }}/history/ || echo "No history found"
+          fi
 
-      - name: Run tests
+      - name: Run tests on PROD
         run: |
-          xvfb-run -a pytest --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            xvfb-run -a pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+          else
+            pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+          fi
+        env:
+          PROD_BASE_URL: ${{ env.PROD_BASE_URL }}
 
       - name: Generate Allure report
         if: always()
@@ -64,15 +127,21 @@ jobs:
         run: |
           mkdir -p "${{ env.ALLURE_REPORT_DIR }}/widgets"
           if [ ! -f "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" ]; then
-            echo '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' \
-              > "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
+            echo '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' > "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
           fi
 
       - name: Parse test results
         id: allure-stats
         if: always()
         run: |
-          sudo apt-get update && sudo apt-get install -y jq
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            sudo apt-get update && sudo apt-get install -y jq
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            brew install jq
+          else
+            choco install jq
+          fi
+          
           SUMMARY_FILE="${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
 
           TOTAL=$(jq -r '.statistic.total // 0' "$SUMMARY_FILE")
@@ -92,14 +161,14 @@ jobs:
           } >> $GITHUB_OUTPUT
 
       - name: Update Allure history
-        if: always()
+        if: always() && github.ref == 'refs/heads/main'
         run: |
-          [ -d "${{ env.ALLURE_REPORT_DIR }}/history" ] && \
-            cp -R ${{ env.ALLURE_REPORT_DIR }}/history/* gh-pages/history/ || \
-            echo "No history to update"
+          if [ -d "${{ env.ALLURE_REPORT_DIR }}/history" ]; then
+            cp -R ${{ env.ALLURE_REPORT_DIR }}/history/* gh-pages/history/ || echo "No history to update"
+          fi
 
-      - name: Deploy to GitHub Pages
-        if: always()
+      - name: Deploy to GitHub Pages (Ubuntu only)
+        if: always() && github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -125,8 +194,8 @@ jobs:
             echo "EMOJI=✅" >> $GITHUB_OUTPUT
           fi
 
-      - name: Send Telegram notification
-        if: always() && github.ref == 'refs/heads/main'
+      - name: Send Telegram notification (Ubuntu only)
+        if: always() && github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
         uses: appleboy/telegram-action@v1.0.0
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -152,21 +221,168 @@ jobs:
             
             ${{ steps.final-status.outputs.FINAL_MESSAGE }}
 
-      - name: Send failure notification for feature branches
-        if: always() && github.ref != 'refs/heads/main' && (steps.allure-stats.outputs.FAILED != '0' || steps.allure-stats.outputs.BROKEN != '0')
+  test-dev:
+    runs-on: ${{ matrix.os }}
+    if: github.event_name == 'workflow_dispatch' && inputs.environment == 'dev'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        browser: ${{ github.event.inputs.browsers == 'all' && fromJSON('["chromium", "firefox", "webkit"]') || fromJSON('["chromium"]') }}
+
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          sparse-checkout: "history"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install allure-pytest pytest-playwright
+          playwright install ${{ matrix.browser }}
+          playwright install-deps
+
+      - name: Install Allure CLI (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-jre
+          curl -o allure-2.24.0.tgz -Ls https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.24.0/allure-commandline-2.24.0.tgz
+          sudo tar -zxvf allure-2.24.0.tgz -C /usr/local
+          echo "/usr/local/allure-2.24.0/bin" >> $GITHUB_PATH
+
+      - name: Install Allure CLI (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install allure
+          echo "$env:ChocolateyInstall\bin" >> $env:GITHUB_PATH
+
+      - name: Install Allure CLI (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install allure
+          echo "/opt/homebrew/bin" >> $GITHUB_PATH
+
+      - name: Prepare directories
+        run: |
+          mkdir -p ${{ env.ALLURE_RESULTS_DIR }}/history
+          if [ -d "gh-pages/history" ]; then
+            cp -R gh-pages/history/* ${{ env.ALLURE_RESULTS_DIR }}/history/ || echo "No history found"
+          fi
+
+      - name: Run tests on DEV
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            xvfb-run -a pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+          else
+            pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+          fi
+        env:
+          PROD_BASE_URL: ${{ env.DEV_BASE_URL }}
+
+      - name: Generate Allure report
+        if: always()
+        run: |
+          allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }} || echo "Allure report generation failed"
+
+      - name: Ensure summary.json exists
+        if: always()
+        run: |
+          mkdir -p "${{ env.ALLURE_REPORT_DIR }}/widgets"
+          if [ ! -f "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" ]; then
+            echo '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' > "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
+          fi
+
+      - name: Parse test results
+        id: allure-stats
+        if: always()
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            sudo apt-get update && sudo apt-get install -y jq
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            brew install jq
+          else
+            choco install jq
+          fi
+          
+          SUMMARY_FILE="${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
+
+          TOTAL=$(jq -r '.statistic.total // 0' "$SUMMARY_FILE")
+          PASSED=$(jq -r '.statistic.passed // 0' "$SUMMARY_FILE")
+          FAILED=$(jq -r '.statistic.failed // 0' "$SUMMARY_FILE")
+          SKIPPED=$(jq -r '.statistic.skipped // 0' "$SUMMARY_FILE")
+          BROKEN=$(jq -r '.statistic.broken // 0' "$SUMMARY_FILE")
+          CANCELED=$(jq -r '.statistic.canceled // 0' "$SUMMARY_FILE")
+
+          {
+            echo "TOTAL=$TOTAL"
+            echo "PASSED=$PASSED"
+            echo "FAILED=$FAILED"
+            echo "SKIPPED=$SKIPPED"
+            echo "BROKEN=$BROKEN"
+            echo "CANCELED=$CANCELED"
+          } >> $GITHUB_OUTPUT
+
+      - name: Update Allure history
+        if: always()
+        run: |
+          if [ -d "${{ env.ALLURE_REPORT_DIR }}/history" ]; then
+            cp -R ${{ env.ALLURE_REPORT_DIR }}/history/* gh-pages/history/ || echo "No history to update"
+          fi
+
+      - name: Deploy to GitHub Pages (Ubuntu only)
+        if: always() && matrix.os == 'ubuntu-latest'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: allure-report
+          clean: true
+          clean-exclude: "history"
+
+      - name: Determine final status
+        id: final-status
+        if: always()
+        run: |
+          FAILED=${{ steps.allure-stats.outputs.FAILED || 0 }}
+          BROKEN=${{ steps.allure-stats.outputs.BROKEN || 0 }}
+
+          if [ "$FAILED" -gt 0 ] || [ "$BROKEN" -gt 0 ]; then
+            echo "FINAL_STATUS=❌ ОШИБКИ" >> $GITHUB_OUTPUT
+            echo "FINAL_MESSAGE=⚠️ <b>Требуется проверка упавших тестов!</b>" >> $GITHUB_OUTPUT
+            echo "EMOJI=❌" >> $GITHUB_OUTPUT
+          else
+            echo "FINAL_STATUS=✅ УСПЕШНО" >> $GITHUB_OUTPUT
+            echo "FINAL_MESSAGE=🎉 <b>Все тесты прошли успешно!</b>" >> $GITHUB_OUTPUT
+            echo "EMOJI=✅" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Telegram notification (Ubuntu only)
+        if: always() && matrix.os == 'ubuntu-latest'
         uses: appleboy/telegram-action@v1.0.0
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            <b>⚠️ ВНИМАНИЕ: Тесты упали на feature ветке!</b>
+            <b>🚀 Результаты тестов на DEV</b>
             
             <b>Проект:</b> ${{ github.repository }}
             <b>Ветка:</b> ${{ github.ref_name }}
-            <b>Окружение:</b> 🟡 FEATURE BRANCH
+            <b>Окружение:</b> 🟡 DEVELOPMENT
             <b>Браузер:</b> ${{ matrix.browser }}
             <b>Платформа:</b> ${{ matrix.os }}
-            <b>Статус:</b> ❌ ОШИБКИ
+            <b>Статус:</b> ${{ steps.final-status.outputs.EMOJI }}
             
             <b>📈 Статистика</b> (${{ steps.allure-stats.outputs.TOTAL }} тестов):
             <code>│</code> • ✅ <b>Успешных:</b> ${{ steps.allure-stats.outputs.PASSED }}
@@ -174,6 +390,7 @@ jobs:
             <code>│</code> • ⏩ <b>Пропущенных:</b> ${{ steps.allure-stats.outputs.SKIPPED }}
             
             <b>🔗 Ссылки</b>:
+            <code>│</code> • <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/">Allure Report</a>
             <code>│</code> • <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
             
-            <b>🚨 Требуется немедленная проверка!</b>
+            ${{ steps.final-status.outputs.FINAL_MESSAGE }}
