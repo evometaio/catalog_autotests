@@ -62,9 +62,9 @@ jobs:
       - name: Install Allure (Ubuntu)
         if: runner.os == 'Linux'
         run: |
-          sudo apt-add-repository ppa:qameta/allure -y
-          sudo apt-get update
-          sudo apt-get install -y allure
+          curl -o allure-2.27.0.tgz -Ls https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz
+          sudo tar -zxvf allure-2.27.0.tgz -C /opt/
+          sudo ln -s /opt/allure-2.27.0/bin/allure /usr/bin/allure
 
       - name: Install Allure (macOS)
         if: runner.os == 'macOS'
@@ -72,7 +72,7 @@ jobs:
 
       - name: Install Java (Windows)
         if: runner.os == 'Windows'
-        run: choco install openjdk --version=17.0.12 -y
+        run: choco install openjdk --version=17 -y
         shell: pwsh
 
       - name: Install Allure (Windows)
@@ -83,7 +83,7 @@ jobs:
       # ==== Run tests ====
       - name: Run Playwright tests
         run: |
-          python -m pytest tests/test_sample.py \
+          python -m pytest tests \
             --alluredir=allure-results \
             --browser=${{ matrix.browser }}
 
