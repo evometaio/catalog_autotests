@@ -275,6 +275,56 @@ jobs:
           CANCELED=$CANCELED
           "@ | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
+      - name: Combine test results from all platforms
+        id: combined-stats
+        if: always() && github.ref == 'refs/heads/main'
+        run: |
+          # Инициализируем переменные
+          TOTAL_SUM=0
+          PASSED_SUM=0
+          FAILED_SUM=0
+          SKIPPED_SUM=0
+          BROKEN_SUM=0
+          CANCELED_SUM=0
+          
+          # Собираем результаты с Ubuntu
+          if [ -n "${{ steps.allure-stats-ubuntu.outputs.TOTAL }}" ]; then
+            TOTAL_SUM=$((TOTAL_SUM + ${{ steps.allure-stats-ubuntu.outputs.TOTAL }}))
+            PASSED_SUM=$((PASSED_SUM + ${{ steps.allure-stats-ubuntu.outputs.PASSED }}))
+            FAILED_SUM=$((FAILED_SUM + ${{ steps.allure-stats-ubuntu.outputs.FAILED }}))
+            SKIPPED_SUM=$((SKIPPED_SUM + ${{ steps.allure-stats-ubuntu.outputs.SKIPPED }}))
+            BROKEN_SUM=$((BROKEN_SUM + ${{ steps.allure-stats-ubuntu.outputs.BROKEN }}))
+            CANCELED_SUM=$((CANCELED_SUM + ${{ steps.allure-stats-ubuntu.outputs.CANCELED }}))
+          fi
+          
+          # Собираем результаты с macOS
+          if [ -n "${{ steps.allure-stats-macos.outputs.TOTAL }}" ]; then
+            TOTAL_SUM=$((TOTAL_SUM + ${{ steps.allure-stats-macos.outputs.TOTAL }}))
+            PASSED_SUM=$((PASSED_SUM + ${{ steps.allure-stats-macos.outputs.PASSED }}))
+            FAILED_SUM=$((FAILED_SUM + ${{ steps.allure-stats-macos.outputs.FAILED }}))
+            SKIPPED_SUM=$((SKIPPED_SUM + ${{ steps.allure-stats-macos.outputs.SKIPPED }}))
+            BROKEN_SUM=$((BROKEN_SUM + ${{ steps.allure-stats-macos.outputs.BROKEN }}))
+            CANCELED_SUM=$((CANCELED_SUM + ${{ steps.allure-stats-macos.outputs.SKIPPED }}))
+          fi
+          
+          # Собираем результаты с Windows
+          if [ -n "${{ steps.allure-stats-windows.outputs.TOTAL }}" ]; then
+            TOTAL_SUM=$((TOTAL_SUM + ${{ steps.allure-stats-windows.outputs.TOTAL }}))
+            PASSED_SUM=$((PASSED_SUM + ${{ steps.allure-stats-windows.outputs.PASSED }}))
+            FAILED_SUM=$((FAILED_SUM + ${{ steps.allure-stats-windows.outputs.FAILED }}))
+            SKIPPED_SUM=$((SKIPPED_SUM + ${{ steps.allure-stats-windows.outputs.SKIPPED }}))
+            BROKEN_SUM=$((BROKEN_SUM + ${{ steps.allure-stats-windows.outputs.BROKEN }}))
+            CANCELED_SUM=$((CANCELED_SUM + ${{ steps.allure-stats-windows.outputs.CANCELED }}))
+          fi
+          
+          # Выводим общие результаты
+          echo "TOTAL=$TOTAL_SUM" >> $GITHUB_OUTPUT
+          echo "PASSED=$PASSED_SUM" >> $GITHUB_OUTPUT
+          echo "FAILED=$FAILED_SUM" >> $GITHUB_OUTPUT
+          echo "SKIPPED=$SKIPPED_SUM" >> $GITHUB_OUTPUT
+          echo "BROKEN=$BROKEN_SUM" >> $GITHUB_OUTPUT
+          echo "CANCELED=$CANCELED_SUM" >> $GITHUB_OUTPUT
+
       - name: Update Allure history (Ubuntu/macOS)
         if: always() && github.ref == 'refs/heads/main' && (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest')
         run: |
@@ -354,6 +404,24 @@ jobs:
             "EMOJI=✅" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           }
 
+      - name: Determine combined final status
+        id: combined-final-status
+        if: always() && github.ref == 'refs/heads/main'
+        run: |
+          # Получаем общее количество упавших и сломанных тестов
+          FAILED_TOTAL=${{ steps.combined-stats.outputs.FAILED || 0 }}
+          BROKEN_TOTAL=${{ steps.combined-stats.outputs.BROKEN || 0 }}
+          
+          if [ "$FAILED_TOTAL" -gt 0 ] || [ "$BROKEN_TOTAL" -gt 0 ]; then
+            echo "FINAL_STATUS=❌ ОШИБКИ" >> $GITHUB_OUTPUT
+            echo "FINAL_MESSAGE=⚠️ <b>Требуется проверка упавших тестов!</b>" >> $GITHUB_OUTPUT
+            echo "EMOJI=❌" >> $GITHUB_OUTPUT
+          else
+            echo "FINAL_STATUS=✅ УСПЕШНО" >> $GITHUB_OUTPUT
+            echo "FINAL_MESSAGE=🎉 <b>Все тесты прошли успешно!</b>" >> $GITHUB_OUTPUT
+            echo "EMOJI=✅" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send Telegram notification (Ubuntu only)
         if: always() && github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
         uses: appleboy/telegram-action@v1.0.0
@@ -368,18 +436,18 @@ jobs:
             <b>Окружение:</b> 🟢 PRODUCTION
             <b>Браузер:</b> ${{ matrix.browser }}
             <b>Платформа:</b> ${{ matrix.os }}
-            <b>Статус:</b> ${{ steps.final-status.outputs.EMOJI }}
+            <b>Статус:</b> ${{ steps.combined-final-status.outputs.EMOJI }}
             
-            <b>📈 Статистика</b> (${{ steps.allure-stats.outputs.TOTAL }} тестов):
-            <code>│</code> • ✅ <b>Успешных:</b> ${{ steps.allure-stats.outputs.PASSED }}
-            <code>│</code> • ❌ <b>Упавших:</b> ${{ steps.allure-stats.outputs.FAILED }}
-            <code>│</code> • ⏩ <b>Пропущенных:</b> ${{ steps.allure-stats.outputs.SKIPPED }}
+            <b>📈 Статистика</b> (${{ steps.combined-stats.outputs.TOTAL }} тестов):
+            <code>│</code> • ✅ <b>Успешных:</b> ${{ steps.combined-stats.outputs.PASSED }}
+            <code>│</code> • ❌ <b>Упавших:</b> ${{ steps.combined-stats.outputs.FAILED }}
+            <code>│</code> • ⏩ <b>Пропущенных:</b> ${{ steps.combined-stats.outputs.SKIPPED }}
             
             <b>🔗 Ссылки</b>:
             <code>│</code> • <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/">Allure Report</a>
             <code>│</code> • <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
             
-            ${{ steps.final-status.outputs.FINAL_MESSAGE }}
+            ${{ steps.combined-final-status.outputs.FINAL_MESSAGE }}
           format: html
           disable_web_page_preview: true
 
