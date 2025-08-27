@@ -1,0 +1,6 @@
+"Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
+"skipped","Wed Aug 27 16:31:38 UTC 2025","Wed Aug 27 16:31:38 UTC 2025","0","tests.api","test_api_example","","","","test_api_performance[firefox]","Тест производительности API."
+"skipped","Wed Aug 27 16:31:38 UTC 2025","Wed Aug 27 16:31:38 UTC 2025","0","tests.api","test_api_example","","","","test_api_data_validation[firefox]","Тест валидации данных API."
+"skipped","Wed Aug 27 16:31:38 UTC 2025","Wed Aug 27 16:31:38 UTC 2025","0","tests.api","test_api_example","","","","test_api_error_handling[firefox]","Тест обработки ошибок API."
+"skipped","Wed Aug 27 16:31:38 UTC 2025","Wed Aug 27 16:31:38 UTC 2025","0","tests.api","test_api_example","","","","test_api_health_check[firefox]","Тест проверки здоровья API."
+"skipped","Wed Aug 27 16:31:38 UTC 2025","Wed Aug 27 16:31:38 UTC 2025","0","tests.api","test_api_example","","","","test_api_post_request[firefox]","Тест POST запроса."
