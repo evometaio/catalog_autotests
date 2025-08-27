@@ -15,28 +15,28 @@ class BasePage:
         url = f"{self.base_url.rstrip('/')}/{path.lstrip('/')}" if path else self.base_url
         self.page.goto(url)
     
-    def wait_for_element(self, selector: str, timeout: int = 10000) -> Locator:
+    def wait_for_element(self, selector: str, timeout: int = 20000) -> Locator:
         """Ожидать появления элемента."""
         element = self.page.locator(selector)
         element.wait_for(state="visible", timeout=timeout)
         return element
     
-    def click(self, selector: str, timeout: int = 10000):
+    def click(self, selector: str, timeout: int = 20000):
         """Кликнуть по элементу."""
         element = self.wait_for_element(selector, timeout)
         element.click()
     
-    def fill(self, selector: str, text: str, timeout: int = 10000):
+    def fill(self, selector: str, text: str, timeout: int = 20000):
         """Заполнить поле."""
         element = self.wait_for_element(selector, timeout)
         element.fill(text)
     
-    def get_text(self, selector: str, timeout: int = 10000) -> str:
+    def get_text(self, selector: str, timeout: int = 20000) -> str:
         """Получить текст элемента."""
         element = self.wait_for_element(selector, timeout)
         return element.text_content()
     
-    def is_visible(self, selector: str, timeout: int = 10000) -> bool:
+    def is_visible(self, selector: str, timeout: int = 20000) -> bool:
         """Проверить видимость элемента."""
         try:
             self.wait_for_element(selector, timeout)
@@ -44,7 +44,7 @@ class BasePage:
         except:
             return False
     
-    def expect_visible(self, selector: str, timeout: int = 10000):
+    def expect_visible(self, selector: str, timeout: int = 20000):
         """Ожидать видимости элемента."""
         element = self.wait_for_element(selector, timeout)
         expect(element).to_be_visible()

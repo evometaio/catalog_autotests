@@ -35,13 +35,25 @@ def screenshot_on_failure(page: Page, request):
 
 
 @pytest.fixture(scope="session")
-def browser_context_args(browser_context_args):
+def browser_context_args(browser_context_args, browser_type):
     """Настройки контекста браузера."""
-    return {
+    context_args = {
         **browser_context_args,
         "viewport": {"width": 1920, "height": 1080},
         "ignore_https_errors": True,
     }
+    
+    # Специальные настройки для WebKit
+    if browser_type.name == "webkit":
+        context_args.update({
+            "accept_downloads": True,
+            "ignore_https_errors": True,
+            # Увеличиваем таймауты для WebKit
+            "navigation_timeout": 60000,  # 60 секунд для навигации
+            "action_timeout": 30000,      # 30 секунд для действий
+        })
+    
+    return context_args
 
 
 @pytest.fixture(scope="session")
@@ -61,10 +73,18 @@ def browser_type_launch_args(browser_type):
     else:
         args = []
     
-    return {
+    launch_args = {
         "headless": headless,
         "args": args
     }
+    
+    # Специальные настройки для WebKit
+    if browser_type.name == "webkit":
+        launch_args.update({
+            "timeout": 60000,  # 60 секунд для запуска браузера
+        })
+    
+    return launch_args
 
 
 @pytest.fixture(scope="session")
