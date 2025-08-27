@@ -140,6 +140,11 @@ jobs:
       - name: Run tests on PROD (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
+          # Special handling for WebKit on Ubuntu
+          if [ "${{ matrix.browser }}" = "webkit" ]; then
+            export PLAYWRIGHT_WEBKIT_HEADLESS=true
+            export PLAYWRIGHT_WEBKIT_ARGS="--disable-dev-shm-usage"
+          fi
           xvfb-run -a pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           PROD_BASE_URL: ${{ env.PROD_BASE_URL }}
@@ -147,6 +152,11 @@ jobs:
       - name: Run tests on PROD (macOS)
         if: matrix.os == 'macos-latest'
         run: |
+          # Special handling for WebKit on macOS
+          if [ "${{ matrix.browser }}" = "webkit" ]; then
+            export PLAYWRIGHT_WEBKIT_HEADLESS=true
+            export PLAYWRIGHT_WEBKIT_ARGS="--disable-dev-shm-usage"
+          fi
           pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           PROD_BASE_URL: ${{ env.PROD_BASE_URL }}
@@ -155,6 +165,11 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
+          # Special handling for WebKit on Windows
+          if ("${{ matrix.browser }}" -eq "webkit") {
+            $env:PLAYWRIGHT_WEBKIT_HEADLESS = "true"
+            $env:PLAYWRIGHT_WEBKIT_ARGS = "--disable-dev-shm-usage"
+          }
           pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           PROD_BASE_URL: ${{ env.PROD_BASE_URL }}
@@ -411,9 +426,33 @@ jobs:
 
       - name: Install Allure CLI (Windows)
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
-          choco install allure
-          echo "$env:ChocolateyInstall\bin" >> $env:GITHUB_PATH
+          # Install Java first
+          choco install openjdk11 -y
+          
+          # Download and install Allure manually
+          $allureVersion = "2.24.0"
+          $allureUrl = "https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/$allureVersion/allure-commandline-$allureVersion.tgz"
+          $allureArchive = "allure-$allureVersion.tgz"
+          $allureDir = "C:\allure-$allureVersion"
+          
+          # Download Allure
+          Invoke-WebRequest -Uri $allureUrl -OutFile $allureArchive
+          
+          # Extract using tar (available in Windows 10+)
+          tar -xzf $allureArchive
+          
+          # Move to C:\ drive
+          if (Test-Path "allure-$allureVersion") {
+            Move-Item "allure-$allureVersion" "C:\" -Force
+          }
+          
+          # Add to PATH
+          echo "C:\allure-$allureVersion\bin" >> $env:GITHUB_PATH
+          
+          # Clean up
+          Remove-Item $allureArchive -Force
 
       - name: Install Allure CLI (macOS)
         if: matrix.os == 'macos-latest'
@@ -437,6 +476,11 @@ jobs:
       - name: Run tests on DEV (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
+          # Special handling for WebKit on Ubuntu
+          if [ "${{ matrix.browser }}" = "webkit" ]; then
+            export PLAYWRIGHT_WEBKIT_HEADLESS=true
+            export PLAYWRIGHT_WEBKIT_ARGS="--disable-dev-shm-usage"
+          fi
           xvfb-run -a pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           PROD_BASE_URL: ${{ env.DEV_BASE_URL }}
@@ -444,6 +488,11 @@ jobs:
       - name: Run tests on DEV (macOS)
         if: matrix.os == 'macos-latest'
         run: |
+          # Special handling for WebKit on macOS
+          if [ "${{ matrix.browser }}" = "webkit" ]; then
+            export PLAYWRIGHT_WEBKIT_HEADLESS=true
+            export PLAYWRIGHT_WEBKIT_ARGS="--disable-dev-shm-usage"
+          fi
           pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           PROD_BASE_URL: ${{ env.DEV_BASE_URL }}
@@ -452,6 +501,11 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
+          # Special handling for WebKit on Windows
+          if ("${{ matrix.browser }}" -eq "webkit") {
+            $env:PLAYWRIGHT_WEBKIT_HEADLESS = "true"
+            $env:PLAYWRIGHT_WEBKIT_ARGS = "--disable-dev-shm-usage"
+          }
           pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           PROD_BASE_URL: ${{ env.DEV_BASE_URL }}

@@ -45,11 +45,28 @@ def browser_context_args(browser_context_args):
 
 
 @pytest.fixture(scope="session")
-def browser_type_launch_args():
-    """Аргументы запуска браузера."""
+def browser_type_launch_args(browser_type):
+    """Аргументы запуска браузера с учетом типа браузера."""
+    headless = os.getenv("HEADLESS", "true").lower() == "true"
+    
+    # Базовые аргументы для всех браузеров
+    base_args = ["--window-size=1920,1080"]
+    
+    # Специфичные аргументы для Chromium
+    if browser_type.name == "chromium":
+        args = base_args + ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--start-maximized"]
+    # Специфичные аргументы для Firefox
+    elif browser_type.name == "firefox":
+        args = base_args + ["--width=1920", "--height=1080"]
+    # Специфичные аргументы для WebKit
+    elif browser_type.name == "webkit":
+        args = base_args + ["--disable-dev-shm-usage"]
+    else:
+        args = base_args
+    
     return {
-        "headless": os.getenv("HEADLESS", "true").lower() == "true",
-        "args": ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--window-size=1920,1080", "--start-maximized"]
+        "headless": headless,
+        "args": args
     }
 
 
