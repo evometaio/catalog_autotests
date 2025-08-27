@@ -49,20 +49,17 @@ def browser_type_launch_args(browser_type):
     """Аргументы запуска браузера с учетом типа браузера."""
     headless = os.getenv("HEADLESS", "true").lower() == "true"
     
-    # Базовые аргументы для всех браузеров
-    base_args = ["--window-size=1920,1080"]
-    
     # Специфичные аргументы для Chromium
     if browser_type.name == "chromium":
-        args = base_args + ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--start-maximized"]
+        args = ["--window-size=1920,1080", "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--start-maximized"]
     # Специфичные аргументы для Firefox
     elif browser_type.name == "firefox":
-        args = base_args + ["--width=1920", "--height=1080"]
-    # Специфичные аргументы для WebKit
+        args = ["--width=1920", "--height=1080"]
+    # Специфичные аргументы для WebKit - только базовые, без дополнительных флагов
     elif browser_type.name == "webkit":
-        args = base_args + ["--disable-dev-shm-usage"]
+        args = []
     else:
-        args = base_args
+        args = []
     
     return {
         "headless": headless,

@@ -143,7 +143,7 @@ jobs:
           # Special handling for WebKit on Ubuntu
           if [ "${{ matrix.browser }}" = "webkit" ]; then
             export PLAYWRIGHT_WEBKIT_HEADLESS=true
-            export PLAYWRIGHT_WEBKIT_ARGS="--disable-dev-shm-usage"
+            export PLAYWRIGHT_WEBKIT_ARGS=""
           fi
           xvfb-run -a pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
@@ -155,7 +155,7 @@ jobs:
           # Special handling for WebKit on macOS
           if [ "${{ matrix.browser }}" = "webkit" ]; then
             export PLAYWRIGHT_WEBKIT_HEADLESS=true
-            export PLAYWRIGHT_WEBKIT_ARGS="--disable-dev-shm-usage"
+            export PLAYWRIGHT_WEBKIT_ARGS=""
           fi
           pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
@@ -168,7 +168,7 @@ jobs:
           # Special handling for WebKit on Windows
           if ("${{ matrix.browser }}" -eq "webkit") {
             $env:PLAYWRIGHT_WEBKIT_HEADLESS = "true"
-            $env:PLAYWRIGHT_WEBKIT_ARGS = "--disable-dev-shm-usage"
+            $env:PLAYWRIGHT_WEBKIT_ARGS = ""
           }
           pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
@@ -479,7 +479,7 @@ jobs:
           # Special handling for WebKit on Ubuntu
           if [ "${{ matrix.browser }}" = "webkit" ]; then
             export PLAYWRIGHT_WEBKIT_HEADLESS=true
-            export PLAYWRIGHT_WEBKIT_ARGS="--disable-dev-shm-usage"
+            export PLAYWRIGHT_WEBKIT_ARGS=""
           fi
           xvfb-run -a pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
@@ -491,7 +491,7 @@ jobs:
           # Special handling for WebKit on macOS
           if [ "${{ matrix.browser }}" = "webkit" ]; then
             export PLAYWRIGHT_WEBKIT_HEADLESS=true
-            export PLAYWRIGHT_WEBKIT_ARGS="--disable-dev-shm-usage"
+            export PLAYWRIGHT_WEBKIT_ARGS=""
           fi
           pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
@@ -504,7 +504,7 @@ jobs:
           # Special handling for WebKit on Windows
           if ("${{ matrix.browser }}" -eq "webkit") {
             $env:PLAYWRIGHT_WEBKIT_HEADLESS = "true"
-            $env:PLAYWRIGHT_WEBKIT_ARGS = "--disable-dev-shm-usage"
+            $env:PLAYWRIGHT_WEBKIT_ARGS = ""
           }
           pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
