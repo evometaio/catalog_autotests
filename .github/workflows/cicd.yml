@@ -90,9 +90,33 @@ jobs:
 
       - name: Install Allure CLI (Windows)
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
-          choco install allure
-          echo "$env:ChocolateyInstall\bin" >> $env:GITHUB_PATH
+          # Install Java first
+          choco install openjdk11 -y
+          
+          # Download and install Allure manually
+          $allureVersion = "2.24.0"
+          $allureUrl = "https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/$allureVersion/allure-commandline-$allureVersion.tgz"
+          $allureArchive = "allure-$allureVersion.tgz"
+          $allureDir = "C:\allure-$allureVersion"
+          
+          # Download Allure
+          Invoke-WebRequest -Uri $allureUrl -OutFile $allureArchive
+          
+          # Extract using tar (available in Windows 10+)
+          tar -xzf $allureArchive
+          
+          # Move to C:\ drive
+          if (Test-Path "allure-$allureVersion") {
+            Move-Item "allure-$allureVersion" "C:\" -Force
+          }
+          
+          # Add to PATH
+          echo "C:\allure-$allureVersion\bin" >> $env:GITHUB_PATH
+          
+          # Clean up
+          Remove-Item $allureArchive -Force
 
       - name: Install Allure CLI (macOS)
         if: matrix.os == 'macos-latest'
