@@ -404,9 +404,9 @@ jobs:
             "EMOJI=✅" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           }
 
-      - name: Determine combined final status
+      - name: Determine combined final status (Ubuntu/macOS)
         id: combined-final-status
-        if: always() && github.ref == 'refs/heads/main'
+        if: always() && github.ref == 'refs/heads/main' && (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest')
         run: |
           # Получаем общее количество упавших и сломанных тестов
           FAILED_TOTAL=${{ steps.combined-stats.outputs.FAILED || 0 }}
@@ -422,6 +422,25 @@ jobs:
             echo "EMOJI=✅" >> $GITHUB_OUTPUT
           fi
 
+      - name: Determine combined final status (Windows)
+        id: combined-final-status-windows
+        if: always() && github.ref == 'refs/heads/main' && matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          # Получаем общее количество упавших и сломанных тестов
+          $FAILED_TOTAL = ${{ steps.combined-stats.outputs.FAILED || 0 }}
+          $BROKEN_TOTAL = ${{ steps.combined-stats.outputs.BROKEN || 0 }}
+          
+          if ($FAILED_TOTAL -gt 0 -or $BROKEN_TOTAL -gt 0) {
+            "FINAL_STATUS=❌ ОШИБКИ" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "FINAL_MESSAGE=⚠️ <b>Требуется проверка упавших тестов!</b>" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "EMOJI=❌" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          } else {
+            "FINAL_STATUS=✅ УСПЕШНО" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "FINAL_MESSAGE=🎉 <b>Все тесты прошли успешно!</b>" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "EMOJI=✅" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
+
       - name: Send Telegram notification (Ubuntu only)
         if: always() && github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
         uses: appleboy/telegram-action@v1.0.0
@@ -436,7 +455,7 @@ jobs:
             <b>Окружение:</b> 🟢 PRODUCTION
             <b>Браузер:</b> ${{ matrix.browser }}
             <b>Платформа:</b> ${{ matrix.os }}
-            <b>Статус:</b> ${{ steps.combined-final-status.outputs.EMOJI }}
+            <b>Статус:</b> ${{ matrix.os == 'windows-latest' && steps.combined-final-status-windows.outputs.EMOJI || steps.combined-final-status.outputs.EMOJI }}
             
             <b>📈 Статистика</b> (${{ steps.combined-stats.outputs.TOTAL }} тестов):
             <code>│</code> • ✅ <b>Успешных:</b> ${{ steps.combined-stats.outputs.PASSED }}
@@ -447,7 +466,7 @@ jobs:
             <code>│</code> • <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/">Allure Report</a>
             <code>│</code> • <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
             
-            ${{ steps.combined-final-status.outputs.FINAL_MESSAGE }}
+            ${{ matrix.os == 'windows-latest' && steps.combined-final-status-windows.outputs.FINAL_MESSAGE || steps.combined-final-status.outputs.FINAL_MESSAGE }}
           format: html
           disable_web_page_preview: true
 
