@@ -91,8 +91,39 @@ jobs:
       - name: Install Allure CLI (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          choco install allure
-          echo "$env:ChocolateyInstall\bin" >> $env:GITHUB_PATH
+          # Попробуем установить через chocolatey
+          Write-Host "Attempting to install Allure via chocolatey..."
+          choco install allure --yes --no-progress || Write-Host "Chocolatey installation failed"
+          
+          # Fallback: скачаем и распакуем вручную если chocolatey не сработал
+          if (!(Get-Command allure -ErrorAction SilentlyContinue)) {
+            Write-Host "Installing Allure manually..."
+            try {
+              # Скачиваем Allure
+              $allureUrl = "https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.24.0/allure-commandline-2.24.0.tgz"
+              $allureFile = "allure-2.24.0.tgz"
+              $allureDir = "C:\allure-2.24.0"
+              
+              Invoke-WebRequest -Uri $allureUrl -OutFile $allureFile
+              Write-Host "Allure downloaded successfully"
+              
+              # Распаковываем (используем 7zip если есть, иначе tar)
+              if (Get-Command 7z -ErrorAction SilentlyContinue) {
+                7z x $allureFile -o"C:\" -y
+              } else {
+                tar -xzf $allureFile -C C:\
+              }
+              
+              # Добавляем в PATH
+              $env:PATH += ";C:\allure-2.24.0\bin"
+              echo "C:\allure-2.24.0\bin" >> $env:GITHUB_PATH
+              Write-Host "Manual installation completed"
+            } catch {
+              Write-Host "Manual installation failed: $_"
+            }
+          } else {
+            Write-Host "Allure installed via chocolatey"
+          }
 
       - name: Install Allure CLI (macOS)
         if: matrix.os == 'macos-latest'
@@ -220,6 +251,8 @@ jobs:
             <code>│</code> • <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
             
             ${{ steps.final-status.outputs.FINAL_MESSAGE }}
+          format: html
+          disable_web_page_preview: true
 
   test-dev:
     runs-on: ${{ matrix.os }}
@@ -265,8 +298,39 @@ jobs:
       - name: Install Allure CLI (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          choco install allure
-          echo "$env:ChocolateyInstall\bin" >> $env:GITHUB_PATH
+          # Попробуем установить через chocolatey
+          Write-Host "Attempting to install Allure via chocolatey..."
+          choco install allure --yes --no-progress || Write-Host "Chocolatey installation failed"
+          
+          # Fallback: скачаем и распакуем вручную если chocolatey не сработал
+          if (!(Get-Command allure -ErrorAction SilentlyContinue)) {
+            Write-Host "Installing Allure manually..."
+            try {
+              # Скачиваем Allure
+              $allureUrl = "https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.24.0/allure-commandline-2.24.0.tgz"
+              $allureFile = "allure-2.24.0.tgz"
+              $allureDir = "C:\allure-2.24.0"
+              
+              Invoke-WebRequest -Uri $allureUrl -OutFile $allureFile
+              Write-Host "Allure downloaded successfully"
+              
+              # Распаковываем (используем 7zip если есть, иначе tar)
+              if (Get-Command 7z -ErrorAction SilentlyContinue) {
+                7z x $allureFile -o"C:\" -y
+              } else {
+                tar -xzf $allureFile -C C:\
+              }
+              
+              # Добавляем в PATH
+              $env:PATH += ";C:\allure-2.24.0\bin"
+              echo "C:\allure-2.24.0\bin" >> $env:GITHUB_PATH
+              Write-Host "Manual installation completed"
+            } catch {
+              Write-Host "Manual installation failed: $_"
+            }
+          } else {
+            Write-Host "Allure installed via chocolatey"
+          }
 
       - name: Install Allure CLI (macOS)
         if: matrix.os == 'macos-latest'
@@ -394,3 +458,5 @@ jobs:
             <code>│</code> • <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
             
             ${{ steps.final-status.outputs.FINAL_MESSAGE }}
+          format: html
+          disable_web_page_preview: true
