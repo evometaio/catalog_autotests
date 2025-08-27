@@ -1,52 +1,62 @@
-name: CI Pipe
+name: Tests CI Pipeline
 
 on:
+  push:
+    branches: [main, develop, feature/*, bugfix/*, hotfix/*]
+  pull_request:
+    branches: [main, develop]
   workflow_dispatch:
     inputs:
       environment:
-        description: "Select environment"
+        description: 'Окружение для тестирования'
         required: true
-        default: "dev"
+        default: 'prod'
         type: choice
-        options: [dev, prod]
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+        options:
+        - prod
+        - dev
+      browsers:
+        description: 'Браузеры для тестирования'
+        required: false
+        default: 'chromium'
+        type: choice
+        options:
+        - chromium
+        - firefox
+        - webkit
+        - all
+      run_type:
+        description: 'Тип запуска тестов'
+        required: false
+        default: 'regression'
+        type: choice
+        options:
+        - smoke
+        - regression
+        - full
+
+env:
+  ALLURE_REPORT_DIR: "allure-report"
+  ALLURE_RESULTS_DIR: "allure-results"
+  PROD_BASE_URL: "https://virtualtours.qbd.ae/map"
+  DEV_BASE_URL: "https://qube-dev-next.evometa.io/map"
 
 jobs:
   test:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            browser: chromium
-          - os: ubuntu-latest
-            browser: firefox
-          - os: ubuntu-latest
-            browser: webkit
-          - os: windows-latest
-            browser: chromium
-          - os: windows-latest
-            browser: firefox
-          - os: windows-latest
-            browser: webkit
-          - os: macos-latest
-            browser: chromium
-          - os: macos-latest
-            browser: firefox
-          - os: macos-latest
-            browser: webkit
-
     runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        browser: ${{ github.event.inputs.browsers == 'all' && fromJSON('["chromium","firefox","webkit"]') || fromJSON('["chromium"]') }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
@@ -54,11 +64,12 @@ jobs:
           pip install -r requirements.txt
           pip install allure-pytest pytest-playwright
 
-      - name: Setup Playwright
+      - name: Install Playwright browsers
         run: |
-          python -m playwright install --with-deps ${{ matrix.browser }}
+          python -m playwright install ${{ matrix.browser }}
+          python -m playwright install-deps
 
-      # ==== OS-specific Allure install ====
+      # ==== Install Allure ====
       - name: Install Allure (Ubuntu)
         if: runner.os == 'Linux'
         run: |
@@ -72,96 +83,63 @@ jobs:
 
       - name: Install Java (Windows)
         if: runner.os == 'Windows'
-        run: choco install openjdk --version=17 -y
         shell: pwsh
+        run: choco install openjdk --version=17 -y
 
       - name: Install Allure (Windows)
         if: runner.os == 'Windows'
-        run: choco install allure --version=2.13.9 -y
         shell: pwsh
+        run: |
+          $allureVersion = "2.27.0"
+          $allureUrl = "https://github.com/allure-framework/allure2/releases/download/$allureVersion/allure-$allureVersion.tgz"
+          $allureArchive = "$env:TEMP\allure-$allureVersion.tgz"
+
+          Invoke-WebRequest -Uri $allureUrl -OutFile $allureArchive
+
+          # Extract
+          tar -xzf $allureArchive -C C:\
+
+          # Add to PATH
+          $allureDir = "C:\allure-$allureVersion"
+          echo "$allureDir\bin" >> $env:GITHUB_PATH
+
+          Remove-Item $allureArchive -Force
 
       # ==== Run tests ====
-      - name: Run Playwright tests
+      - name: Run tests
         run: |
-          python -m pytest tests \
-            --alluredir=allure-results \
-            --browser=${{ matrix.browser }}
-
-      # ==== Process Allure results ====
-      - name: Ensure allure-results directory
-        run: mkdir -p allure-results
-
-      - name: Ensure summary.json exists
-        run: |
-          if [ ! -f allure-results/summary.json ]; then
-            echo '{}' > allure-results/summary.json
-          fi
+          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
+        env:
+          PROD_BASE_URL: ${{ env.PROD_BASE_URL }}
 
       - name: Generate Allure report
         run: |
-          allure generate allure-results --clean -o allure-report || echo "Allure report generation failed"
+          allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }} || echo "Allure report generation failed"
 
-      - name: Upload Allure results
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results-${{ matrix.os }}-${{ matrix.browser }}
-          path: allure-results
-
-      - name: Upload Allure report
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report-${{ matrix.os }}-${{ matrix.browser }}
-          path: allure-report
-
-      - name: Save status
+      - name: Ensure summary.json exists
         run: |
-          echo "${{ matrix.os }} | ${{ matrix.browser }} | ${{ job.status }}" >> status.txt
-        if: always()
-
-      - name: Upload status artifact
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: status-${{ matrix.os }}-${{ matrix.browser }}
-          path: status.txt
+          mkdir -p "${{ env.ALLURE_REPORT_DIR }}/widgets"
+          if [ ! -f "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" ]; then
+            echo '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' > "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
+          fi
 
   send-summary:
     runs-on: ubuntu-latest
     needs: test
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Generate and send Telegram summary
+        uses: appleboy/telegram-action@v1.0.0
         with:
-          path: ./statuses
-
-      - name: Build summary message
-        id: summary
-        run: |
-          echo "Test Results for ${{ github.event.inputs.environment || 'dev' }} environment:" > message.txt
-          echo "" >> message.txt
-
-          for file in ./statuses/status-*/*.txt; do
-            line=$(cat $file)
-            os=$(echo $line | cut -d '|' -f1 | xargs)
-            browser=$(echo $line | cut -d '|' -f2 | xargs)
-            status=$(echo $line | cut -d '|' -f3 | xargs)
-
-            if [ "$status" == "success" ]; then
-              echo "✅ $os / $browser: PASSED" >> message.txt
-            else
-              echo "❌ $os / $browser: FAILED" >> message.txt
-            fi
-          done
-
-          echo "" >> message.txt
-          echo "Full reports available in artifacts." >> message.txt
-
-      - name: Send Telegram Notification
-        env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          MESSAGE="$(cat message.txt)"
-          curl -s -X POST https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage \
-            -d chat_id=$TELEGRAM_CHAT_ID \
-            -d parse_mode=Markdown \
-            -d text="${MESSAGE}"
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            <b>🚀 Итоговый отчет по тестам</b>
+            
+            <b>Проект:</b> ${{ github.repository }}
+            <b>Ветка:</b> ${{ github.ref_name }}
+            <b>Окружение:</b> ${{ github.event.inputs.environment }}
+            
+            <b>Ссылка на Allure:</b> <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/">отчет</a>
+            <b>Ссылка на Actions:</b> <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
+          format: html
+          disable_web_page_preview: true
