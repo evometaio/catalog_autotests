@@ -49,7 +49,7 @@ def browser_type_launch_args():
     """Аргументы запуска браузера."""
     return {
         "headless": os.getenv("HEADLESS", "true").lower() == "true",
-        "args": ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"]
+        "args": ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--window-size=1920,1080", "--start-maximized"]
     }
 
 
@@ -57,6 +57,11 @@ def browser_type_launch_args():
 def base_url():
     """Фикстура для production URL - требуется pytest-playwright."""
     return os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
+
+@pytest.fixture(scope="session")
+def dev_base_url():
+    """Фикстура для production URL - требуется pytest-playwright."""
+    return os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map")
 
 
 @pytest.fixture

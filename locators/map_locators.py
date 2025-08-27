@@ -4,10 +4,10 @@ class MapLocators:
     # Основной контейнер карты
     MAP_CONTAINER = '[data-testid="map"]'
     
-    # Проекты на карте
-    PROJECT_ELIRE = 'div[aria-label="Elire"]'
-    PROJECT_ARISHA = 'div[aria-label="ARISHA TERRACES"]'
-    PROJECT_CUBIX = 'div[aria-label="CUBIX RESIDENCES"]'
+    # Универсальные локаторы для проектов (работают на всех окружениях)
+    PROJECT_ELIRE = 'div[aria-label*="Elire"], div[aria-label*="ELIRE"]'
+    PROJECT_ARISHA = 'div[aria-label*="Arisha"], div[aria-label*="ARISHA"]'
+    PROJECT_CUBIX = 'div[aria-label*="Cubix"], div[aria-label*="CUBIX"]'
     
     # Элементы управления картой (основные)
     ZOOM_IN_BUTTON = '[aria-label="Увеличить"]'
@@ -23,16 +23,12 @@ class MapLocators:
     PROJECT_INFO_WINDOW = 'div.ant-card[class*="_projectInfo"]'
     PROJECT_CARD = 'div.ant-card'
     
-    # Общие селекторы
-    ALL_PROJECTS = 'div[aria-label*="Elire"], div[aria-label*="ARISHA"], div[aria-label*="CUBIX"]'
+    # Универсальные селекторы для всех проектов (работают на всех окружениях)
+    ALL_PROJECTS = 'div[aria-label*="Elire"], div[aria-label*="ELIRE"], div[aria-label*="Arisha"], div[aria-label*="ARISHA"], div[aria-label*="Cubix"], div[aria-label*="CUBIX"]'
     ALL_BUTTONS = 'button[aria-label]'
     
     # Навигация на странице проекта
     DUBAI_BUTTON = 'span.ant-menu-title-content'
     PROJECT_PAGE_TITLE = 'h1, h2, h3'
     PROJECT_NAVIGATION = '[class*="CompactNavigation"]'
-    
-    # URL шаблоны
-    PROJECT_URL_TEMPLATE = "https://virtualtours.qbd.ae/project/{project}/area"
-    MAP_URL = "https://virtualtours.qbd.ae/map"
 

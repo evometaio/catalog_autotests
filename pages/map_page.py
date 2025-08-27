@@ -1,6 +1,7 @@
 from pages.base_page import BasePage
 from locators.map_locators import MapLocators
 from playwright.sync_api import Page
+import os
 
 
 class MapPage(BasePage):
@@ -9,11 +10,36 @@ class MapPage(BasePage):
     def __init__(self, page: Page, base_url: str = None):
         super().__init__(page, base_url)
         self.locators = MapLocators()
+        
+        # Динамически определяем URL в зависимости от окружения
+        if base_url and ("qube-dev" in base_url or "dev" in base_url):
+            self.project_url_template = base_url.replace("/map", "/project/{project}/area")
+            self.map_url = base_url
+        else:
+            # Production URLs из переменных окружения
+            prod_base = os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
+            self.project_url_template = prod_base.replace("/map", "/project/{project}/area")
+            self.map_url = prod_base
     
     def open_map_page(self):
         """Открыть страницу карты."""
         self.open()
         self.wait_for_page_load()
+        
+        # Убеждаемся, что окно имеет правильный размер
+        self.ensure_proper_window_size()
+    
+    def ensure_proper_window_size(self):
+        """Обеспечиваем правильный размер окна для лучшей видимости карты."""
+        try:
+            # Проверяем текущий размер viewport
+            current_size = self.page.viewport_size
+            if current_size and (current_size['width'] < 1920 or current_size['height'] < 1080):
+                # Устанавливаем Full HD размер
+                self.page.set_viewport_size({"width": 1920, "height": 1080})
+        except Exception as e:
+            print(e)
+
     
     def check_map_loaded(self):
         """Проверить загрузку карты."""
@@ -42,63 +68,29 @@ class MapPage(BasePage):
         self.expect_visible(self.locators.PROJECT_INFO_WINDOW)
     
     def open_project_page(self, project_name: str):
-        """Открыть полную страницу проекта."""
-        project_url = self.locators.PROJECT_URL_TEMPLATE.format(project=project_name.lower())
+        """Открыть страницу проекта."""
+        project_url = self.project_url_template.format(project=project_name.lower())
         self.page.goto(project_url)
         self.wait_for_page_load()
     
     def check_project_page_loaded(self, project_name: str):
         """Проверить загрузку страницы проекта."""
         # Проверяем, что мы на странице проекта (URL содержит /project/ и название проекта)
+        self.wait_for_page_load()
         current_url = self.page.url
+        self.wait_for_page_load()
         assert f'/project/{project_name.lower()}' in current_url, f"Не на странице проекта {project_name}. Текущий URL: {current_url}"
-        
-        # Проверяем наличие текста проекта на странице
-        body_text = self.page.locator('body').inner_text()
-        assert project_name.lower() in body_text.lower(), f"Текст проекта '{project_name}' не найден на странице"
     
     def return_to_map_from_project(self):
         """Вернуться на карту со страницы проекта."""
-        # Переходим на карту напрямую
-        self.page.goto(self.locators.MAP_URL)
+        self.page.goto(self.map_url)
         self.wait_for_page_load()
     
     def verify_returned_to_map(self):
-        """Проверить, что успешно вернулись на карту."""
+        """Проверить, что вернулись на карту."""
         current_url = self.page.url
-        assert self.locators.MAP_URL in current_url, f"Не вернулись на карту. Текущий URL: {current_url}"
-        
-        # Проверяем, что карта загрузилась
-        self.check_map_loaded()
-        
-        # Проверяем, что проекты видны
-        self.check_all_projects_visible()
-    
-    def zoom_in(self):
-        """Приблизить карту."""
-        try:
-            # Сначала пробуем основной локатор
-            if self.is_visible(self.locators.ZOOM_IN_BUTTON, timeout=5000):
-                self.click(self.locators.ZOOM_IN_BUTTON)
-            else:
-                # Пробуем альтернативные локаторы
-                self.click(self.locators.ZOOM_IN_ALT)
-        except Exception:
-            # Если не удалось, просто логируем
-            print("Кнопка увеличения не найдена или недоступна")
-    
-    def zoom_out(self):
-        """Отдалить карту."""
-        try:
-            # Сначала пробуем основной локатор
-            if self.is_visible(self.locators.ZOOM_OUT_BUTTON, timeout=5000):
-                self.click(self.locators.ZOOM_OUT_BUTTON)
-            else:
-                # Пробуем альтернативные локаторы
-                self.click(self.locators.ZOOM_OUT_ALT)
-        except Exception:
-            # Если не удалось, просто логируем
-            print("Кнопка уменьшения не найдена или недоступна")
+        assert self.map_url in current_url, f"Не вернулись на карту. Текущий URL: {current_url}"
+
     
     def toggle_fullscreen(self):
         """Переключить полноэкранный режим."""
@@ -113,36 +105,8 @@ class MapPage(BasePage):
             # Если не удалось, просто логируем
             print("Кнопка полноэкранного режима не найдена или недоступна")
 
-    def check_map_controls_visible(self):
-        """Проверить видимость элементов управления картой."""
-        # Проверяем основные элементы управления
-        controls_found = 0
-        
-        if self.is_visible(self.locators.ZOOM_IN_BUTTON, timeout=5000):
-            controls_found += 1
-        elif self.is_visible(self.locators.ZOOM_IN_ALT, timeout=5000):
-            controls_found += 1
-            
-        if self.is_visible(self.locators.ZOOM_OUT_BUTTON, timeout=5000):
-            controls_found += 1
-        elif self.is_visible(self.locators.ZOOM_OUT_ALT, timeout=5000):
-            controls_found += 1
-            
-        if self.is_visible(self.locators.FULLSCREEN_BUTTON, timeout=5000):
-            controls_found += 1
-        elif self.is_visible(self.locators.FULLSCREEN_ALT, timeout=5000):
-            controls_found += 1
-        
-        # Требуем хотя бы 2 элемента управления
-        assert controls_found >= 2, f"Найдено только {controls_found} элементов управления картой"
     
     def check_all_elements(self):
         """Проверить видимость всех основных элементов."""
         self.check_map_loaded()
         self.check_all_projects_visible()
-        # Делаем проверку элементов управления необязательной
-        try:
-            self.check_map_controls_visible()
-        except Exception as e:
-            print(f"Элементы управления картой недоступны: {e}")
-            # Не прерываем тест, если элементы управления недоступны

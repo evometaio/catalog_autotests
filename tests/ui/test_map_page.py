@@ -41,7 +41,7 @@ def test_all_projects_visible_on_map(map_page):
     """Тест видимости всех проектов на карте."""
     with allure.step("Открываем страницу карты"):
         map_page.open_map_page()
-    
+
     with allure.step("Проверяем видимость всех проектов"):
         map_page.check_all_projects_visible()
 
@@ -56,13 +56,12 @@ def test_project_navigation_on_map(map_page, project_name):
     """Тест навигации по проектам."""
     with allure.step(f"Открываем страницу карты"):
         map_page.open_map_page()
-    
+
     with allure.step(f"Кликаем по проекту {project_name.upper()}"):
         map_page.click_project(project_name)
-    
+
     with allure.step(f"Проверяем информацию о проекте {project_name.upper()}"):
         map_page.check_project_info_visible(project_name)
-
 
 
 @allure.feature("Страница карты")
@@ -75,16 +74,15 @@ def test_full_navigation_cycle_on_map(map_page, project_name):
     """Тест полного цикла навигации: карта -> проект -> карта."""
     with allure.step(f"Открываем страницу карты"):
         map_page.open_map_page()
-    
+
     with allure.step(f"Тестируем навигацию для проекта {project_name.upper()}"):
         # Открываем проект
         map_page.open_project_page(project_name)
         map_page.check_project_page_loaded(project_name)
-        
+
         # Возвращаемся на карту
         map_page.return_to_map_from_project()
         map_page.verify_returned_to_map()
-
 
 
 # TODO подумать как реализизовать
@@ -115,7 +113,6 @@ def test_fullscreen_mode_on_map(map_page):
     """Тест полноэкранного режима."""
     with allure.step("Открываем страницу карты"):
         map_page.open_map_page()
-    
+
     with allure.step("Переключаем полноэкранный режим"):
         map_page.toggle_fullscreen()
-

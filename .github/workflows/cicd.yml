@@ -8,8 +8,10 @@ env:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - name: Checkout main repository
@@ -124,16 +126,19 @@ jobs:
           fi
 
       - name: Send Telegram notification
-        if: always()
+        if: always() && github.ref == 'refs/heads/main'
         uses: appleboy/telegram-action@v1.0.0
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            <b>🚀 Результаты тестов</b>
+            <b>🚀 Результаты тестов на PROD</b>
             
             <b>Проект:</b> ${{ github.repository }}
             <b>Ветка:</b> ${{ github.ref_name }}
+            <b>Окружение:</b> 🟢 PRODUCTION
+            <b>Браузер:</b> ${{ matrix.browser }}
+            <b>Платформа:</b> ${{ matrix.os }}
             <b>Статус:</b> ${{ steps.final-status.outputs.EMOJI }}
             
             <b>📈 Статистика</b> (${{ steps.allure-stats.outputs.TOTAL }} тестов):
@@ -146,5 +151,29 @@ jobs:
             <code>│</code> • <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
             
             ${{ steps.final-status.outputs.FINAL_MESSAGE }}
-          format: html
-          disable_web_page_preview: true
+
+      - name: Send failure notification for feature branches
+        if: always() && github.ref != 'refs/heads/main' && (steps.allure-stats.outputs.FAILED != '0' || steps.allure-stats.outputs.BROKEN != '0')
+        uses: appleboy/telegram-action@v1.0.0
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            <b>⚠️ ВНИМАНИЕ: Тесты упали на feature ветке!</b>
+            
+            <b>Проект:</b> ${{ github.repository }}
+            <b>Ветка:</b> ${{ github.ref_name }}
+            <b>Окружение:</b> 🟡 FEATURE BRANCH
+            <b>Браузер:</b> ${{ matrix.browser }}
+            <b>Платформа:</b> ${{ matrix.os }}
+            <b>Статус:</b> ❌ ОШИБКИ
+            
+            <b>📈 Статистика</b> (${{ steps.allure-stats.outputs.TOTAL }} тестов):
+            <code>│</code> • ✅ <b>Успешных:</b> ${{ steps.allure-stats.outputs.PASSED }}
+            <code>│</code> • ❌ <b>Упавших:</b> ${{ steps.allure-stats.outputs.FAILED }}
+            <code>│</code> • ⏩ <b>Пропущенных:</b> ${{ steps.allure-stats.outputs.SKIPPED }}
+            
+            <b>🔗 Ссылки</b>:
+            <code>│</code> • <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
+            
+            <b>🚨 Требуется немедленная проверка!</b>
