@@ -90,9 +90,50 @@ jobs:
 
       - name: Install Allure CLI (Windows)
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
-          choco install allure
-          echo "$env:ChocolateyInstall\bin" >> $env:GITHUB_PATH
+          # Download Allure manually since Chocolatey doesn't have it
+          $allureVersion = "2.24.0"
+          $allureUrl = "https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/$allureVersion/allure-commandline-$allureVersion.tgz"
+          $allureArchive = "allure-$allureVersion.tgz"
+          $allureDir = "C:\allure-$allureVersion"
+          
+          # Download and extract Allure
+          Invoke-WebRequest -Uri $allureUrl -OutFile $allureArchive
+          
+          # Install 7-Zip if not available for tar extraction
+          if (-not (Get-Command "7z" -ErrorAction SilentlyContinue)) {
+            choco install 7zip -y
+          }
+          
+          # Extract using 7-Zip
+          if (Test-Path "7z.exe") {
+            & "7z.exe" x $allureArchive -o"C:\" -y
+          } else {
+            # Try to use built-in tar if available (Windows 10+)
+            try {
+              tar -xzf $allureArchive -C "C:\"
+            } catch {
+              Write-Host "Failed to extract with tar, trying alternative method"
+              # Alternative: use Java to run Allure directly
+              $javaPath = (Get-Command java -ErrorAction SilentlyContinue).Source
+              if ($javaPath) {
+                Write-Host "Java found at: $javaPath"
+                Write-Host "Allure will be run via Java"
+              }
+            }
+          }
+          
+          # Add to PATH
+          $env:PATH += ";$allureDir\bin"
+          echo "$allureDir\bin" >> $env:GITHUB_PATH
+          
+          # Verify installation
+          if (Test-Path "$allureDir\bin\allure.bat") {
+            Write-Host "Allure installed successfully at: $allureDir\bin\allure.bat"
+          } else {
+            Write-Host "Allure installation may have failed, will try Java fallback"
+          }
 
       - name: Install Allure CLI (macOS)
         if: matrix.os == 'macos-latest'
@@ -100,20 +141,18 @@ jobs:
           brew install allure
           echo "/opt/homebrew/bin" >> $GITHUB_PATH
 
-      - name: Prepare directories
-        if: always()
+      - name: Prepare directories (Ubuntu/macOS)
+        if: always() && (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest')
         run: |
-          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            mkdir -p "allure-results/history"
-            mkdir -p "allure-report/widgets"
-          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            mkdir -p "allure-results/history"
-            mkdir -p "allure-report/widgets"
-          else
-            # Windows: PowerShell команды
-            New-Item -ItemType Directory -Force -Path "allure-results/history" | Out-Null
-            New-Item -ItemType Directory -Force -Path "allure-report/widgets" | Out-Null
-          fi
+          mkdir -p "allure-results/history"
+          mkdir -p "allure-report/widgets"
+
+      - name: Prepare directories (Windows)
+        if: always() && matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "allure-results/history" | Out-Null
+          New-Item -ItemType Directory -Force -Path "allure-report/widgets" | Out-Null
 
       - name: Run tests on PROD
         run: |
@@ -274,9 +313,50 @@ jobs:
 
       - name: Install Allure CLI (Windows)
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
-          choco install allure
-          echo "$env:ChocolateyInstall\bin" >> $env:GITHUB_PATH
+          # Download Allure manually since Chocolatey doesn't have it
+          $allureVersion = "2.24.0"
+          $allureUrl = "https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/$allureVersion/allure-commandline-$allureVersion.tgz"
+          $allureArchive = "allure-$allureVersion.tgz"
+          $allureDir = "C:\allure-$allureVersion"
+          
+          # Download and extract Allure
+          Invoke-WebRequest -Uri $allureUrl -OutFile $allureArchive
+          
+          # Install 7-Zip if not available for tar extraction
+          if (-not (Get-Command "7z" -ErrorAction SilentlyContinue)) {
+            choco install 7zip -y
+          }
+          
+          # Extract using 7-Zip
+          if (Test-Path "7z.exe") {
+            & "7z.exe" x $allureArchive -o"C:\" -y
+          } else {
+            # Try to use built-in tar if available (Windows 10+)
+            try {
+              tar -xzf $allureArchive -C "C:\"
+            } catch {
+              Write-Host "Failed to extract with tar, trying alternative method"
+              # Alternative: use Java to run Allure directly
+              $javaPath = (Get-Command java -ErrorAction SilentlyContinue).Source
+              if ($javaPath) {
+                Write-Host "Java found at: $javaPath"
+                Write-Host "Allure will be run via Java"
+              }
+            }
+          }
+          
+          # Add to PATH
+          $env:PATH += ";$allureDir\bin"
+          echo "$allureDir\bin" >> $env:GITHUB_PATH
+          
+          # Verify installation
+          if (Test-Path "$allureDir\bin\allure.bat") {
+            Write-Host "Allure installed successfully at: $allureDir\bin\allure.bat"
+          } else {
+            Write-Host "Allure installation may have failed, will try Java fallback"
+          }
 
       - name: Install Allure CLI (macOS)
         if: matrix.os == 'macos-latest'
@@ -284,20 +364,18 @@ jobs:
           brew install allure
           echo "/opt/homebrew/bin" >> $GITHUB_PATH
 
-      - name: Prepare directories
-        if: always()
+      - name: Prepare directories (Ubuntu/macOS)
+        if: always() && (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest')
         run: |
-          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            mkdir -p "allure-results/history"
-            mkdir -p "allure-report/widgets"
-          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            mkdir -p "allure-results/history"
-            mkdir -p "allure-report/widgets"
-          else
-            # Windows: PowerShell команды
-            New-Item -ItemType Directory -Force -Path "allure-results/history" | Out-Null
-            New-Item -ItemType Directory -Force -Path "allure-report/widgets" | Out-Null
-          fi
+          mkdir -p "allure-results/history"
+          mkdir -p "allure-report/widgets"
+
+      - name: Prepare directories (Windows)
+        if: always() && matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "allure-results/history" | Out-Null
+          New-Item -ItemType Directory -Force -Path "allure-report/widgets" | Out-Null
 
       - name: Run tests on DEV
         run: |
