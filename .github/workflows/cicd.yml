@@ -145,7 +145,7 @@ jobs:
             export PLAYWRIGHT_WEBKIT_HEADLESS=true
             export PLAYWRIGHT_WEBKIT_ARGS=""
           fi
-          xvfb-run -a pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+          xvfb-run -a pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
         env:
           PROD_BASE_URL: ${{ env.PROD_BASE_URL }}
 
@@ -157,7 +157,7 @@ jobs:
             export PLAYWRIGHT_WEBKIT_HEADLESS=true
             export PLAYWRIGHT_WEBKIT_ARGS=""
           fi
-          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
         env:
           PROD_BASE_URL: ${{ env.PROD_BASE_URL }}
 
@@ -170,7 +170,7 @@ jobs:
             $env:PLAYWRIGHT_WEBKIT_HEADLESS = "true"
             $env:PLAYWRIGHT_WEBKIT_ARGS = ""
           }
-          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
         env:
           PROD_BASE_URL: ${{ env.PROD_BASE_URL }}
 
@@ -481,7 +481,7 @@ jobs:
             export PLAYWRIGHT_WEBKIT_HEADLESS=true
             export PLAYWRIGHT_WEBKIT_ARGS=""
           fi
-          xvfb-run -a pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+          xvfb-run -a pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
         env:
           PROD_BASE_URL: ${{ env.DEV_BASE_URL }}
 
@@ -493,7 +493,7 @@ jobs:
             export PLAYWRIGHT_WEBKIT_HEADLESS=true
             export PLAYWRIGHT_WEBKIT_ARGS=""
           fi
-          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
         env:
           PROD_BASE_URL: ${{ env.DEV_BASE_URL }}
 
@@ -502,11 +502,11 @@ jobs:
         shell: pwsh
         run: |
           # Special handling for WebKit on Windows
-          if ("${{ matrix.browser }}" -eq "webkit") {
+          if ("${{ matrix.browser }}" = "webkit") {
             $env:PLAYWRIGHT_WEBKIT_HEADLESS = "true"
             $env:PLAYWRIGHT_WEBKIT_ARGS = ""
           }
-          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
         env:
           PROD_BASE_URL: ${{ env.DEV_BASE_URL }}
 
