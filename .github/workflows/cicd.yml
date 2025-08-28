@@ -1,6 +1,6 @@
 name: Tests CI Pipeline
 
-on: 
+on:
   push:
     branches: [main, develop, feature/*, bugfix/*, hotfix/*]
   pull_request:
@@ -18,12 +18,10 @@ on:
       browsers:
         description: 'Браузеры для тестирования'
         required: false
-        default: 'chromium'
+        default: 'default'
         type: choice
         options:
-        - chromium
-        - firefox
-        - webkit
+        - default
         - all
       run_type:
         description: 'Тип запуска тестов'
@@ -42,32 +40,28 @@ env:
   DEV_BASE_URL: "https://qube-dev-next.evometa.io/map"
 
 jobs:
-  test-prod:
+  test:
     runs-on: ${{ matrix.os }}
-    if: |
-      github.event_name == 'workflow_dispatch' && inputs.environment == 'prod' || 
-      github.ref == 'refs/heads/main' || 
-      github.event_name == 'push' || 
-      github.event_name == 'pull_request'
+
     strategy:
       matrix:
-        os: ${{ github.ref == 'refs/heads/main' && fromJSON('["ubuntu-latest", "windows-latest", "macos-latest"]') || fromJSON('["ubuntu-latest"]') }}
-        browser: ${{ github.ref == 'refs/heads/main' && fromJSON('["chromium", "firefox", "webkit"]') || fromJSON('["chromium"]') }}
+        include:
+          - os: ubuntu-latest
+            browser: firefox
+            browser_name: "Firefox"
+          - os: windows-latest
+            browser: chromium
+            browser_name: "Chrome"
+          - os: macos-latest
+            browser: webkit
+            browser_name: "Safari"
 
     steps:
-      - name: Checkout main repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout gh-pages branch
-        if: github.ref == 'refs/heads/main'
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: gh-pages
-          sparse-checkout: "history"
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -76,117 +70,71 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install allure-pytest pytest-playwright
-          playwright install ${{ matrix.browser }}
-          playwright install-deps
 
-      - name: Install Allure CLI (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Install Playwright browsers
         run: |
-          sudo apt-get update
-          sudo apt-get install -y default-jre
-          curl -o allure-2.24.0.tgz -Ls https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.24.0/allure-commandline-2.24.0.tgz
-          sudo tar -zxvf allure-2.24.0.tgz -C /usr/local
-          echo "/usr/local/allure-2.24.0/bin" >> $GITHUB_PATH
+          python -m playwright install ${{ matrix.browser }}
+          python -m playwright install-deps
 
-      - name: Install Allure CLI (Windows)
-        if: matrix.os == 'windows-latest'
+      - name: Install Allure (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          curl -o allure-2.27.0.tgz -Ls https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz
+          sudo tar -zxvf allure-2.27.0.tgz -C /opt/
+          sudo ln -s /opt/allure-2.27.0/bin/allure /usr/bin/allure
+
+      - name: Install Allure (macOS)
+        if: runner.os == 'macOS'
+        run: brew install allure
+
+      - name: Install Java (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: choco install openjdk --version=17 -y
+
+      - name: Install Allure (Windows)
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          # Install Java first
-          choco install openjdk11 -y
-          
-          # Download and install Allure manually
-          $allureVersion = "2.24.0"
-          $allureUrl = "https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/$allureVersion/allure-commandline-$allureVersion.tgz"
-          $allureArchive = "allure-$allureVersion.tgz"
-          $allureDir = "C:\allure-$allureVersion"
-          
-          # Download Allure
+          $allureVersion = "2.27.0"
+          $allureUrl = "https://github.com/allure-framework/allure2/releases/download/$allureVersion/allure-$allureVersion.tgz"
+          $allureArchive = "$env:TEMP\allure-$allureVersion.tgz"
+
           Invoke-WebRequest -Uri $allureUrl -OutFile $allureArchive
-          
-          # Extract using tar (available in Windows 10+)
-          tar -xzf $allureArchive
-          
-          # Move to C:\ drive
-          if (Test-Path "allure-$allureVersion") {
-            Move-Item "allure-$allureVersion" "C:\" -Force
-          }
-          
-          # Add to PATH
-          echo "C:\allure-$allureVersion\bin" >> $env:GITHUB_PATH
-          
-          # Clean up
+          tar -xzf $allureArchive -C C:\
+          $allureDir = "C:\allure-$allureVersion"
+          echo "$allureDir\bin" >> $env:GITHUB_PATH
           Remove-Item $allureArchive -Force
 
-      - name: Install Allure CLI (macOS)
-        if: matrix.os == 'macos-latest'
+      - name: Run tests
         run: |
-          brew install allure
-          echo "/opt/homebrew/bin" >> $GITHUB_PATH
-
-      - name: Prepare directories (Ubuntu/macOS)
-        if: always() && (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest')
-        run: |
-          mkdir -p "allure-results/history"
-          mkdir -p "allure-report/widgets"
-
-      - name: Prepare directories (Windows)
-        if: always() && matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "allure-results/history" | Out-Null
-          New-Item -ItemType Directory -Force -Path "allure-report/widgets" | Out-Null
-
-      - name: Run tests on PROD (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          # Special handling for WebKit on Ubuntu
-          if [ "${{ matrix.browser }}" = "webkit" ]; then
-            export PLAYWRIGHT_WEBKIT_HEADLESS=true
-            export PLAYWRIGHT_WEBKIT_ARGS=""
-          fi
-          xvfb-run -a pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
-        env:
-          PROD_BASE_URL: ${{ env.PROD_BASE_URL }}
-
-      - name: Run tests on PROD (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          # Special handling for WebKit on macOS
-          if [ "${{ matrix.browser }}" = "webkit" ]; then
-            export PLAYWRIGHT_WEBKIT_HEADLESS=true
-            export PLAYWRIGHT_WEBKIT_ARGS=""
-          fi
           pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
         env:
-          PROD_BASE_URL: ${{ env.PROD_BASE_URL }}
+          BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL || env.PROD_BASE_URL }}
 
-      - name: Run tests on PROD (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
+      - name: Generate Allure report (Linux/macOS)
+        if: runner.os != 'Windows'
         run: |
-          # Special handling for WebKit on Windows
-          if ("${{ matrix.browser }}" -eq "webkit") {
-            $env:PLAYWRIGHT_WEBKIT_HEADLESS = "true"
-            $env:PLAYWRIGHT_WEBKIT_ARGS = ""
-          }
-          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
-        env:
-          PROD_BASE_URL: ${{ env.PROD_BASE_URL }}
-
-      - name: Generate Allure report (Ubuntu/macOS)
-        if: always() && (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest')
-        run: |
-          allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }} || echo "Allure report generation failed"
+          if command -v allure &> /dev/null; then
+            allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }}
+          else
+            echo "Allure not found, skipping report generation"
+            exit 0
+          fi
 
       - name: Generate Allure report (Windows)
-        if: always() && matrix.os == 'windows-latest'
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }} || echo "Allure report generation failed"
+          try {
+            allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }}
+          } catch {
+            Write-Host "Allure not found, skipping report generation"
+            exit 0
+          }
 
-      - name: Ensure summary.json exists (Ubuntu/macOS)
-        if: always() && (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest')
+      - name: Ensure summary.json exists (Linux/macOS)
+        if: runner.os != 'Windows'
         run: |
           mkdir -p "${{ env.ALLURE_REPORT_DIR }}/widgets"
           if [ ! -f "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" ]; then
@@ -194,628 +142,79 @@ jobs:
           fi
 
       - name: Ensure summary.json exists (Windows)
-        if: always() && matrix.os == 'windows-latest'
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path "${{ env.ALLURE_REPORT_DIR }}/widgets" | Out-Null
+          New-Item -ItemType Directory -Force -Path "${{ env.ALLURE_REPORT_DIR }}/widgets"
           if (-not (Test-Path "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json")) {
             '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' | Out-File -FilePath "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" -Encoding UTF8
           }
 
-      - name: Parse test results (Ubuntu)
-        id: allure-stats-ubuntu
-        if: always() && matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update && sudo apt-get install -y jq
-          
-          SUMMARY_FILE="${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
-
-          TOTAL=$(jq -r '.statistic.total // 0' "$SUMMARY_FILE")
-          PASSED=$(jq -r '.statistic.passed // 0' "$SUMMARY_FILE")
-          FAILED=$(jq -r '.statistic.failed // 0' "$SUMMARY_FILE")
-          SKIPPED=$(jq -r '.statistic.skipped // 0' "$SUMMARY_FILE")
-          BROKEN=$(jq -r '.statistic.broken // 0' "$SUMMARY_FILE")
-          CANCELED=$(jq -r '.statistic.canceled // 0' "$SUMMARY_FILE")
-
-          {
-            echo "TOTAL=$TOTAL"
-            echo "PASSED=$PASSED"
-            echo "FAILED=$FAILED"
-            echo "SKIPPED=$SKIPPED"
-            echo "BROKEN=$BROKEN"
-            echo "CANCELED=$CANCELED"
-          } >> $GITHUB_OUTPUT
-
-      - name: Parse test results (macOS)
-        id: allure-stats-macos
-        if: always() && matrix.os == 'macos-latest'
-        run: |
-          brew install jq
-          
-          SUMMARY_FILE="${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
-
-          TOTAL=$(jq -r '.statistic.total // 0' "$SUMMARY_FILE")
-          PASSED=$(jq -r '.statistic.passed // 0' "$SUMMARY_FILE")
-          FAILED=$(jq -r '.statistic.failed // 0' "$SUMMARY_FILE")
-          SKIPPED=$(jq -r '.statistic.skipped // 0' "$SUMMARY_FILE")
-          BROKEN=$(jq -r '.statistic.broken // 0' "$SUMMARY_FILE")
-          CANCELED=$(jq -r '.statistic.canceled // 0' "$SUMMARY_FILE")
-
-          {
-            echo "TOTAL=$TOTAL"
-            echo "PASSED=$PASSED"
-            echo "FAILED=$FAILED"
-            echo "SKIPPED=$SKIPPED"
-            echo "BROKEN=$BROKEN"
-            echo "CANCELED=$CANCELED"
-          } >> $GITHUB_OUTPUT
-
-      - name: Parse test results (Windows)
-        id: allure-stats-windows
-        if: always() && matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          choco install jq -y
-          
-          $SUMMARY_FILE = "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
-
-          $TOTAL = (jq -r '.statistic.total // 0' $SUMMARY_FILE)
-          $PASSED = (jq -r '.statistic.passed // 0' $SUMMARY_FILE)
-          $FAILED = (jq -r '.statistic.failed // 0' $SUMMARY_FILE)
-          $SKIPPED = (jq -r '.statistic.skipped // 0' $SUMMARY_FILE)
-          $BROKEN = (jq -r '.statistic.broken // 0' $SUMMARY_FILE)
-          $CANCELED = (jq -r '.statistic.canceled // 0' $SUMMARY_FILE)
-
-          @"
-          TOTAL=$TOTAL
-          PASSED=$PASSED
-          FAILED=$FAILED
-          SKIPPED=$SKIPPED
-          BROKEN=$BROKEN
-          CANCELED=$CANCELED
-          "@ | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-
-      - name: Combine test results (Ubuntu/macOS)
-        id: combined-stats
-        if: always() && github.ref == 'refs/heads/main' && matrix.os != 'windows-latest'
-        run: |
-          # Инициализируем переменные
-          TOTAL_SUM=0
-          PASSED_SUM=0
-          FAILED_SUM=0
-          SKIPPED_SUM=0
-          BROKEN_SUM=0
-          CANCELED_SUM=0
-          
-          # Собираем результаты с Ubuntu
-          if [ -n "${{ steps.allure-stats-ubuntu.outputs.TOTAL }}" ]; then
-            TOTAL_SUM=$((TOTAL_SUM + ${{ steps.allure-stats-ubuntu.outputs.TOTAL }}))
-            PASSED_SUM=$((PASSED_SUM + ${{ steps.allure-stats-ubuntu.outputs.PASSED }}))
-            FAILED_SUM=$((FAILED_SUM + ${{ steps.allure-stats-ubuntu.outputs.FAILED }}))
-            SKIPPED_SUM=$((SKIPPED_SUM + ${{ steps.allure-stats-ubuntu.outputs.SKIPPED }}))
-            BROKEN_SUM=$((BROKEN_SUM + ${{ steps.allure-stats-ubuntu.outputs.BROKEN }}))
-            CANCELED_SUM=$((CANCELED_SUM + ${{ steps.allure-stats-ubuntu.outputs.CANCELED }}))
-          fi
-          
-          # Собираем результаты с macOS
-          if [ -n "${{ steps.allure-stats-macos.outputs.TOTAL }}" ]; then
-            TOTAL_SUM=$((TOTAL_SUM + ${{ steps.allure-stats-macos.outputs.TOTAL }}))
-            PASSED_SUM=$((PASSED_SUM + ${{ steps.allure-stats-macos.outputs.PASSED }}))
-            FAILED_SUM=$((FAILED_SUM + ${{ steps.allure-stats-macos.outputs.FAILED }}))
-            SKIPPED_SUM=$((SKIPPED_SUM + ${{ steps.allure-stats-macos.outputs.SKIPPED }}))
-            BROKEN_SUM=$((BROKEN_SUM + ${{ steps.allure-stats-macos.outputs.BROKEN }}))
-            CANCELED_SUM=$((CANCELED_SUM + ${{ steps.allure-stats-macos.outputs.SKIPPED }}))
-          fi
-          
-
-          
-          # Выводим общие результаты
-          echo "TOTAL=$TOTAL_SUM" >> $GITHUB_OUTPUT
-          echo "PASSED=$PASSED_SUM" >> $GITHUB_OUTPUT
-          echo "FAILED=$FAILED_SUM" >> $GITHUB_OUTPUT
-          echo "SKIPPED=$SKIPPED_SUM" >> $GITHUB_OUTPUT
-          echo "BROKEN=$BROKEN_SUM" >> $GITHUB_OUTPUT
-          echo "CANCELED=$CANCELED_SUM" >> $GITHUB_OUTPUT
-
-      - name: Combine test results (Windows)
-        id: combined-stats-windows
-        if: always() && github.ref == 'refs/heads/main' && matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          # Инициализируем переменные
-          $TOTAL_SUM = 0
-          $PASSED_SUM = 0
-          $FAILED_SUM = 0
-          $SKIPPED_SUM = 0
-          $BROKEN_SUM = 0
-          $CANCELED_SUM = 0
-          
-          # Собираем результаты с Windows
-          if (${{ steps.allure-stats-windows.outputs.TOTAL }}) {
-            $TOTAL_SUM = $TOTAL_SUM + ${{ steps.allure-stats-windows.outputs.TOTAL }}
-            $PASSED_SUM = $PASSED_SUM + ${{ steps.allure-stats-windows.outputs.PASSED }}
-            $FAILED_SUM = $FAILED_SUM + ${{ steps.allure-stats-windows.outputs.FAILED }}
-            $SKIPPED_SUM = $SKIPPED_SUM + ${{ steps.allure-stats-windows.outputs.SKIPPED }}
-            $BROKEN_SUM = $BROKEN_SUM + ${{ steps.allure-stats-windows.outputs.BROKEN }}
-            $CANCELED_SUM = $CANCELED_SUM + ${{ steps.allure-stats-windows.outputs.CANCELED }}
-          }
-          
-          # Выводим общие результаты
-          "TOTAL=$TOTAL_SUM" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "PASSED=$PASSED_SUM" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "FAILED=$FAILED_SUM" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "SKIPPED=$SKIPPED_SUM" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "BROKEN=$BROKEN_SUM" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "CANCELED=$CANCELED_SUM" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-
-      - name: Update Allure history (Ubuntu/macOS)
-        if: always() && github.ref == 'refs/heads/main' && (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest')
-        run: |
-          if [ -d "${{ env.ALLURE_REPORT_DIR }}/history" ]; then
-            cp -R ${{ env.ALLURE_REPORT_DIR }}/history/* gh-pages/history/ || echo "No history to update"
-          fi
-
-      - name: Update Allure history (Windows)
-        if: always() && github.ref == 'refs/heads/main' && matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          if (Test-Path "${{ env.ALLURE_REPORT_DIR }}/history") {
-            Copy-Item -Path "${{ env.ALLURE_REPORT_DIR }}/history/*" -Destination "gh-pages/history/" -Recurse -Force -ErrorAction SilentlyContinue
-          } else {
-            Write-Host "No history to update"
-          }
-
-      - name: Deploy to GitHub Pages (Ubuntu only)
-        if: always() && github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: gh-pages
-          folder: allure-report
-          clean: true
-          clean-exclude: "history"
-
-      - name: Determine final status (Ubuntu)
-        id: final-status-ubuntu
-        if: always() && matrix.os == 'ubuntu-latest'
-        run: |
-          FAILED=${{ steps.allure-stats-ubuntu.outputs.FAILED || 0 }}
-          BROKEN=${{ steps.allure-stats-ubuntu.outputs.BROKEN || 0 }}
-
-          if [ "$FAILED" -gt 0 ] || [ "$BROKEN" -gt 0 ]; then
-            echo "FINAL_STATUS=❌ ОШИБКИ" >> $GITHUB_OUTPUT
-            echo "FINAL_MESSAGE=⚠️ <b>Требуется проверка упавших тестов!</b>" >> $GITHUB_OUTPUT
-            echo "EMOJI=❌" >> $GITHUB_OUTPUT
-          else
-            echo "FINAL_STATUS=✅ УСПЕШНО" >> $GITHUB_OUTPUT
-            echo "FINAL_MESSAGE=🎉 <b>Все тесты прошли успешно!</b>" >> $GITHUB_OUTPUT
-            echo "EMOJI=✅" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Determine final status (macOS)
-        id: final-status-macos
-        if: always() && matrix.os == 'macos-latest'
-        run: |
-          FAILED=${{ steps.allure-stats-macos.outputs.FAILED || 0 }}
-          BROKEN=${{ steps.allure-stats-macos.outputs.BROKEN || 0 }}
-
-          if [ "$FAILED" -gt 0 ] || [ "$BROKEN" -gt 0 ]; then
-            echo "FINAL_STATUS=❌ ОШИБКИ" >> $GITHUB_OUTPUT
-            echo "FINAL_MESSAGE=⚠️ <b>Требуется проверка упавших тестов!</b>" >> $GITHUB_OUTPUT
-            echo "EMOJI=❌" >> $GITHUB_OUTPUT
-          else
-            echo "FINAL_STATUS=✅ УСПЕШНО" >> $GITHUB_OUTPUT
-            echo "FINAL_MESSAGE=🎉 <b>Все тесты прошли успешно!</b>" >> $GITHUB_OUTPUT
-            echo "EMOJI=✅" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Determine final status (Windows)
-        id: final-status-windows
-        if: always() && matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          $FAILED = ${{ steps.allure-stats-windows.outputs.FAILED || 0 }}
-          $BROKEN = ${{ steps.allure-stats-windows.outputs.BROKEN || 0 }}
-
-          if ($FAILED -gt 0 -or $BROKEN -gt 0) {
-            "FINAL_STATUS=❌ ОШИБКИ" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "FINAL_MESSAGE=⚠️ <b>Требуется проверка упавших тестов!</b>" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "EMOJI=❌" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          } else {
-            "FINAL_STATUS=✅ УСПЕШНО" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "FINAL_MESSAGE=🎉 <b>Все тесты прошли успешно!</b>" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "EMOJI=✅" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
-
-      - name: Determine combined final status (Ubuntu/macOS)
-        id: combined-final-status
-        if: always() && github.ref == 'refs/heads/main' && (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest')
-        run: |
-          # Получаем общее количество упавших и сломанных тестов
-          FAILED_TOTAL=${{ steps.combined-stats.outputs.FAILED || 0 }}
-          BROKEN_TOTAL=${{ steps.combined-stats.outputs.BROKEN || 0 }}
-          
-          if [ "$FAILED_TOTAL" -gt 0 ] || [ "$BROKEN_TOTAL" -gt 0 ]; then
-            echo "FINAL_STATUS=❌ ОШИБКИ" >> $GITHUB_OUTPUT
-            echo "FINAL_MESSAGE=⚠️ <b>Требуется проверка упавших тестов!</b>" >> $GITHUB_OUTPUT
-            echo "EMOJI=❌" >> $GITHUB_OUTPUT
-          else
-            echo "FINAL_STATUS=✅ УСПЕШНО" >> $GITHUB_OUTPUT
-            echo "FINAL_MESSAGE=🎉 <b>Все тесты прошли успешно!</b>" >> $GITHUB_OUTPUT
-            echo "EMOJI=✅" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Determine combined final status (Windows)
-        id: combined-final-status-windows
-        if: always() && github.ref == 'refs/heads/main' && matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          # Получаем общее количество упавших и сломанных тестов
-          $FAILED_TOTAL = ${{ steps.combined-stats.outputs.FAILED || 0 }}
-          $BROKEN_TOTAL = ${{ steps.combined-stats.outputs.BROKEN || 0 }}
-          
-          if ($FAILED_TOTAL -gt 0 -or $BROKEN_TOTAL -gt 0) {
-            "FINAL_STATUS=❌ ОШИБКИ" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "FINAL_MESSAGE=⚠️ <b>Требуется проверка упавших тестов!</b>" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "EMOJI=❌" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          } else {
-            "FINAL_STATUS=✅ УСПЕШНО" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "FINAL_MESSAGE=🎉 <b>Все тесты прошли успешно!</b>" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "EMOJI=✅" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
-
-      - name: Send Telegram notification (Ubuntu only)
-        if: always() && github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
-        uses: appleboy/telegram-action@v1.0.0
-        with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          message: |
-            <b>🚀 Результаты тестов на PROD</b>
-            
-            <b>Проект:</b> ${{ github.repository }}
-            <b>Ветка:</b> ${{ github.ref_name }}
-            <b>Окружение:</b> 🟢 PRODUCTION
-            <b>Браузер:</b> ${{ matrix.browser }}
-            <b>Платформа:</b> ${{ matrix.os }}
-            <b>Статус:</b> ${{ matrix.os == 'windows-latest' && steps.combined-final-status-windows.outputs.EMOJI || steps.combined-final-status.outputs.EMOJI }}
-            
-            <b>📈 Статистика</b> (${{ matrix.os == 'windows-latest' && steps.combined-stats-windows.outputs.TOTAL || steps.combined-stats.outputs.TOTAL }} тестов):
-            <code>│</code> • ✅ <b>Успешных:</b> ${{ matrix.os == 'windows-latest' && steps.combined-stats-windows.outputs.PASSED || steps.combined-stats.outputs.PASSED }}
-            <code>│</code> • ❌ <b>Упавших:</b> ${{ matrix.os == 'windows-latest' && steps.combined-stats-windows.outputs.FAILED || steps.combined-stats.outputs.FAILED }}
-            <code>│</code> • ⏩ <b>Пропущенных:</b> ${{ matrix.os == 'windows-latest' && steps.combined-stats-windows.outputs.SKIPPED || steps.combined-stats.outputs.SKIPPED }}
-            
-            <b>🔗 Ссылки</b>:
-            <code>│</code> • <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/">Allure Report</a>
-            <code>│</code> • <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
-            
-            ${{ matrix.os == 'windows-latest' && steps.combined-final-status-windows.outputs.FINAL_MESSAGE || steps.combined-final-status.outputs.FINAL_MESSAGE }}
-          format: html
-          disable_web_page_preview: true
-
-  test-dev:
-    runs-on: ${{ matrix.os }}
-    if: github.event_name == 'workflow_dispatch' && inputs.environment == 'dev'
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        browser: ${{ github.event.inputs.browsers == 'all' && fromJSON('["chromium", "firefox", "webkit"]') || fromJSON('["chromium"]') }}
-
-    steps:
-      - name: Checkout main repository
-        uses: actions/checkout@v4
-
-      - name: Checkout gh-pages branch
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: gh-pages
-          sparse-checkout: "history"
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install allure-pytest pytest-playwright
-          playwright install ${{ matrix.browser }}
-          playwright install-deps
-
-      - name: Install Allure CLI (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y default-jre
-          curl -o allure-2.24.0.tgz -Ls https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.24.0/allure-commandline-2.24.0.tgz
-          sudo tar -zxvf allure-2.24.0.tgz -C /usr/local
-          echo "/usr/local/allure-2.24.0/bin" >> $GITHUB_PATH
-
-      - name: Install Allure CLI (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          # Install Java first
-          choco install openjdk11 -y
-          
-          # Download and install Allure manually
-          $allureVersion = "2.24.0"
-          $allureUrl = "https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/$allureVersion/allure-commandline-$allureVersion.tgz"
-          $allureArchive = "allure-$allureVersion.tgz"
-          $allureDir = "C:\allure-$allureVersion"
-          
-          # Download Allure
-          Invoke-WebRequest -Uri $allureUrl -OutFile $allureArchive
-          
-          # Extract using tar (available in Windows 10+)
-          tar -xzf $allureArchive
-          
-          # Move to C:\ drive
-          if (Test-Path "allure-$allureVersion") {
-            Move-Item "allure-$allureVersion" "C:\" -Force
-          }
-          
-          # Add to PATH
-          echo "C:\allure-$allureVersion\bin" >> $env:GITHUB_PATH
-          
-          # Clean up
-          Remove-Item $allureArchive -Force
-
-      - name: Install Allure CLI (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew install allure
-          echo "/opt/homebrew/bin" >> $GITHUB_PATH
-
-      - name: Prepare directories (Ubuntu/macOS)
-        if: always() && (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest')
-        run: |
-          mkdir -p "allure-results/history"
-          mkdir -p "allure-report/widgets"
-
-      - name: Prepare directories (Windows)
-        if: always() && matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "allure-results/history" | Out-Null
-          New-Item -ItemType Directory -Force -Path "allure-report/widgets" | Out-Null
-
-      - name: Run tests on DEV (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          # Special handling for WebKit on Ubuntu
-          if [ "${{ matrix.browser }}" = "webkit" ]; then
-            export PLAYWRIGHT_WEBKIT_HEADLESS=true
-            export PLAYWRIGHT_WEBKIT_ARGS=""
-          fi
-          xvfb-run -a pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
-        env:
-          PROD_BASE_URL: ${{ env.DEV_BASE_URL }}
-
-      - name: Run tests on DEV (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          # Special handling for WebKit on macOS
-          if [ "${{ matrix.browser }}" = "webkit" ]; then
-            export PLAYWRIGHT_WEBKIT_HEADLESS=true
-            export PLAYWRIGHT_WEBKIT_ARGS=""
-          fi
-          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
-        env:
-          PROD_BASE_URL: ${{ env.DEV_BASE_URL }}
-
-      - name: Run tests on DEV (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          # Special handling for WebKit on Windows
-          if ("${{ matrix.browser }}" = "webkit") {
-            $env:PLAYWRIGHT_WEBKIT_HEADLESS = "true"
-            $env:PLAYWRIGHT_WEBKIT_ARGS = ""
-          }
-          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
-        env:
-          PROD_BASE_URL: ${{ env.DEV_BASE_URL }}
-
-      - name: Generate Allure report (Ubuntu/macOS)
-        if: always() && (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest')
-        run: |
-          allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }} || echo "Allure report generation failed"
-
-      - name: Generate Allure report (Windows)
-        if: always() && matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }} || echo "Allure report generation failed"
-
-      - name: Ensure summary.json exists (Ubuntu/macOS)
-        if: always() && (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest')
-        run: |
-          mkdir -p "${{ env.ALLURE_REPORT_DIR }}/widgets"
-          if [ ! -f "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" ]; then
-            echo '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' > "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
-          fi
-
-      - name: Ensure summary.json exists (Windows)
-        if: always() && matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "${{ env.ALLURE_REPORT_DIR }}/widgets" | Out-Null
-          if (-not (Test-Path "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json")) {
-            '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' | Out-File -FilePath "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" -Encoding UTF8
-          }
-
-      - name: Parse test results (Ubuntu)
-        id: allure-stats-ubuntu-dev
-        if: always() && matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update && sudo apt-get install -y jq
-          
-          SUMMARY_FILE="${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
-
-          TOTAL=$(jq -r '.statistic.total // 0' "$SUMMARY_FILE")
-          PASSED=$(jq -r '.statistic.passed // 0' "$SUMMARY_FILE")
-          FAILED=$(jq -r '.statistic.failed // 0' "$SUMMARY_FILE")
-          SKIPPED=$(jq -r '.statistic.skipped // 0' "$SUMMARY_FILE")
-          BROKEN=$(jq -r '.statistic.broken // 0' "$SUMMARY_FILE")
-          CANCELED=$(jq -r '.statistic.canceled // 0' "$SUMMARY_FILE")
-
-          {
-            echo "TOTAL=$TOTAL"
-            echo "PASSED=$PASSED"
-            echo "FAILED=$FAILED"
-            echo "SKIPPED=$SKIPPED"
-            echo "BROKEN=$BROKEN"
-            echo "CANCELED=$CANCELED"
-          } >> $GITHUB_OUTPUT
-
-      - name: Parse test results (macOS)
-        id: allure-stats-macos-dev
-        if: always() && matrix.os == 'macos-latest'
-        run: |
-          brew install jq
-          
-          SUMMARY_FILE="${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
-
-          TOTAL=$(jq -r '.statistic.total // 0' "$SUMMARY_FILE")
-          PASSED=$(jq -r '.statistic.passed // 0' "$SUMMARY_FILE")
-          FAILED=$(jq -r '.statistic.failed // 0' "$SUMMARY_FILE")
-          SKIPPED=$(jq -r '.statistic.skipped // 0' "$SUMMARY_FILE")
-          BROKEN=$(jq -r '.statistic.broken // 0' "$SUMMARY_FILE")
-          CANCELED=$(jq -r '.statistic.canceled // 0' "$SUMMARY_FILE")
-
-          {
-            echo "TOTAL=$TOTAL"
-            echo "PASSED=$PASSED"
-            echo "FAILED=$FAILED"
-            echo "SKIPPED=$SKIPPED"
-            echo "BROKEN=$BROKEN"
-            echo "CANCELED=$CANCELED"
-          } >> $GITHUB_OUTPUT
-
-      - name: Parse test results (Windows)
-        id: allure-stats-windows-dev
-        if: always() && matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          choco install jq -y
-          
-          $SUMMARY_FILE = "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
-
-          $TOTAL = (jq -r '.statistic.total // 0' $SUMMARY_FILE)
-          $PASSED = (jq -r '.statistic.passed // 0' $SUMMARY_FILE)
-          $FAILED = (jq -r '.statistic.failed // 0' $SUMMARY_FILE)
-          $SKIPPED = (jq -r '.statistic.skipped // 0' $SUMMARY_FILE)
-          $BROKEN = (jq -r '.statistic.broken // 0' $SUMMARY_FILE)
-          $CANCELED = (jq -r '.statistic.canceled // 0' $SUMMARY_FILE)
-
-          @"
-          TOTAL=$TOTAL
-          PASSED=$PASSED
-          FAILED=$FAILED
-          SKIPPED=$SKIPPED
-          BROKEN=$BROKEN
-          CANCELED=$CANCELED
-          "@ | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-
-      - name: Update Allure history
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v4
         if: always()
-        run: |
-          if [ -d "${{ env.ALLURE_REPORT_DIR }}/history" ]; then
-            cp -R ${{ env.ALLURE_REPORT_DIR }}/history/* gh-pages/history/ || echo "No history to update"
-          fi
-
-      - name: Deploy to GitHub Pages (Ubuntu only)
-        if: always() && matrix.os == 'ubuntu-latest'
-        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: gh-pages
-          folder: allure-report
-          clean: true
-          clean-exclude: "history"
+          name: allure-results-${{ matrix.os }}-${{ matrix.browser }}
+          path: ${{ env.ALLURE_RESULTS_DIR }}
+          retention-days: 30
 
-      - name: Determine final status (Ubuntu)
-        id: final-status-ubuntu
-        if: always() && matrix.os == 'ubuntu-latest'
+  deploy-report:
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Allure results
+        uses: actions/download-artifact@v4
+        with:
+          path: allure-results
+
+      - name: Generate Allure report
         run: |
-          FAILED=${{ steps.allure-stats-ubuntu.outputs.FAILED || 0 }}
-          BROKEN=${{ steps.allure-stats-ubuntu.outputs.BROKEN || 0 }}
+          # Установка Allure
+          curl -o allure-2.27.0.tgz -Ls https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz
+          sudo tar -zxvf allure-2.27.0.tgz -C /opt/
+          sudo ln -s /opt/allure-2.27.0/bin/allure /usr/bin/allure
+          
+          # Объединение результатов всех job'ов
+          mkdir -p combined-results
+          find allure-results -name "*.json" -exec cp {} combined-results/ \;
+          find allure-results -name "*.xml" -exec cp {} combined-results/ \;
+          
+          # Генерация отчета
+          allure generate combined-results --clean -o allure-report
 
-          if [ "$FAILED" -gt 0 ] || [ "$BROKEN" -gt 0 ]; then
-            echo "FINAL_STATUS=❌ ОШИБКИ" >> $GITHUB_OUTPUT
-            echo "FINAL_MESSAGE=⚠️ <b>Требуется проверка упавших тестов!</b>" >> $GITHUB_OUTPUT
-            echo "EMOJI=❌" >> $GITHUB_OUTPUT
-          else
-            echo "FINAL_STATUS=✅ УСПЕШНО" >> $GITHUB_OUTPUT
-            echo "FINAL_MESSAGE=🎉 <b>Все тесты прошли успешно!</b>" >> $GITHUB_OUTPUT
-            echo "EMOJI=✅" >> $GITHUB_OUTPUT
-          fi
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          destination_dir: allure-report
 
-      - name: Determine final status (macOS)
-        id: final-status-macos
-        if: always() && matrix.os == 'macos-latest'
-        run: |
-          FAILED=${{ steps.allure-stats-macos.outputs.FAILED || 0 }}
-          BROKEN=${{ steps.allure-stats-macos.outputs.BROKEN || 0 }}
-
-          if [ "$FAILED" -gt 0 ] || [ "$BROKEN" -gt 0 ]; then
-            echo "FINAL_STATUS=❌ ОШИБКИ" >> $GITHUB_OUTPUT
-            echo "FINAL_MESSAGE=⚠️ <b>Требуется проверка упавших тестов!</b>" >> $GITHUB_OUTPUT
-            echo "EMOJI=❌" >> $GITHUB_OUTPUT
-          else
-            echo "FINAL_STATUS=✅ УСПЕШНО" >> $GITHUB_OUTPUT
-            echo "FINAL_MESSAGE=🎉 <b>Все тесты прошли успешно!</b>" >> $GITHUB_OUTPUT
-            echo "EMOJI=✅" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Determine final status (Windows)
-        id: final-status-windows
-        if: always() && matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          $FAILED = ${{ steps.allure-stats-windows.outputs.FAILED || 0 }}
-          $BROKEN = ${{ steps.allure-stats-windows.outputs.BROKEN || 0 }}
-
-          if ($FAILED -gt 0 -or $BROKEN -gt 0) {
-            "FINAL_STATUS=❌ ОШИБКИ" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "FINAL_MESSAGE=⚠️ <b>Требуется проверка упавших тестов!</b>" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "EMOJI=❌" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          } else {
-            "FINAL_STATUS=✅ УСПЕШНО" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "FINAL_MESSAGE=🎉 <b>Все тесты прошли успешно!</b>" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "EMOJI=✅" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          }
-
-      - name: Send Telegram notification (Ubuntu only)
-        if: always() && matrix.os == 'ubuntu-latest'
+  send-summary:
+    runs-on: ubuntu-latest
+    needs: [test, deploy-report]
+    if: always()
+    steps:
+      - name: Generate and send Telegram summary
         uses: appleboy/telegram-action@v1.0.0
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            <b>🚀 Результаты тестов на DEV</b>
+            <b>🚀 Итоговый отчет по тестам</b>
             
             <b>Проект:</b> ${{ github.repository }}
             <b>Ветка:</b> ${{ github.ref_name }}
-            <b>Окружение:</b> 🟡 DEVELOPMENT
-            <b>Браузер:</b> ${{ matrix.browser }}
-            <b>Платформа:</b> ${{ matrix.os }}
-            <b>Статус:</b> ${{ steps.final-status.outputs.EMOJI }}
+            <b>Окружение:</b> ${{ github.event.inputs.environment || 'prod' }}
+            <b>Тип запуска:</b> ${{ github.event.inputs.run_type || 'regression' }}
             
-            <b>📈 Статистика</b> (${{ steps.allure-stats.outputs.TOTAL }} тестов):
-            <code>│</code> • ✅ <b>Успешных:</b> ${{ steps.allure-stats.outputs.PASSED }}
-            <code>│</code> • ❌ <b>Упавших:</b> ${{ steps.allure-stats.outputs.FAILED }}
-            <code>│</code> • ⏩ <b>Пропущенных:</b> ${{ steps.allure-stats.outputs.SKIPPED }}
+            <b>Статус тестов:</b> ${{ needs.test.result == 'success' && '✅ Все тесты прошли' || '❌ Есть ошибки' }}
             
-            <b>🔗 Ссылки</b>:
-            <code>│</code> • <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/">Allure Report</a>
-            <code>│</code> • <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
-            
-            ${{ steps.final-status.outputs.FINAL_MESSAGE }}
+            <b>Ссылка на Allure отчет:</b> <a href="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/">📊 Отчет</a>
+            <b>Ссылка на Actions:</b> <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
           format: html
           disable_web_page_preview: true
-
