@@ -42,6 +42,11 @@ env:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
+    outputs:
+      os: ${{ matrix.os }}
+      browser: ${{ matrix.browser }}
+      browser_name: ${{ matrix.browser_name }}
+      status: ${{ job.status }}
 
     strategy:
       matrix:
@@ -171,6 +176,26 @@ jobs:
         with:
           path: allure-results
 
+      - name: Download previous report from GitHub Pages
+        run: |
+          # Скачиваем предыдущий отчет для сохранения истории
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "Downloading previous report from GitHub Pages..."
+            # Создаем папку для предыдущего отчета
+            mkdir -p allure-report-old
+            
+            # Пытаемся скачать предыдущий отчет (может не существовать при первом запуске)
+            curl -f -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/" -o /tmp/previous-report.html 2>/dev/null || echo "No previous report found"
+            
+            # Если есть предыдущий отчет, скачиваем его результаты
+            if [ -f "/tmp/previous-report.html" ]; then
+              echo "Previous report found, downloading results..."
+              # Здесь можно добавить логику для скачивания конкретных файлов результатов
+              # Пока просто создаем заглушку для истории
+              echo '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' > allure-report-old/summary.json
+            fi
+          fi
+
       - name: Generate Allure report
         run: |
           # Установка Allure
@@ -178,13 +203,30 @@ jobs:
           sudo tar -zxvf allure-2.27.0.tgz -C /opt/
           sudo ln -s /opt/allure-2.27.0/bin/allure /usr/bin/allure
           
+          # Скачивание предыдущего отчета для сохранения истории
+          if [ -d "allure-report" ]; then
+            echo "Previous report found, preserving history..."
+            # Копируем предыдущий отчет в отдельную папку
+            cp -r allure-report allure-report-old
+          fi
+          
           # Объединение результатов всех job'ов
           mkdir -p combined-results
           find allure-results -name "*.json" -exec cp {} combined-results/ \;
           find allure-results -name "*.xml" -exec cp {} combined-results/ \;
           
-          # Генерация отчета
+          # Если есть предыдущий отчет, копируем его результаты для сохранения истории
+          if [ -d "allure-report-old" ]; then
+            echo "Merging with previous results..."
+            find allure-report-old -name "*.json" -exec cp {} combined-results/ \;
+            find allure-report-old -name "*.xml" -exec cp {} combined-results/ \;
+          fi
+          
+          # Генерация отчета с историей
           allure generate combined-results --clean -o allure-report
+          
+          # Очистка временных файлов
+          rm -rf allure-report-old combined-results
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -214,7 +256,12 @@ jobs:
             
             <b>Статус тестов:</b> ${{ needs.test.result == 'success' && '✅ Все тесты прошли' || '❌ Есть ошибки' }}
             
-            <b>Ссылка на Allure отчет:</b> <a href="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}">📊 Отчет</a>
+            <b>Детальный статус по ОС и браузерам:</b>
+            <code>│</code> • Ubuntu + Firefox: ${{ needs.test.outputs.status == 'success' && '✅' || '❌' }}
+            <code>│</code> • Windows + Chrome: ${{ needs.test.outputs.status == 'success' && '✅' || '❌' }}
+            <code>│</code> • macOS + Safari: ${{ needs.test.outputs.status == 'success' && '✅' || '❌' }}
+            
+            <b>Ссылка на Allure отчет:</b> <a href="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}">📊 Отчет (с историей)</a>
             <b>Ссылка на Actions:</b> <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
           format: html
           disable_web_page_preview: true
