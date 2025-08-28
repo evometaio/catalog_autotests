@@ -194,7 +194,6 @@ jobs:
 
             Статус: ${{ (needs.ubuntu-firefox.result == 'success' && needs.windows-chromium.result == 'success' && needs.macos-webkit.result == 'success') && '✅ Все тесты прошли' || '❌ Есть ошибки' }}
 
-            📊 Отчет: https://${{ github.repository_owner }}.github.io/catalog_autotests/
             📊 Отчет: https://${{ github.repository_owner }}.github.io/catalog_autotests/allure-report/
             🔗 Actions: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           format: html
