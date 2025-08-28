@@ -40,26 +40,13 @@ env:
   DEV_BASE_URL: "https://qube-dev-next.evometa.io/map"
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
+  test-ubuntu-firefox:
+    runs-on: ubuntu-latest
     outputs:
-      os: ${{ matrix.os }}
-      browser: ${{ matrix.browser }}
-      browser_name: ${{ matrix.browser_name }}
       status: ${{ job.status }}
-
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            browser: firefox
-            browser_name: "Firefox"
-          - os: windows-latest
-            browser: chromium
-            browser_name: "Chrome"
-          - os: macos-latest
-            browser: webkit
-            browser_name: "Safari"
+      os: "ubuntu-latest"
+      browser: "firefox"
+      browser_name: "Firefox"
 
     steps:
       - name: Checkout repository
@@ -78,27 +65,80 @@ jobs:
 
       - name: Install Playwright browsers
         run: |
-          python -m playwright install ${{ matrix.browser }}
+          python -m playwright install firefox
           python -m playwright install-deps
 
-      - name: Install Allure (Ubuntu)
-        if: runner.os == 'Linux'
+      - name: Install Allure
         run: |
           curl -o allure-2.27.0.tgz -Ls https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz
           sudo tar -zxvf allure-2.27.0.tgz -C /opt/
           sudo ln -s /opt/allure-2.27.0/bin/allure /usr/bin/allure
 
-      - name: Install Allure (macOS)
-        if: runner.os == 'macOS'
-        run: brew install allure
+      - name: Run tests
+        run: |
+          pytest --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
+        env:
+          BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL || env.PROD_BASE_URL }}
 
-      - name: Install Java (Windows)
-        if: runner.os == 'Windows'
+      - name: Generate Allure report
+        run: |
+          if command -v allure &> /dev/null; then
+            allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }}
+          else
+            echo "Allure not found, skipping report generation"
+            exit 0
+          fi
+
+      - name: Ensure summary.json exists
+        run: |
+          mkdir -p "${{ env.ALLURE_REPORT_DIR }}/widgets"
+          if [ ! -f "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" ]; then
+            echo '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' > "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
+          fi
+
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-ubuntu-firefox
+          path: ${{ env.ALLURE_RESULTS_DIR }}
+          retention-days: 30
+
+  test-windows-chrome:
+    runs-on: windows-latest
+    outputs:
+      status: ${{ job.status }}
+      os: "windows-latest"
+      browser: "chromium"
+      browser_name: "Chrome"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install allure-pytest pytest-playwright
+
+      - name: Install Playwright browsers
+        shell: pwsh
+        run: |
+          python -m playwright install chromium
+          python -m playwright install-deps
+
+      - name: Install Java
         shell: pwsh
         run: choco install openjdk --version=17 -y
 
-      - name: Install Allure (Windows)
-        if: runner.os == 'Windows'
+      - name: Install Allure
         shell: pwsh
         run: |
           $allureVersion = "2.27.0"
@@ -108,27 +148,17 @@ jobs:
           Invoke-WebRequest -Uri $allureUrl -OutFile $allureArchive
           tar -xzf $allureArchive -C C:\
           $allureDir = "C:\allure-$allureVersion"
-          echo "$allureDir\bin" >> $env:GITHUB_PATH
+          Add-Content -Path $env:GITHUB_PATH -Value "$allureDir\bin"
           Remove-Item $allureArchive -Force
 
       - name: Run tests
+        shell: pwsh
         run: |
-          pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
+          pytest --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
         env:
           BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL || env.PROD_BASE_URL }}
 
-      - name: Generate Allure report (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: |
-          if command -v allure &> /dev/null; then
-            allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }}
-          else
-            echo "Allure not found, skipping report generation"
-            exit 0
-          fi
-
-      - name: Generate Allure report (Windows)
-        if: runner.os == 'Windows'
+      - name: Generate Allure report
         shell: pwsh
         run: |
           try {
@@ -138,16 +168,7 @@ jobs:
             exit 0
           }
 
-      - name: Ensure summary.json exists (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: |
-          mkdir -p "${{ env.ALLURE_REPORT_DIR }}/widgets"
-          if [ ! -f "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" ]; then
-            echo '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' > "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
-          fi
-
-      - name: Ensure summary.json exists (Windows)
-        if: runner.os == 'Windows'
+      - name: Ensure summary.json exists
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path "${{ env.ALLURE_REPORT_DIR }}/widgets"
@@ -159,13 +180,74 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: allure-results-${{ matrix.os }}-${{ matrix.browser }}
+          name: allure-results-windows-chrome
+          path: ${{ env.ALLURE_RESULTS_DIR }}
+          retention-days: 30
+
+  test-macos-safari:
+    runs-on: macos-latest
+    outputs:
+      status: ${{ job.status }}
+      os: "macos-latest"
+      browser: "webkit"
+      browser_name: "Safari"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install allure-pytest pytest-playwright
+
+      - name: Install Playwright browsers
+        run: |
+          python -m playwright install webkit
+          python -m playwright install-deps
+
+      - name: Install Allure
+        run: brew install allure
+
+      - name: Run tests
+        run: |
+          pytest --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
+        env:
+          BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL || env.PROD_BASE_URL }}
+
+      - name: Generate Allure report
+        run: |
+          if command -v allure &> /dev/null; then
+            allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }}
+          else
+            echo "Allure not found, skipping report generation"
+            exit 0
+          fi
+
+      - name: Ensure summary.json exists
+        run: |
+          mkdir -p "${{ env.ALLURE_REPORT_DIR }}/widgets"
+          if [ ! -f "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" ]; then
+            echo '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' > "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
+          fi
+
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-macos-safari
           path: ${{ env.ALLURE_RESULTS_DIR }}
           retention-days: 30
 
   deploy-report:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test-ubuntu-firefox, test-windows-chrome, test-macos-safari]
     if: always()
     steps:
       - name: Checkout repository
@@ -239,7 +321,7 @@ jobs:
 
   send-summary:
     runs-on: ubuntu-latest
-    needs: [test, deploy-report]
+    needs: [test-ubuntu-firefox, test-windows-chrome, test-macos-safari, deploy-report]
     if: always()
     steps:
       - name: Generate and send Telegram summary
@@ -255,14 +337,14 @@ jobs:
             <b>Окружение:</b> ${{ github.event.inputs.environment || 'prod' }}
             <b>Тип запуска:</b> ${{ github.event.inputs.run_type || 'regression' }}
             
-            <b>Статус тестов:</b> ${{ needs.test.result == 'success' && '✅ Все тесты прошли' || '❌ Есть ошибки' }}
+            <b>Статус тестов:</b> ${{ (needs.test-ubuntu-firefox.result == 'success' && needs.test-windows-chrome.result == 'success' && needs.test-macos-safari.result == 'success') && '✅ Все тесты прошли' || '❌ Есть ошибки' }}
             
             <b>Детальный статус по ОС и браузерам:</b>
-            <code>│</code> • Ubuntu + Firefox: ${{ needs.test.outputs.status == 'success' && '✅' || '❌' }}
-            <code>│</code> • Windows + Chrome: ${{ needs.test.outputs.status == 'success' && '✅' || '❌' }}
-            <code>│</code> • macOS + Safari: ${{ needs.test.outputs.status == 'success' && '✅' || '❌' }}
+            <code>│</code> • Ubuntu + Firefox: ${{ needs.test-ubuntu-firefox.outputs.status == 'success' && '✅' || '❌' }}
+            <code>│</code> • Windows + Chrome: ${{ needs.test-windows-chrome.outputs.status == 'success' && '✅' || '❌' }}
+            <code>│</code> • macOS + Safari: ${{ needs.test-macos-safari.outputs.status == 'success' && '✅' || '❌' }}
             
-            <b>Ссылка на Allure отчет:</b> <a href="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}">📊 Отчет</a>
+            <b>Ссылка на Allure отчет:</b> <a href="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/">📊 Отчет (с историей)</a>
             <b>Ссылка на Actions:</b> <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
           format: html
           disable_web_page_preview: true
