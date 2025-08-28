@@ -177,7 +177,7 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     needs: [ubuntu-firefox, windows-chromium, macos-webkit, deploy-allure]
-    if: always()
+    if: always() && github.event_name == 'workflow_dispatch'
     steps:
       - name: Send Telegram summary
         uses: appleboy/telegram-action@v1.0.0
@@ -194,7 +194,7 @@ jobs:
 
             Статус: ${{ (needs.ubuntu-firefox.result == 'success' && needs.windows-chromium.result == 'success' && needs.macos-webkit.result == 'success') && '✅ Все тесты прошли' || '❌ Есть ошибки' }}
 
-            📊 Отчет: https://${{ github.repository_owner }}.github.io/catalog_autotests/allure-report/
-            🔗 Actions: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            📊 Отчет: <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/allure-report/">Allure</a>
+            🔗 Actions: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GH Actions</a>
           format: html
           disable_web_page_preview: true

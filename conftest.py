@@ -69,13 +69,34 @@ def browser_type_launch_args(browser_type):
 
 @pytest.fixture(scope="session")
 def base_url():
-    """Фикстура для production URL - требуется pytest-playwright."""
-    return os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
+    """Base URL в зависимости от окружения"""
+    env = os.getenv("TEST_ENVIRONMENT", "prod")
+    if env == "dev":
+        return os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map")
+    else:
+        return os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
 
 @pytest.fixture(scope="session")
 def dev_base_url():
-    """Фикстура для production URL - требуется pytest-playwright."""
+    """Base dev URL"""
     return os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map")
+
+@pytest.fixture(scope="session")
+def agent_url():
+    """Base agent URL в зависимости от окружения"""
+    env = os.getenv("TEST_ENVIRONMENT", "prod")
+    if env == "dev":
+        return os.getenv("DEV_AGENT_BASE_URL", "https://qube-dev-next.evometa.io/agent/map")
+    else:
+        return os.getenv("AGENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/agent/map")
+
+def client_url():
+    """Base cleint URL в зависимости от окружения"""
+    env = os.getenv("TEST_ENVIRONMENT", "prod")
+    if env == "dev":
+        return os.getenv("DEV_CLIENT_BASE_URL", "https://qube-dev-next.evometa.io/client/map")
+    else:
+        return os.getenv("CLIENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/client/map")
 
 
 @pytest.fixture
@@ -84,12 +105,22 @@ def fake():
     from faker import Faker
     return Faker(['ru_RU', 'en_US'])
 
-
 @pytest.fixture
 def map_page(page: Page, base_url):
-    """Фикстура для страницы карты - использует POM."""
+    """Фикстура для страницы карты"""
     from pages.map_page import MapPage
     return MapPage(page, base_url)
+
+@pytest.fixture
+def project_agent_page(page: Page, agent_url):
+    """Фикстура для страницы проекта (агентский роут)"""
+    from pages.project_page import ProjectPage
+    return ProjectPage(page, agent_url)
+
+def project_client_page(page: Page, client_url):
+    """Фикстура для страницы проекта (клиентский роут)"""
+    from pages.project_page import ProjectPage
+    return ProjectPage(page, client_url)
 
 
 # Хук для обработки результатов тестов
