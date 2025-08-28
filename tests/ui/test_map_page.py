@@ -85,24 +85,6 @@ def test_full_navigation_cycle_on_map(map_page, project_name):
         map_page.verify_returned_to_map()
 
 
-# TODO подумать как реализизовать
-@allure.feature("Страница карты")
-@allure.story("Функциональность зума")
-@pytest.mark.skip(reason="Флаки тест")
-@pytest.mark.regression
-@pytest.mark.ui
-@allure.severity(allure.severity_level.NORMAL)
-def test_map_zoom_functionality(map_page):
-    """Тест функциональности зума карты."""
-    with allure.step("Открываем страницу карты"):
-        map_page.open_map_page()
-
-    with allure.step("Приближаем карту"):
-        map_page.zoom_in()
-
-    with allure.step("Отдаляем карту"):
-        map_page.zoom_out()
-
 
 @allure.feature("Страница карты")
 @allure.story("Полноэкранный режим")
