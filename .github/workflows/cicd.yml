@@ -18,12 +18,10 @@ on:
       browsers:
         description: 'Браузеры для тестирования'
         required: false
-        default: 'chromium'
+        default: 'default'
         type: choice
         options:
-        - chromium
-        - firefox
-        - webkit
+        - default
         - all
       run_type:
         description: 'Тип запуска тестов'
@@ -46,8 +44,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        browser: ${{ github.event.inputs.browsers == 'all' && fromJSON('["chromium","firefox","webkit"]') || fromJSON('["chromium"]') }}
+        include:
+          - os: ubuntu-latest
+            browser: firefox
+            browser_name: "Firefox"
+          - os: windows-latest
+            browser: chromium
+            browser_name: "Chrome"
+          - os: macos-latest
+            browser: webkit
+            browser_name: "Safari"
 
     steps:
       - name: Checkout repository
@@ -103,25 +109,57 @@ jobs:
         run: |
           pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
         env:
-          PROD_BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
+          BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
 
       - name: Generate Allure report
         run: |
-          allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }} || echo "Allure report generation failed"
+          if command -v allure &> /dev/null; then
+            allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }}
+          else
+            echo "Allure not found, skipping report generation"
+            exit 0
+          fi
 
-      - name: Ensure summary.json exists
+      - name: Ensure summary.json exists (Linux/macOS)
+        if: runner.os != 'Windows'
         run: |
           mkdir -p "${{ env.ALLURE_REPORT_DIR }}/widgets"
           if [ ! -f "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" ]; then
             echo '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' > "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json"
           fi
 
+      - name: Ensure summary.json exists (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "${{ env.ALLURE_REPORT_DIR }}/widgets"
+          if (-not (Test-Path "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json")) {
+            '{"statistic":{"total":0,"passed":0,"failed":0,"skipped":0,"broken":0,"canceled":0}}' | Out-File -FilePath "${{ env.ALLURE_REPORT_DIR }}/widgets/summary.json" -Encoding UTF8
+          }
+
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-${{ matrix.os }}-${{ matrix.browser }}
+          path: ${{ env.ALLURE_RESULTS_DIR }}
+          retention-days: 30
+
   send-summary:
     runs-on: ubuntu-latest
     needs: test
+    if: always()
     steps:
+      - name: Check Telegram secrets
+        run: |
+          if [ -z "${{ secrets.TELEGRAM_CHAT_ID }}" ] || [ -z "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then
+            echo "Telegram secrets not configured, skipping notification"
+            exit 0
+          fi
+
       - name: Generate and send Telegram summary
         uses: appleboy/telegram-action@v1.0.0
+        if: secrets.TELEGRAM_CHAT_ID != '' && secrets.TELEGRAM_BOT_TOKEN != ''
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -130,20 +168,14 @@ jobs:
             
             <b>Проект:</b> ${{ github.repository }}
             <b>Ветка:</b> ${{ github.ref_name }}
-            <b>Окружение:</b> ${{ github.event.inputs.environment }}
+            <b>Окружение:</b> ${{ github.event.inputs.environment || 'prod' }}
+            <b>Тип запуска:</b> ${{ github.event.inputs.run_type || 'regression' }}
             
             <b>Статусы по ОС и браузерам:</b>
-            <code>│</code> • Ubuntu + Chromium: ${{ needs.test.result == 'success' && '✅' || '❌' }}
             <code>│</code> • Ubuntu + Firefox: ${{ needs.test.result == 'success' && '✅' || '❌' }}
-            <code>│</code> • Ubuntu + WebKit: ${{ needs.test.result == 'success' && '✅' || '❌' }}
-            <code>│</code> • Windows + Chromium: ${{ needs.test.result == 'success' && '✅' || '❌' }}
-            <code>│</code> • Windows + Firefox: ${{ needs.test.result == 'success' && '✅' || '❌' }}
-            <code>│</code> • Windows + WebKit: ${{ needs.test.result == 'success' && '✅' || '❌' }}
-            <code>│</code> • macOS + Chromium: ${{ needs.test.result == 'success' && '✅' || '❌' }}
-            <code>│</code> • macOS + Firefox: ${{ needs.test.result == 'success' && '✅' || '❌' }}
-            <code>│</code> • macOS + WebKit: ${{ needs.test.result == 'success' && '✅' || '❌' }}
+            <code>│</code> • Windows + Chrome: ${{ needs.test.result == 'success' && '✅' || '❌' }}
+            <code>│</code> • macOS + Safari: ${{ needs.test.result == 'success' && '✅' || '❌' }}
             
-            <b>Ссылка на Allure:</b> <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/">отчет</a>
             <b>Ссылка на Actions:</b> <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
           format: html
           disable_web_page_preview: true
