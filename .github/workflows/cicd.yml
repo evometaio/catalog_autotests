@@ -277,26 +277,21 @@ jobs:
           sudo tar -zxvf allure-2.27.0.tgz -C /opt/
           sudo ln -s /opt/allure-2.27.0/bin/allure /usr/bin/allure
 
-      - name: Download previous report for history
+      - name: Download previous results for history
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-archive
+          path: allure-results-old
+        continue-on-error: true
+
+      - name: Check previous results
         run: |
-          # Скачиваем предыдущий отчет для сохранения истории
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "Downloading previous report for history..."
-            mkdir -p allure-report-old
-            
-            # Пытаемся скачать предыдущий отчет
-            curl -f -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/" -o /tmp/previous-report.html 2>/dev/null || echo "No previous report found"
-            
-            if [ -f "/tmp/previous-report.html" ]; then
-              echo "Previous report found, downloading results..."
-              # Скачиваем результаты предыдущего отчета
-              curl -f -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/data/allure-results.zip" -o allure-results-old.zip 2>/dev/null || echo "No previous results found"
-              
-              if [ -f "allure-results-old.zip" ]; then
-                unzip -q allure-results-old.zip -d allure-report-old/
-                echo "Previous results loaded for history"
-              fi
-            fi
+          if [ -d "allure-results-old" ]; then
+            echo "Previous results found for history"
+            find allure-results-old -name "*.json" | wc -l | xargs echo "Previous JSON files:"
+            find allure-results-old -name "*.xml" | wc -l | xargs echo "Previous XML files:"
+          else
+            echo "No previous results found, starting fresh"
           fi
 
       - name: Generate Allure report with history
@@ -311,15 +306,20 @@ jobs:
           
           # Объединение результатов всех job'ов
           mkdir -p combined-results
+          echo "Copying current test results..."
           find allure-results -name "*.json" -exec cp {} combined-results/ \;
           find allure-results -name "*.xml" -exec cp {} combined-results/ \;
           
           # Если есть предыдущий отчет, копируем его результаты для истории
-          if [ -d "allure-report-old" ]; then
+          if [ -d "allure-results-old" ]; then
             echo "Merging with previous results for history..."
-            find allure-report-old -name "*.json" -exec cp {} combined-results/ \;
-            find allure-report-old -name "*.xml" -exec cp {} combined-results/ \;
+            find allure-results-old -name "*.json" -exec cp {} combined-results/ \;
+            find allure-results-old -name "*.xml" -exec cp {} combined-results/ \;
           fi
+          
+          echo "Total files for report generation:"
+          find combined-results -name "*.json" | wc -l | xargs echo "JSON files:"
+          find combined-results -name "*.xml" | wc -l | xargs echo "XML files:"
           
           # Генерация отчета с историей
           allure generate combined-results --clean -o allure-report
@@ -329,8 +329,10 @@ jobs:
           zip -r ../allure-results.zip data/
           cd ..
           
+          echo "Report generated and archived for next run"
+          
           # Очистка временных файлов
-          rm -rf allure-report-old combined-results
+          rm -rf allure-results-old combined-results
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
