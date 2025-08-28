@@ -1,0 +1,14 @@
+# Основные зависимости для тестирования
+pytest==8.4.1
+pytest-playwright==0.7.0
+playwright==1.54.0
+
+# Отчетность
+allure-pytest==2.15.0
+allure-python-commons==2.15.0
+
+# HTTP клиент
+requests==2.32.4
+
+# Генерация тестовых данных
+Faker==25.2.0
