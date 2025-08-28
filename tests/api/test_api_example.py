@@ -5,6 +5,7 @@ import requests
 
 @allure.feature("API")
 @allure.story("Базовые запросы (Шаблон теста API)")
+@pytest.mark.skip(reason="Пример теста")
 @allure.severity(allure.severity_level.MINOR)
 def test_api_health_check():
     """Тест проверки здоровья API."""
