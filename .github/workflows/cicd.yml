@@ -176,7 +176,6 @@ jobs:
         with:
           path: allure-results
 
-<<<<<<< HEAD
       - name: Download previous report from GitHub Pages
         run: |
           # Скачиваем предыдущий отчет для сохранения истории
@@ -263,7 +262,7 @@ jobs:
             <code>│</code> • Windows + Chrome: ${{ needs.test.outputs.status == 'success' && '✅' || '❌' }}
             <code>│</code> • macOS + Safari: ${{ needs.test.outputs.status == 'success' && '✅' || '❌' }}
             
-            <b>Ссылка на Allure отчет:</b> <a href="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/">📊 Отчет (с историей)</a>
+            <b>Ссылка на Allure отчет:</b> <a href="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}">📊 Отчет</a>
             <b>Ссылка на Actions:</b> <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
           format: html
           disable_web_page_preview: true
