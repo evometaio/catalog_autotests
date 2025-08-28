@@ -113,7 +113,7 @@ jobs:
 
   deploy-allure:
     runs-on: ubuntu-latest
-    needs: [ubuntu-firefox, windows-chromium, macos-webkit]
+    needs: [ ubuntu-firefox, windows-chromium, macos-webkit ]
     if: always()
     steps:
       - uses: actions/checkout@v4
@@ -154,25 +154,21 @@ jobs:
 
           allure generate combined-results --clean -o ${{ env.ALLURE_REPORT_DIR }}
 
-          cd ${{ env.ALLURE_REPORT_DIR }}
-          zip -r ../../history.zip history/ || echo "No history"
-          cd ../..
+      - name: Prepare history archive
+        run: |
+          if [ -d "${{ env.ALLURE_REPORT_DIR }}/history" ]; then
+            cd ${{ env.ALLURE_REPORT_DIR }}
+            zip -r ../history.zip history/
+            cd ..
+          fi
 
-      - name: Deploy Allure to GitHub Pages
+      - name: Deploy Allure + history to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
+          publish_dir: .
           destination_dir: allure-report
-
-      - name: Upload history for next run
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: allure-history
-          path: history.zip
-          retention-days: 30
 
   notify:
     runs-on: ubuntu-latest
