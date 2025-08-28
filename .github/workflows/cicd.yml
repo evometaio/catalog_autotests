@@ -145,13 +145,16 @@ jobs:
       - name: Generate Allure report with history
         run: |
           mkdir -p combined-results
+          # копируем все результаты тестов
           find allure-results -type f -exec cp {} combined-results/ \;
 
+          # добавляем историю
           if [ -d old-history/history ]; then
             echo "Merging history..."
             cp -r old-history/history combined-results/
           fi
 
+          # генерируем отчет
           allure generate combined-results --clean -o ${{ env.ALLURE_REPORT_DIR }}
 
       - name: Prepare history archive
@@ -167,8 +170,9 @@ jobs:
         if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          destination_dir: allure-report
+          publish_dir: ${{ env.ALLURE_REPORT_DIR }}  # локально готовый отчет
+          destination_dir: catalog_autotests/allure-report  # путь на Pages
+
 
   notify:
     runs-on: ubuntu-latest
