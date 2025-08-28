@@ -112,7 +112,8 @@ jobs:
         env:
           BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL || env.PROD_BASE_URL }}
 
-      - name: Generate Allure report
+      - name: Generate Allure report (Linux/macOS)
+        if: runner.os != 'Windows'
         run: |
           if command -v allure &> /dev/null; then
             allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }}
@@ -120,6 +121,17 @@ jobs:
             echo "Allure not found, skipping report generation"
             exit 0
           fi
+
+      - name: Generate Allure report (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          try {
+            allure generate ${{ env.ALLURE_RESULTS_DIR }} --clean -o ${{ env.ALLURE_REPORT_DIR }}
+          } catch {
+            Write-Host "Allure not found, skipping report generation"
+            exit 0
+          }
 
       - name: Ensure summary.json exists (Linux/macOS)
         if: runner.os != 'Windows'
@@ -146,9 +158,45 @@ jobs:
           path: ${{ env.ALLURE_RESULTS_DIR }}
           retention-days: 30
 
-  send-summary:
+  deploy-report:
     runs-on: ubuntu-latest
     needs: test
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Allure results
+        uses: actions/download-artifact@v4
+        with:
+          path: allure-results
+
+      - name: Generate Allure report
+        run: |
+          # Установка Allure
+          curl -o allure-2.27.0.tgz -Ls https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz
+          sudo tar -zxvf allure-2.27.0.tgz -C /opt/
+          sudo ln -s /opt/allure-2.27.0/bin/allure /usr/bin/allure
+          
+          # Объединение результатов всех job'ов
+          mkdir -p combined-results
+          find allure-results -name "*.json" -exec cp {} combined-results/ \;
+          find allure-results -name "*.xml" -exec cp {} combined-results/ \;
+          
+          # Генерация отчета
+          allure generate combined-results --clean -o allure-report
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          destination_dir: allure-report
+
+  send-summary:
+    runs-on: ubuntu-latest
+    needs: [test, deploy-report]
     if: always()
     steps:
       - name: Generate and send Telegram summary
@@ -166,6 +214,7 @@ jobs:
             
             <b>Статус тестов:</b> ${{ needs.test.result == 'success' && '✅ Все тесты прошли' || '❌ Есть ошибки' }}
             
+            <b>Ссылка на Allure отчет:</b> <a href="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/">📊 Отчет</a>
             <b>Ссылка на Actions:</b> <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
           format: html
           disable_web_page_preview: true
