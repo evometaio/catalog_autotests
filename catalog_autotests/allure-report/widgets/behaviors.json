@@ -1,0 +1,1 @@
+{"total":2,"items":[{"uid":"b2b76ff11a37125c6c7b83578966f77f","name":"Страница карты","statistic":{"failed":0,"broken":0,"skipped":1,"passed":5,"unknown":0,"total":6}},{"uid":"dabdcff99fa27c22cdaab8da3377f857","name":"API","statistic":{"failed":0,"broken":0,"skipped":5,"passed":0,"unknown":0,"total":5}}]}
