@@ -42,6 +42,10 @@ env:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
+    outputs:
+      ubuntu_firefox: ${{ matrix.os == 'ubuntu-latest' && matrix.browser == 'firefox' && job.status || '' }}
+      windows_chrome: ${{ matrix.os == 'windows-latest' && matrix.browser == 'chromium' && job.status || '' }}
+      macos_safari: ${{ matrix.os == 'macos-latest' && matrix.browser == 'webkit' && job.status || '' }}
     strategy:
       matrix:
         include:
@@ -109,7 +113,7 @@ jobs:
         run: |
           pytest --browser=${{ matrix.browser }} --alluredir=${{ env.ALLURE_RESULTS_DIR }} --maxfail=0 --tb=short --continue-on-collection-errors
         env:
-          BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
+          BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL || env.PROD_BASE_URL }}
 
       - name: Generate Allure report
         run: |
@@ -172,9 +176,9 @@ jobs:
             <b>Тип запуска:</b> ${{ github.event.inputs.run_type || 'regression' }}
             
             <b>Статусы по ОС и браузерам:</b>
-            <code>│</code> • Ubuntu + Firefox: ${{ needs.test.result == 'success' && '✅' || '❌' }}
-            <code>│</code> • Windows + Chrome: ${{ needs.test.result == 'success' && '✅' || '❌' }}
-            <code>│</code> • macOS + Safari: ${{ needs.test.result == 'success' && '✅' || '❌' }}
+            <code>│</code> • Ubuntu + Firefox: ${{ needs.test.outputs.ubuntu_firefox == 'success' && '✅' || '❌' }}
+            <code>│</code> • Windows + Chrome: ${{ needs.test.outputs.windows_chrome == 'success' && '✅' || '❌' }}
+            <code>│</code> • macOS + Safari: ${{ needs.test.outputs.macos_safari == 'success' && '✅' || '❌' }}
             
             <b>Ссылка на Actions:</b> <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GitHub Actions</a>
           format: html
