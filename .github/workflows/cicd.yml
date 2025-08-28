@@ -284,6 +284,28 @@ jobs:
           path: allure-results-old
         continue-on-error: true
 
+      - name: Download from GitHub Pages (fallback)
+        run: |
+          # Попытка скачать архив с GitHub Pages как fallback
+          if [ ! -d "allure-results-old" ] || [ -z "$(find allure-results-old -name '*.json' -o -name '*.xml' 2>/dev/null)" ]; then
+            echo "Trying to download from GitHub Pages as fallback..."
+            mkdir -p allure-results-old-fallback
+            
+            # Пытаемся скачать архив с GitHub Pages
+            curl -f -L "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-results.zip" -o allure-results-old-fallback.zip 2>/dev/null || echo "No archive found on GitHub Pages"
+            
+            if [ -f "allure-results-old-fallback.zip" ]; then
+              unzip -q allure-results-old-fallback.zip -d allure-results-old-fallback/
+              echo "Fallback results loaded from GitHub Pages"
+              # Перемещаем fallback результаты в основную папку
+              if [ ! -d "allure-results-old" ]; then
+                mv allure-results-old-fallback allure-results-old
+              else
+                cp -r allure-results-old-fallback/* allure-results-old/
+              fi
+            fi
+          fi
+
       - name: Check previous results
         run: |
           if [ -d "allure-results-old" ]; then
