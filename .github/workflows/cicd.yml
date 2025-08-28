@@ -2,9 +2,9 @@ name: Tests CI Pipeline
 
 on:
   push:
-    branches: [main, develop, feature/*, bugfix/*, hotfix/*]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
   workflow_dispatch:
     inputs:
       environment:
@@ -132,9 +132,14 @@ jobs:
       - name: Download previous history
         run: |
           mkdir -p old-history
-          curl -s -L https://evometaio.github.io/catalog_autotests/allure-report/history.zip -o history.zip || echo "No previous history"
-          if [ -f history.zip ]; then
+          curl -s -L https://evometaio.github.io/catalog_autotests/allure-report/history.zip -o history.zip || true
+
+          if [ -s history.zip ] && file history.zip | grep -q "Zip archive"; then
+            echo "Found valid history.zip, extracting..."
             unzip -q history.zip -d old-history
+          else
+            echo "No valid history found, skipping"
+            rm -f history.zip
           fi
 
       - name: Generate Allure report with history
@@ -143,12 +148,12 @@ jobs:
           find allure-results -type f -exec cp {} combined-results/ \;
 
           if [ -d old-history/history ]; then
+            echo "Merging history..."
             cp -r old-history/history combined-results/
           fi
 
           allure generate combined-results --clean -o ${{ env.ALLURE_REPORT_DIR }}
 
-          # упаковываем history для следующего запуска
           cd ${{ env.ALLURE_REPORT_DIR }}
           zip -r ../../history.zip history/ || echo "No history"
           cd ../..
@@ -189,7 +194,7 @@ jobs:
 
             Статус: ${{ (needs.ubuntu-firefox.result == 'success' && needs.windows-chromium.result == 'success' && needs.macos-webkit.result == 'success') && '✅ Все тесты прошли' || '❌ Есть ошибки' }}
 
-            📊 Отчет: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/allure-report/
+            📊 Отчет: https://${{ github.repository_owner }}.github.io/${{ github.event.repository_name }}/allure-report/
             🔗 Actions: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           format: html
           disable_web_page_preview: true
