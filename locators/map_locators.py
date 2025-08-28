@@ -31,4 +31,5 @@ class MapLocators:
     DUBAI_BUTTON = 'span.ant-menu-title-content'
     PROJECT_PAGE_TITLE = 'h1, h2, h3'
     PROJECT_NAVIGATION = '[class*="CompactNavigation"]'
+    EXPLORE_PROJECT_BUTTON = '//button[.//span[text()="Explore Project"]]'
 

@@ -1,7 +1,6 @@
 import allure
 import pytest
 
-
 @allure.feature("Страница карты")
 @allure.story("Загрузка карты")
 @pytest.mark.smoke
@@ -14,22 +13,6 @@ def test_map_page_loads(map_page):
 
     with allure.step("Проверяем, что карта загружена"):
         map_page.check_map_loaded()
-
-
-# TODO подумать как реализизовать
-@allure.feature("Страница карты")
-@allure.story("Все элементы")
-@pytest.mark.skip(reason="Флаки тест")
-@pytest.mark.regression
-@pytest.mark.ui
-@allure.severity(allure.severity_level.NORMAL)
-def test_map_page_all_elements(map_page):
-    """Тест всех основных элементов страницы карты."""
-    with allure.step("Открываем страницу карты"):
-        map_page.open_map_page()
-
-    with allure.step("Проверяем все основные элементы"):
-        map_page.check_all_elements()
 
 
 @allure.feature("Страница карты")
@@ -67,8 +50,9 @@ def test_project_navigation_on_map(map_page, project_name):
 @allure.feature("Страница карты")
 @allure.story("Полный цикл навигации")
 @pytest.mark.regression
+@pytest.mark.smoke
 @pytest.mark.ui
-@allure.severity(allure.severity_level.NORMAL)
+@allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.parametrize("project_name", ["elire", "arisha", "cubix"])
 def test_full_navigation_cycle_on_map(map_page, project_name):
     """Тест полного цикла навигации: карта -> проект -> карта."""
@@ -83,7 +67,6 @@ def test_full_navigation_cycle_on_map(map_page, project_name):
         # Возвращаемся на карту
         map_page.return_to_map_from_project()
         map_page.verify_returned_to_map()
-
 
 
 @allure.feature("Страница карты")

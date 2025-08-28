@@ -42,27 +42,6 @@ class MapPage(BasePage):
                 self.page.set_viewport_size({"width": 1920, "height": 1080})
         except Exception as e:
             print(e)
-    
-    def wait_for_map_and_projects_loaded(self):
-        """Ожидать полной загрузки карты и проектов."""
-        try:
-            # Сначала ждем загрузки контейнера карты
-            self.wait_for_element(self.locators.MAP_CONTAINER, timeout=30000)
-            
-            # Затем ждем появления хотя бы одного проекта
-            # Используем более надежный локатор для ожидания проектов
-            self.page.wait_for_selector(
-                'div[aria-label*="Elire"], div[aria-label*="ELIRE"], div[aria-label*="Arisha"], div[aria-label*="ARISHA"], div[aria-label*="Cubix"], div[aria-label*="CUBIX"]',
-                state="visible",
-                timeout=30000
-            )
-            
-            # Дополнительная пауза для стабилизации карты
-            self.page.wait_for_timeout(2000)
-            
-        except Exception as e:
-            print(f"Ошибка при ожидании загрузки карты: {e}")
-            # Продолжаем выполнение, возможно карта уже загружена
 
     
     def check_map_loaded(self):
@@ -99,7 +78,6 @@ class MapPage(BasePage):
             
         except Exception as e:
             print(f"Проект {project_name} не найден: {e}")
-            # Продолжаем выполнение, возможно элемент уже готов
         
         self.click(selector)
     
@@ -144,9 +122,3 @@ class MapPage(BasePage):
         except Exception:
             # Если не удалось, просто логируем
             print("Кнопка полноэкранного режима не найдена или недоступна")
-
-    
-    def check_all_elements(self):
-        """Проверить видимость всех основных элементов."""
-        self.check_map_loaded()
-        self.check_all_projects_visible()
