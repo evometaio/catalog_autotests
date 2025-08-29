@@ -1,1 +1,1 @@
-[{"values":["prod"],"name":"environment"},{"values":["https://qube-dev-next.evometa.io/map"],"name":"url"},{"values":["webkit"],"name":"browser"}]
+[{"values":["dev"],"name":"environment"},{"values":["https://qube-dev-next.evometa.io/map"],"name":"url"},{"values":["chromium"],"name":"browser"}]
