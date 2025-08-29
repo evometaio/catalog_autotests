@@ -93,5 +93,4 @@ class ProjectPage(MapPage):
 
     def cleanup_after_test(self):
         """Очистка через системную команду."""
-        os.system("rm -rf temp")  # Удаляем папку и все файлы
-        print("Папка temp/downloads удалена")
+        os.system("rm -rf temp")

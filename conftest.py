@@ -1,8 +1,40 @@
 import allure
 import pytest
 import os
+import platform
 from datetime import datetime
 from playwright.sync_api import Page
+
+
+def _create_environment_properties():
+    """Создает файл environment.properties для Allure отчета"""
+    env = os.getenv("TEST_ENVIRONMENT", "prod")
+    
+    # Создаем директорию для результатов если её нет
+    os.makedirs("reports/allure-results", exist_ok=True)
+    
+    # Определяем URL-ы для текущего окружения
+    urls = _get_urls_by_environment()
+    
+    # Создаем содержимое файла environment.properties
+    properties_content = f"""# Test Environment Configuration
+environment = {env}
+url = {urls['map']}
+browser = chromium
+"""
+    
+    # Записываем файл
+    with open("reports/allure-results/environment.properties", "w", encoding="utf-8") as f:
+        f.write(properties_content)
+    
+    print(f"📝 Environment properties созданы для окружения: {env.upper()}")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_environment():
+    """Фикстура для настройки окружения перед запуском тестов"""
+    _create_environment_properties()
+    return _get_urls_by_environment()
 
 
 @pytest.fixture(autouse=True)
