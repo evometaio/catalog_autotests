@@ -25,6 +25,10 @@ env:
   ALLURE_RESULTS_DIR: "allure-results"
   PROD_BASE_URL: "https://virtualtours.qbd.ae/map"
   DEV_BASE_URL: "https://qube-dev-next.evometa.io/map"
+  DEV_AGENT_BASE_URL: "https://qube-dev-next.evometa.io/agent/map"
+  DEV_CLIENT_BASE_URL: "https://qube-dev-next.evometa.io/client/map"
+  AGENT_PROD_BASE_URL: "https://virtualtours.qbd.ae/agent/map"
+  CLIENT_PROD_BASE_URL: "https://virtualtours.qbd.ae/client/map"
 
 jobs:
   ubuntu-firefox:
@@ -46,7 +50,7 @@ jobs:
       - name: Run tests (Firefox/Linux)
         run: pytest --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
-          BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
+          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -75,7 +79,7 @@ jobs:
         shell: pwsh
         run: pytest --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
-          BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
+          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -103,7 +107,7 @@ jobs:
       - name: Run tests (Webkit/macOS)
         run: pytest --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
-          BASE_URL: ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
+          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
       - uses: actions/upload-artifact@v4
         if: always()
