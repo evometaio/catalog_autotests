@@ -53,10 +53,18 @@ jobs:
       - name: Create environment properties
         run: |
           mkdir -p ${{ env.ALLURE_RESULTS_DIR }}
+          
+          ENV="${{ github.event.inputs.environment || 'prod' }}"
+          if [ "$ENV" = "prod" ]; then
+            URL="${{ env.PROD_BASE_URL }}"
+          else
+            URL="${{ env.DEV_BASE_URL }}"
+          fi
+          
           cat > ${{ env.ALLURE_RESULTS_DIR }}/environment.properties << EOF
           # Test Environment Configuration
-          environment = ${{ github.event.inputs.environment || 'prod' }}
-          url = ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
+          environment = $ENV
+          url = $URL
           browser = firefox
           EOF
         env:
@@ -94,10 +102,18 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path ${{ env.ALLURE_RESULTS_DIR }}
+          
+          $env = "${{ github.event.inputs.environment || 'prod' }}"
+          if ($env -eq "prod") {
+            $url = "${{ env.PROD_BASE_URL }}"
+          } else {
+            $url = "${{ env.DEV_BASE_URL }}"
+          }
+          
           @"
           # Test Environment Configuration
-          environment = ${{ github.event.inputs.environment || 'prod' }}
-          url = ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
+          environment = $env
+          url = $url
           browser = chromium
           "@ | Out-File -FilePath "${{ env.ALLURE_RESULTS_DIR }}/environment.properties" -Encoding UTF8
         env:
@@ -135,10 +151,18 @@ jobs:
       - name: Create environment properties
         run: |
           mkdir -p ${{ env.ALLURE_RESULTS_DIR }}
+          
+          ENV="${{ github.event.inputs.environment || 'prod' }}"
+          if [ "$ENV" = "prod" ]; then
+            URL="${{ env.PROD_BASE_URL }}"
+          else
+            URL="${{ env.DEV_BASE_URL }}"
+          fi
+          
           cat > ${{ env.ALLURE_RESULTS_DIR }}/environment.properties << EOF
           # Test Environment Configuration
-          environment = ${{ github.event.inputs.environment || 'prod' }}
-          url = ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
+          environment = $ENV
+          url = $URL
           browser = webkit
           EOF
         env:
@@ -182,7 +206,7 @@ jobs:
           mkdir -p old-history
           echo "🔍 Загружаем history.zip из GitHub Pages..."
           
-          curl -s -L -f "https://${{ github.repository_owner }}.github.io/${{ github.repository }}/allure-report/history.zip" -o history.zip || {
+          curl -s -L -f "https://${{ github.repository_owner }}.github.io/catalog_autotests/allure-report/history.zip" -o history.zip || {
             echo "ℹ️ History.zip не найден, будет создан новый"
             rm -f history.zip
           }
