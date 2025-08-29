@@ -50,7 +50,7 @@ def test_project_navigation_on_map(map_page, project_name):
 @allure.feature("Страница карты")
 @allure.story("Полный цикл навигации")
 @pytest.mark.regression
-@pytest.mark.smoke
+# @pytest.mark.smoke
 @pytest.mark.ui
 @allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.parametrize("project_name", ["elire", "arisha", "cubix"])

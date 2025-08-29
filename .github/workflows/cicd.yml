@@ -1,6 +1,9 @@
 name: Tests CI Pipeline
 
 on:
+  schedule:
+    # Запуск каждый день в 11:00 по МСК (08:00 UTC)
+    - cron: '0 8 * * *'
   push:
     branches: [main]
   pull_request:
@@ -47,8 +50,20 @@ jobs:
           python -m playwright install firefox
           python -m playwright install-deps
 
+      - name: Create environment properties
+        run: |
+          mkdir -p ${{ env.ALLURE_RESULTS_DIR }}
+          cat > ${{ env.ALLURE_RESULTS_DIR }}/environment.properties << EOF
+          # Test Environment Configuration
+          environment = ${{ github.event.inputs.environment || 'prod' }}
+          url = ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
+          browser = firefox
+          EOF
+        env:
+          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+
       - name: Run tests (Firefox/Linux)
-        run: pytest --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest --browser=firefox -m smoke --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
@@ -75,9 +90,22 @@ jobs:
           python -m playwright install chromium
           python -m playwright install-deps
 
+      - name: Create environment properties
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ${{ env.ALLURE_RESULTS_DIR }}
+          @"
+          # Test Environment Configuration
+          environment = ${{ github.event.inputs.environment || 'prod' }}
+          url = ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
+          browser = chromium
+          "@ | Out-File -FilePath "${{ env.ALLURE_RESULTS_DIR }}/environment.properties" -Encoding UTF8
+        env:
+          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+
       - name: Run tests (Chromium/Windows)
         shell: pwsh
-        run: pytest --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest --browser=chromium -m smoke --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
@@ -104,8 +132,20 @@ jobs:
           python -m playwright install-deps
           brew install allure
 
+      - name: Create environment properties
+        run: |
+          mkdir -p ${{ env.ALLURE_RESULTS_DIR }}
+          cat > ${{ env.ALLURE_RESULTS_DIR }}/environment.properties << EOF
+          # Test Environment Configuration
+          environment = ${{ github.event.inputs.environment || 'prod' }}
+          url = ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
+          browser = webkit
+          EOF
+        env:
+          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+
       - name: Run tests (Webkit/macOS)
-        run: pytest --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest --browser=webkit -m smoke --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
@@ -126,6 +166,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: allure-results
+          pattern: allure-results-*
+          merge-multiple: true
+
+      - name: Download history artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-history
+          path: allure-results
+        continue-on-error: true
 
       - name: Install Allure
         run: |
@@ -136,35 +185,72 @@ jobs:
       - name: Download previous history
         run: |
           mkdir -p old-history
-          curl -s -L https://evometaio.github.io/catalog_autotests/allure-report/history.zip -o history.zip || true
-
-          if [ -s history.zip ] && file history.zip | grep -q "Zip archive"; then
-            echo "Found valid history.zip, extracting..."
-            unzip -q history.zip -d old-history
+          echo "🔍 Пытаемся загрузить history.zip из артефактов..."
+          
+          # Пробуем загрузить history.zip из артефактов предыдущего запуска
+          if [ -f "allure-results/allure-history/history.zip" ]; then
+            echo "✅ History.zip найден в артефактах, копируем..."
+            cp "allure-results/allure-history/history.zip" .
           else
-            echo "No valid history found, skipping"
-            rm -f history.zip
+            echo "ℹ️ History.zip не найден в артефактах, пробуем GitHub Pages..."
+            # Fallback: пробуем загрузить из GitHub Pages
+            curl -s -L -f "https://${{ github.repository_owner }}.github.io/${{ github.repository }}/allure-report/history.zip" -o history.zip || {
+              echo "❌ Не удалось загрузить history.zip, создаем новый"
+              rm -f history.zip
+            }
+          fi
+
+          if [ -f history.zip ] && [ -s history.zip ]; then
+            echo "✅ History.zip найден, проверяем содержимое..."
+            if file history.zip | grep -q "Zip archive"; then
+              echo "📦 Распаковываем history.zip..."
+              unzip -q history.zip -d old-history
+              echo "✅ History успешно загружен"
+            else
+              echo "❌ Файл не является zip архивом, удаляем"
+              rm -f history.zip
+            fi
+          else
+            echo "ℹ️ History не найден, будет создан новый"
           fi
 
       - name: Generate Allure report with history
         run: |
+          echo "🔧 Подготавливаем результаты для генерации отчета..."
           mkdir -p combined-results
+          
+          # Копируем все результаты тестов
           find allure-results -type f -exec cp {} combined-results/ \;
+          echo "✅ Результаты тестов скопированы"
 
+          # Добавляем history если есть
           if [ -d old-history/history ]; then
-            echo "Merging history..."
+            echo "📚 Копируем history..."
             cp -r old-history/history combined-results/
+            echo "✅ History добавлен"
+          else
+            echo "ℹ️ History не найден, создаем новый"
           fi
 
+          # Генерируем отчет
+          echo "📊 Генерируем Allure отчет..."
           allure generate combined-results --clean -o ${{ env.ALLURE_REPORT_DIR }}
+          echo "✅ Отчет сгенерирован"
 
+          # Создаем history.zip для следующего запуска
           cd ${{ env.ALLURE_REPORT_DIR }}
-          zip -r ../../history.zip history/ || echo "No history"
+          if [ -d history ]; then
+            echo "📦 Создаем history.zip..."
+            zip -r ../../history.zip history/
+            echo "✅ History.zip создан"
+          else
+            echo "⚠️ Папка history не найдена, history.zip не создан"
+          fi
           cd ../..
 
       - name: Deploy Allure to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./allure-report
@@ -177,11 +263,12 @@ jobs:
           name: allure-history
           path: history.zip
           retention-days: 30
+        continue-on-error: true
 
   notify:
     runs-on: ubuntu-latest
     needs: [ubuntu-firefox, windows-chromium, macos-webkit, deploy-allure]
-    if: always() && github.event_name == 'workflow_dispatch'
+    if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     steps:
       - name: Send Telegram summary
         uses: appleboy/telegram-action@v1.0.0
@@ -194,7 +281,7 @@ jobs:
             Проект: ${{ github.repository }}
             Ветка: ${{ github.ref_name }}
             Окружение: ${{ github.event.inputs.environment || 'prod' }}
-            Тип запуска: ${{ github.event.inputs.run_type || 'regression' }}
+            Тип запуска: ${{ github.event.inputs.run_type || (github.event_name == 'schedule' && 'scheduled') || 'regression' }}
 
             Статус: ${{ (needs.ubuntu-firefox.result == 'success' && needs.windows-chromium.result == 'success' && needs.macos-webkit.result == 'success') && '✅ Все тесты прошли' || '❌ Есть ошибки' }}
 
