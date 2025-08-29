@@ -89,7 +89,6 @@ class ProjectPage(MapPage):
             return file_size > 1024, file_path
 
         except Exception as e:
-            print(f"Ошибка при скачивании PDF: {e}")
             return False, ""
 
     def cleanup_after_test(self):

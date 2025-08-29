@@ -1,6 +1,5 @@
 from playwright.sync_api import Page, Locator, expect
 from locators.map_locators import MapLocators
-import os
 
 
 class BasePage:
@@ -9,7 +8,7 @@ class BasePage:
     def __init__(self, page: Page, base_url: str = None):
         self.locators = MapLocators()
         self.page = page
-        self.base_url = base_url or os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
+        self.base_url = base_url
     
     def open(self, path: str = ""):
         """Открыть страницу."""

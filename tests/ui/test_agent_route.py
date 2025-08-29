@@ -5,6 +5,7 @@ import pytest
 @allure.feature("Страница проекта")
 @allure.story("Загрузка PDF")
 @pytest.mark.smoke
+@pytest.mark.regression
 @pytest.mark.ui
 @allure.severity(allure.severity_level.CRITICAL)
 def test_download_pdf_on_agent_route(project_agent_page):
@@ -42,5 +43,5 @@ def test_download_pdf_on_agent_route(project_agent_page):
     finally:
         # Очищаем скачанный файл в любом случае (успех или ошибка)
         if downloaded_file_path:
-            with allure.step("Очищаем скачанный PDF файл"):
+            with allure.step("Удаляем скачанный PDF файл"):
                 project_agent_page.cleanup_after_test()

@@ -70,33 +70,17 @@ def browser_type_launch_args(browser_type):
 @pytest.fixture(scope="session")
 def base_url():
     """Base URL в зависимости от окружения"""
-    env = os.getenv("TEST_ENVIRONMENT", "prod")
-    if env == "dev":
-        return os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map")
-    else:
-        return os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
+    return _get_urls_by_environment()["map"]
 
-@pytest.fixture(scope="session")
-def dev_base_url():
-    """Base dev URL"""
-    return os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map")
 
 @pytest.fixture(scope="session")
 def agent_url():
     """Base agent URL в зависимости от окружения"""
-    env = os.getenv("TEST_ENVIRONMENT", "prod")
-    if env == "dev":
-        return os.getenv("DEV_AGENT_BASE_URL", "https://qube-dev-next.evometa.io/agent/map")
-    else:
-        return os.getenv("AGENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/agent/map")
+    return _get_urls_by_environment()["agent"]
 
 def client_url():
-    """Base cleint URL в зависимости от окружения"""
-    env = os.getenv("TEST_ENVIRONMENT", "prod")
-    if env == "dev":
-        return os.getenv("DEV_CLIENT_BASE_URL", "https://qube-dev-next.evometa.io/client/map")
-    else:
-        return os.getenv("CLIENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/client/map")
+    """Base client URL в зависимости от окружения"""
+    return _get_urls_by_environment()["client"]
 
 
 @pytest.fixture
@@ -117,6 +101,7 @@ def project_agent_page(page: Page, agent_url):
     from pages.project_page import ProjectPage
     return ProjectPage(page, agent_url)
 
+@pytest.fixture
 def project_client_page(page: Page, client_url):
     """Фикстура для страницы проекта (клиентский роут)"""
     from pages.project_page import ProjectPage
@@ -129,3 +114,25 @@ def pytest_runtest_makereport(item, call):
     if call.when == "call":
         # Сохраняем результат для использования в фикстурах
         item.rep_call = call
+
+
+def _get_urls_by_environment() -> dict:
+    """Получить все URL-ы для текущего окружения"""
+    env = os.getenv("TEST_ENVIRONMENT", "prod")
+    print(f"\n🔧 Тесты запускаются на окружении: {env.upper()}")
+
+    # Добавляем информацию в Allure (только окружение)
+    allure.dynamic.label("environment", env)
+
+    if env == "dev":
+        return {
+            "map": os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map"),
+            "agent": os.getenv("DEV_AGENT_BASE_URL", "https://qube-dev-next.evometa.io/agent/map"),
+            "client": os.getenv("DEV_CLIENT_BASE_URL", "https://qube-dev-next.evometa.io/client/map")
+        }
+    else:
+        return {
+            "map": os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map"),
+            "agent": os.getenv("AGENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/agent/map"),
+            "client": os.getenv("CLIENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/client/map")
+        }

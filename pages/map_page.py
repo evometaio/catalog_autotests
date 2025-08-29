@@ -1,7 +1,6 @@
 from pages.base_page import BasePage
 from locators.map_locators import MapLocators
 from playwright.sync_api import Page
-import os
 
 
 class MapPage(BasePage):
@@ -11,15 +10,9 @@ class MapPage(BasePage):
         super().__init__(page, base_url)
         self.locators = MapLocators()
         
-        # Динамически определяем URL в зависимости от окружения
-        if base_url and ("qube-dev" in base_url or "dev" in base_url):
-            self.project_url_template = base_url.replace("/map", "/project/{project}/area")
-            self.map_url = base_url
-        else:
-            # Production URLs из переменных окружения
-            prod_base = os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
-            self.project_url_template = prod_base.replace("/map", "/project/{project}/area")
-            self.map_url = prod_base
+        # URL-ы теперь определяются в conftest.py
+        self.project_url_template = base_url.replace("/map", "/project/{project}/area")
+        self.map_url = base_url
     
     def open_map_page(self):
         """Открыть страницу карты."""
