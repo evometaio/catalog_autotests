@@ -53,17 +53,25 @@ jobs:
       - name: Create environment properties
         run: |
           mkdir -p ${{ env.ALLURE_RESULTS_DIR }}
+          
+          ENV="${{ github.event.inputs.environment || 'prod' }}"
+          if [ "$ENV" = "prod" ]; then
+            URL="${{ env.PROD_BASE_URL }}"
+          else
+            URL="${{ env.DEV_BASE_URL }}"
+          fi
+          
           cat > ${{ env.ALLURE_RESULTS_DIR }}/environment.properties << EOF
           # Test Environment Configuration
-          environment = ${{ github.event.inputs.environment || 'prod' }}
-          url = ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
-          browser = firefox
+          environment = $ENV
+          url = $URL
+          browser = ubuntu-firefox
           EOF
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
       - name: Run tests (Firefox/Linux)
-        run: pytest --browser=firefox -m smoke --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
@@ -94,18 +102,26 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path ${{ env.ALLURE_RESULTS_DIR }}
+          
+          $env = "${{ github.event.inputs.environment || 'prod' }}"
+          if ($env -eq "prod") {
+            $url = "${{ env.PROD_BASE_URL }}"
+          } else {
+            $url = "${{ env.DEV_BASE_URL }}"
+          }
+          
           @"
           # Test Environment Configuration
-          environment = ${{ github.event.inputs.environment || 'prod' }}
-          url = ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
-          browser = chromium
+          environment = $env
+          url = $url
+          browser = windows-chromium
           "@ | Out-File -FilePath "${{ env.ALLURE_RESULTS_DIR }}/environment.properties" -Encoding UTF8
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
       - name: Run tests (Chromium/Windows)
         shell: pwsh
-        run: pytest --browser=chromium -m smoke --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
@@ -135,17 +151,25 @@ jobs:
       - name: Create environment properties
         run: |
           mkdir -p ${{ env.ALLURE_RESULTS_DIR }}
+          
+          ENV="${{ github.event.inputs.environment || 'prod' }}"
+          if [ "$ENV" = "prod" ]; then
+            URL="${{ env.PROD_BASE_URL }}"
+          else
+            URL="${{ env.DEV_BASE_URL }}"
+          fi
+          
           cat > ${{ env.ALLURE_RESULTS_DIR }}/environment.properties << EOF
           # Test Environment Configuration
-          environment = ${{ github.event.inputs.environment || 'prod' }}
-          url = ${{ github.event.inputs.environment == 'prod' && env.PROD_BASE_URL || env.DEV_BASE_URL }}
-          browser = webkit
+          environment = $ENV
+          url = $URL
+          browser = macos-webkit
           EOF
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
       - name: Run tests (Webkit/macOS)
-        run: pytest --browser=webkit -m smoke --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
@@ -169,12 +193,7 @@ jobs:
           pattern: allure-results-*
           merge-multiple: true
 
-      - name: Download history artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-history
-          path: allure-results
-        continue-on-error: true
+
 
       - name: Install Allure
         run: |
@@ -185,20 +204,12 @@ jobs:
       - name: Download previous history
         run: |
           mkdir -p old-history
-          echo "🔍 Пытаемся загрузить history.zip из артефактов..."
+          echo "🔍 Загружаем history.zip из GitHub Pages..."
           
-          # Пробуем загрузить history.zip из артефактов предыдущего запуска
-          if [ -f "allure-results/allure-history/history.zip" ]; then
-            echo "✅ History.zip найден в артефактах, копируем..."
-            cp "allure-results/allure-history/history.zip" .
-          else
-            echo "ℹ️ History.zip не найден в артефактах, пробуем GitHub Pages..."
-            # Fallback: пробуем загрузить из GitHub Pages
-            curl -s -L -f "https://${{ github.repository_owner }}.github.io/${{ github.repository }}/allure-report/history.zip" -o history.zip || {
-              echo "❌ Не удалось загрузить history.zip, создаем новый"
-              rm -f history.zip
-            }
-          fi
+          curl -s -L -f "https://${{ github.repository_owner }}.github.io/catalog_autotests/allure-report/history.zip" -o history.zip || {
+            echo "ℹ️ History.zip не найден, будет создан новый"
+            rm -f history.zip
+          }
 
           if [ -f history.zip ] && [ -s history.zip ]; then
             echo "✅ History.zip найден, проверяем содержимое..."
@@ -237,38 +248,42 @@ jobs:
           allure generate combined-results --clean -o ${{ env.ALLURE_REPORT_DIR }}
           echo "✅ Отчет сгенерирован"
 
-          # Создаем history.zip для следующего запуска
+          # Проверяем, что создалось в allure-report
+          echo "🔍 Проверяем содержимое allure-report..."
+          ls -la ${{ env.ALLURE_REPORT_DIR }}
+          
+          # Создаем history.zip внутри allure-report для деплоя
           cd ${{ env.ALLURE_REPORT_DIR }}
+          echo "📁 Текущая директория: $(pwd)"
+          echo "📁 Содержимое: $(ls -la)"
+          
           if [ -d history ]; then
-            echo "📦 Создаем history.zip..."
-            zip -r ../../history.zip history/
-            echo "✅ History.zip создан"
+            echo "📦 Создаем history.zip внутри allure-report..."
+            zip -r history.zip history/
+            echo "✅ History.zip создан внутри allure-report"
+            echo "📁 После создания: $(ls -la)"
           else
             echo "⚠️ Папка history не найдена, history.zip не создан"
+            echo "📁 Доступные папки: $(find . -type d -maxdepth 1)"
           fi
           cd ../..
 
+
+
       - name: Deploy Allure to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
-        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule' || github.event_name == 'pull_request'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./allure-report
           destination_dir: allure-report
 
-      - name: Upload history for next run
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: allure-history
-          path: history.zip
-          retention-days: 30
-        continue-on-error: true
+
 
   notify:
     runs-on: ubuntu-latest
     needs: [ubuntu-firefox, windows-chromium, macos-webkit, deploy-allure]
-    if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event_name == 'pull_request')
     steps:
       - name: Send Telegram summary
         uses: appleboy/telegram-action@v1.0.0
@@ -276,7 +291,7 @@ jobs:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            🚀 Итоговый отчет по тестам
+            🚀 <b>Итоговый отчет по тестам</b>
 
             Проект: ${{ github.repository }}
             Ветка: ${{ github.ref_name }}
