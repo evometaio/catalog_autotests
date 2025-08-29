@@ -1,6 +1,9 @@
 name: Tests CI Pipeline
 
 on:
+  schedule:
+    # Запуск каждый день в 11:00 по МСК (08:00 UTC)
+    - cron: '0 8 * * *'
   push:
     branches: [main]
   pull_request:
@@ -60,7 +63,7 @@ jobs:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
       - name: Run tests (Firefox/Linux)
-        run: pytest --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest --browser=firefox -m smoke --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
@@ -102,7 +105,7 @@ jobs:
 
       - name: Run tests (Chromium/Windows)
         shell: pwsh
-        run: pytest --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest --browser=chromium -m smoke --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
@@ -142,7 +145,7 @@ jobs:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
       - name: Run tests (Webkit/macOS)
-        run: pytest --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest --browser=webkit -m smoke --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
@@ -163,6 +166,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: allure-results
+          pattern: allure-results-*
+          merge-multiple: true
+
+      - name: Download history artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-history
+          path: allure-results
+        continue-on-error: true
 
       - name: Install Allure
         run: |
@@ -173,13 +185,20 @@ jobs:
       - name: Download previous history
         run: |
           mkdir -p old-history
-          echo "🔍 Пытаемся загрузить history.zip..."
+          echo "🔍 Пытаемся загрузить history.zip из артефактов..."
           
-          # Пробуем загрузить history.zip из GitHub Pages
-          curl -s -L -f "https://${{ github.repository_owner }}.github.io/${{ github.repository }}/allure-report/history.zip" -o history.zip || {
-            echo "❌ Не удалось загрузить history.zip, создаем новый"
-            rm -f history.zip
-          }
+          # Пробуем загрузить history.zip из артефактов предыдущего запуска
+          if [ -f "allure-results/allure-history/history.zip" ]; then
+            echo "✅ History.zip найден в артефактах, копируем..."
+            cp "allure-results/allure-history/history.zip" .
+          else
+            echo "ℹ️ History.zip не найден в артефактах, пробуем GitHub Pages..."
+            # Fallback: пробуем загрузить из GitHub Pages
+            curl -s -L -f "https://${{ github.repository_owner }}.github.io/${{ github.repository }}/allure-report/history.zip" -o history.zip || {
+              echo "❌ Не удалось загрузить history.zip, создаем новый"
+              rm -f history.zip
+            }
+          fi
 
           if [ -f history.zip ] && [ -s history.zip ]; then
             echo "✅ History.zip найден, проверяем содержимое..."
@@ -231,7 +250,7 @@ jobs:
 
       - name: Deploy Allure to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./allure-report
@@ -249,7 +268,7 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     needs: [ubuntu-firefox, windows-chromium, macos-webkit, deploy-allure]
-    if: always() && github.event_name == 'workflow_dispatch'
+    if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     steps:
       - name: Send Telegram summary
         uses: appleboy/telegram-action@v1.0.0
@@ -262,7 +281,7 @@ jobs:
             Проект: ${{ github.repository }}
             Ветка: ${{ github.ref_name }}
             Окружение: ${{ github.event.inputs.environment || 'prod' }}
-            Тип запуска: ${{ github.event.inputs.run_type || 'regression' }}
+            Тип запуска: ${{ github.event.inputs.run_type || (github.event_name == 'schedule' && 'scheduled') || 'regression' }}
 
             Статус: ${{ (needs.ubuntu-firefox.result == 'success' && needs.windows-chromium.result == 'success' && needs.macos-webkit.result == 'success') && '✅ Все тесты прошли' || '❌ Есть ошибки' }}
 
