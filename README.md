@@ -47,7 +47,6 @@ make test-api
 3. Выбрать параметры:
    - **Branch**: `main` (или другая ветка)
    - **Environment**: `prod` или `dev`
-   - **Browsers**: `chromium`, `firefox`, `webkit` или `all`
    - **Run type**: `smoke`, `regression` или `full`
 4. Нажать **Run workflow**
 
