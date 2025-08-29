@@ -4,7 +4,7 @@ import pytest
 
 @allure.feature("Страница проекта")
 @allure.story("Загрузка PDF")
-# @pytest.mark.smoke
+@pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
 @allure.severity(allure.severity_level.CRITICAL)
