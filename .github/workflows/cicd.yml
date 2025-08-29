@@ -256,7 +256,7 @@ jobs:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            🚀 Итоговый отчет по тестам
+            🚀 <b>Итоговый отчет по тестам</b>
 
             Проект: ${{ github.repository }}
             Ветка: ${{ github.ref_name }}
