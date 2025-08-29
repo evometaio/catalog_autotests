@@ -65,7 +65,7 @@ jobs:
           # Test Environment Configuration
           environment = $ENV
           url = $URL
-          browser = firefox
+          browser = ubuntu-firefox
           EOF
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
@@ -114,7 +114,7 @@ jobs:
           # Test Environment Configuration
           environment = $env
           url = $url
-          browser = chromium
+          browser = windows-chromium
           "@ | Out-File -FilePath "${{ env.ALLURE_RESULTS_DIR }}/environment.properties" -Encoding UTF8
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
@@ -163,7 +163,7 @@ jobs:
           # Test Environment Configuration
           environment = $ENV
           url = $URL
-          browser = webkit
+          browser = macos-webkit
           EOF
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
@@ -248,14 +248,23 @@ jobs:
           allure generate combined-results --clean -o ${{ env.ALLURE_REPORT_DIR }}
           echo "✅ Отчет сгенерирован"
 
-          # Создаем history.zip для следующего запуска
+          # Проверяем, что создалось в allure-report
+          echo "🔍 Проверяем содержимое allure-report..."
+          ls -la ${{ env.ALLURE_REPORT_DIR }}
+          
+          # Создаем history.zip внутри allure-report для деплоя
           cd ${{ env.ALLURE_REPORT_DIR }}
+          echo "📁 Текущая директория: $(pwd)"
+          echo "📁 Содержимое: $(ls -la)"
+          
           if [ -d history ]; then
-            echo "📦 Создаем history.zip..."
-            zip -r ../../history.zip history/
-            echo "✅ History.zip создан"
+            echo "📦 Создаем history.zip внутри allure-report..."
+            zip -r history.zip history/
+            echo "✅ History.zip создан внутри allure-report"
+            echo "📁 После создания: $(ls -la)"
           else
             echo "⚠️ Папка history не найдена, history.zip не создан"
+            echo "📁 Доступные папки: $(find . -type d -maxdepth 1)"
           fi
           cd ../..
 
