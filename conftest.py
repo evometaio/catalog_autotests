@@ -110,6 +110,7 @@ def agent_url():
     """Base agent URL в зависимости от окружения"""
     return _get_urls_by_environment()["agent"]
 
+@pytest.fixture(scope="session")
 def client_url():
     """Base client URL в зависимости от окружения"""
     return _get_urls_by_environment()["client"]

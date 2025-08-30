@@ -2,13 +2,13 @@ import allure
 import pytest
 
 
-@allure.feature("Страница проекта")
+@allure.feature("Страница проекта (агенсткий роут)")
 @allure.story("Загрузка PDF")
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
 @allure.severity(allure.severity_level.CRITICAL)
-def test_download_pdf_on_agent_route(project_agent_page):
+def test_download_pdf_on_project_agent_page(project_agent_page):
     downloaded_file_path = ""
 
     try:
@@ -19,10 +19,10 @@ def test_download_pdf_on_agent_route(project_agent_page):
             assert "agent" in current_url, "Не открылась агентская страница"
 
         with allure.step("Кликаем на проект Arisha"):
-            project_agent_page.click_on_agent_project('arisha')
+            project_agent_page.click_on_project('arisha')
 
         with allure.step("Кликаем на кнопку All units"):
-            project_agent_page.click_on_all_units_button('arisha')
+            project_agent_page.click_on_all_units_button()
 
         with allure.step("Кликаем на доступный апарт"):
             project_agent_page.click_on_avialable_apartment()
@@ -44,4 +44,4 @@ def test_download_pdf_on_agent_route(project_agent_page):
         # Очищаем скачанный файл в любом случае (успех или ошибка)
         if downloaded_file_path:
             with allure.step("Удаляем скачанный PDF файл"):
-                project_agent_page.cleanup_after_test()
+                project_agent_page.cleanup_pdf_after_test()
