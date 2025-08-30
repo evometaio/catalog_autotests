@@ -20,7 +20,19 @@ class ProjectPage(MapPage):
         self.open()
         self.wait_for_page_load()
 
-    def click_on_agent_project(self, project_name: str):
+    def open_client_page(self):
+        """Открыть страницу проекта (клиент роут)."""
+        self.open()
+        self.wait_for_page_load()
+
+    def fill_in_the_callback_form_on_project_client_page(self):
+        """Заполнить поля формы Callback."""
+        self.expect_visible(self.project_locators.ClientPage.CALLBACK_FORM_BUTTON)
+        self.click(self.project_locators.ClientPage.CALLBACK_FORM_BUTTON)
+
+
+
+    def click_on_project(self, project_name: str):
         """Кликнуть на проект и затем на кнопку Explore Project."""
         self.wait_for_map_and_projects_loaded()
         # Сначала кликаем на проект (используем метод из MapPage)
@@ -32,7 +44,7 @@ class ProjectPage(MapPage):
         self.wait_for_page_load()
 
 
-    def click_on_all_units_button(self, project_name: str = "arisha"):
+    def click_on_all_units_button(self):
         """Кликнуть на кнопку All units."""
         self.expect_visible(self.project_locators.ALL_UNITS_BUTTON)
         self.click(self.project_locators.ALL_UNITS_BUTTON)
@@ -46,8 +58,8 @@ class ProjectPage(MapPage):
 
     def click_on_sales_offer_button(self):
         """Кликнуть на кнопку Sales Offer."""
-        self.expect_visible(self.project_locators.SALES_OFFER_BUTTON)
-        self.click(self.project_locators.SALES_OFFER_BUTTON)
+        self.expect_visible(self.project_locators.AgentPage.SALES_OFFER_BUTTON)
+        self.click(self.project_locators.AgentPage.SALES_OFFER_BUTTON)
 
     def download_pdf_and_verify(self) -> tuple[bool, str]:
         """
@@ -64,8 +76,8 @@ class ProjectPage(MapPage):
             # Начинаем скачивание
             with self.page.expect_download() as download_info:
                 # Кликаем по кнопке Download PDF
-                self.expect_visible(self.project_locators.DOWNLOAD_PDF_BUTTON)
-                self.click(self.project_locators.DOWNLOAD_PDF_BUTTON)
+                self.expect_visible(self.project_locators.AgentPage.DOWNLOAD_PDF_BUTTON)
+                self.click(self.project_locators.AgentPage.DOWNLOAD_PDF_BUTTON)
 
             # Получаем объект скачивания
             download = download_info.value
@@ -91,6 +103,6 @@ class ProjectPage(MapPage):
         except Exception as e:
             return False, ""
 
-    def cleanup_after_test(self):
+    def cleanup_pdf_after_test(self):
         """Очистка через системную команду."""
         os.system("rm -rf temp")
