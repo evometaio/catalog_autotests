@@ -26,7 +26,7 @@ setup: ## Настройка проекта
 
 # Основные команды тестирования
 test-dev: ## Запустить все тесты на DEV
-	@echo "$(GREEN)🧪 Запуск всех тестов...$(NC)"
+	@echo "$(GREEN)🧪 Запуск всех тестов на DEV...$(NC)"
 	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
 
 test-head-dev: ## Запустить все UI тесты в head режиме на DEV
@@ -34,11 +34,11 @@ test-head-dev: ## Запустить все UI тесты в head режиме �
 	HEADLESS=false TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --alluredir=reports/allure-results || true
 
 test-prod: ## Запустить все тесты на PROD
-	@echo "$(GREEN)🧪 Запуск всех тестов...$(NC)"
+	@echo "$(GREEN)🧪 Запуск всех тестов на PROD...$(NC)"
 	$(PYTEST) -sv --alluredir=reports/allure-results || true
 
 test-head-prod: ## Запустить все UI тесты в head режиме
-	@echo "$(GREEN)👁️ Запуск UI тестов в head режиме...$(NC)"
+	@echo "$(GREEN)👁️ Запуск UI тестов в head режиме на PROD...$(NC)"
 	HEADLESS=false $(PYTEST) tests/ui/ -sv --alluredir=reports/allure-results || true
 
 test-ui: ## Запустить все UI тесты
@@ -67,8 +67,8 @@ regress-dev: ## Полное регрессионное тестирование
 	@echo "$(GREEN)🚀 Запуск полного регрессионного тестирования на DEV...$(NC)"
 	@echo "$(YELLOW)🖥️ Тестирование в Chromium...$(NC)"
 	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
-#	@echo "$(YELLOW)🖥️ Тестирование в Firefox...$(NC)"
-#	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=firefox --alluredir=reports/allure-results || true
+	@echo "$(YELLOW)🖥️ Тестирование в Firefox...$(NC)"
+	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=firefox --alluredir=reports/allure-results || true
 	@echo "$(YELLOW)🖥️ Тестирование в WebKit...$(NC)"
 	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=webkit --alluredir=reports/allure-results || true
 	@echo "$(GREEN)✅ Регрессионное тестирование на DEV завершено!$(NC)"
@@ -91,3 +91,10 @@ clean: ## Очистить временные файлы
 	rm -rf reports/ logs/ .pytest_cache/ __pycache__/
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+
+# Форматирование кода
+format: ## Отформатировать весь код (Black + isort)
+	@echo "$(GREEN)🎨 Форматирование кода...$(NC)"
+	black .
+	isort .
+	@echo "$(GREEN)✅ Форматирование завершено!$(NC)"
