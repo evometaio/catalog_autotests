@@ -43,7 +43,7 @@ class BasePage:
             # Затем ждем появления хотя бы одного проекта
             # Используем более надежный локатор для ожидания проектов
             self.page.wait_for_selector(
-                'div[aria-label*="Elire"], div[aria-label*="ELIRE"], div[aria-label*="Arisha"], div[aria-label*="ARISHA"], div[aria-label*="Cubix"], div[aria-label*="CUBIX"]',
+                'div[aria-label*="Elire"], div[aria-label*="ELIRE"], div[aria-label*="Arisha"], div[aria-label*="ARISHA"], div[aria-label*="Cubix"], div[aria-label*="CUBIX"], div[aria-label*="Peylaa"], div[aria-label*="Peylaa"], div[aria-label*="Tranquil"]',
                 state="visible",
                 timeout=30000,
             )
