@@ -1,19 +1,22 @@
 import os
 import time
 
-from locators.map_locators import MapLocators
-from locators.project_locators import ProjectLocators
 from playwright.sync_api import Page
+
+from locators.map_locators import MapLocators
+from locators.project_locators import QubePageLocators
 from pages.map_page import MapPage
+
 
 class ProjectPage(MapPage):
     """
     Класс для работы со страницей проекта (агенсткий роут)
     """
+
     def __init__(self, page: Page, base_url: str = None):
         super().__init__(page, base_url)
         self.map_locators = MapLocators()
-        self.project_locators = ProjectLocators()
+        self.project_locators = QubePageLocators()
 
     def open_agent_page(self):
         """Открыть страницу проекта (агент роут)."""
@@ -30,8 +33,6 @@ class ProjectPage(MapPage):
         self.expect_visible(self.project_locators.ClientPage.CALLBACK_FORM_BUTTON)
         self.click(self.project_locators.ClientPage.CALLBACK_FORM_BUTTON)
 
-
-
     def click_on_project(self, project_name: str):
         """Кликнуть на проект и затем на кнопку Explore Project."""
         self.wait_for_map_and_projects_loaded()
@@ -42,7 +43,6 @@ class ProjectPage(MapPage):
         # Затем кликаем на кнопку Explore Project
         self.click(self.map_locators.EXPLORE_PROJECT_BUTTON)
         self.wait_for_page_load()
-
 
     def click_on_all_units_button(self):
         """Кликнуть на кнопку All units."""
@@ -87,7 +87,7 @@ class ProjectPage(MapPage):
                 return False, ""
 
             # Проверяем что это PDF
-            if not download.suggested_filename.lower().endswith('.pdf'):
+            if not download.suggested_filename.lower().endswith(".pdf"):
                 return False, ""
 
             # Сохраняем файл в нашу директорию
