@@ -53,33 +53,3 @@ class TestQubeMapProjects:
             # Возвращаемся на карту
             qube_map_page.return_to_map_from_project()
             qube_map_page.verify_returned_to_map()
-
-    @allure.story("Проверка всех проектов на карте QUBE")
-    @pytest.mark.smoke
-    @allure.severity(allure.severity_level.CRITICAL)
-    def test_qube_map_projects(self, qube_map_page):
-        """Тест проверки всех проектов на карте Qube."""
-        with allure.step("Открываем карту Qube"):
-            qube_map_page.open_map_page()
-
-        with allure.step("Проверяем загрузку карты"):
-            qube_map_page.check_map_loaded()
-
-        with allure.step("Проверяем все 3 проекта Qube"):
-            qube_map_page.check_all_projects_visible()
-
-        with allure.step("Проверяем каждый проект по отдельности"):
-            # Проверяем Arisha
-            with allure.step("Кликаем на проект Arisha"):
-                qube_map_page.click_project("arisha")
-                qube_map_page.check_project_info_visible("arisha")
-
-            # Проверяем Elire
-            with allure.step("Кликаем на проект Elire"):
-                qube_map_page.click_project("elire")
-                qube_map_page.check_project_info_visible("elire")
-
-            # Проверяем Cubix
-            with allure.step("Кликаем на проект Cubix"):
-                qube_map_page.click_project("cubix")
-                qube_map_page.check_project_info_visible("cubix")

@@ -32,6 +32,10 @@ env:
   DEV_CLIENT_BASE_URL: "https://qube-dev-next.evometa.io/client/map"
   AGENT_PROD_BASE_URL: "https://virtualtours.qbd.ae/agent/map"
   CLIENT_PROD_BASE_URL: "https://virtualtours.qbd.ae/client/map"
+  CAPSTONE_DEV_URL: "https://capstone-dev.evometa.io"
+  CAPSTONE_PROD_URL: "https://3dtours.peylaa-phuket.com"
+  WELLCUBE_DEV_URL: "https://catalog-dev.evometa.io/wellcube"
+  WELLCUBE_PROD_URL: "https://catalog.evometa.io/wellcube"
 
 jobs:
   ubuntu-firefox:

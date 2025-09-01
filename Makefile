@@ -55,8 +55,8 @@ regress-prod: ## Полное регрессионное тестировани�
 	@echo "$(GREEN)🚀 Запуск полного регрессионного тестирования на PROD...$(NC)"
 	@echo "$(YELLOW)🖥️ Тестирование в Chromium...$(NC)"
 	TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
-#	@echo "$(YELLOW)🖥️ Тестирование в Firefox...$(NC)"
-#	HEADLESS=false $(PYTEST) tests/ui/ -sv --browser=firefox --alluredir=reports/allure-results || true
+	@echo "$(YELLOW)🖥️ Тестирование в Firefox...$(NC)"
+	TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/ -sv --browser=firefox --alluredir=reports/allure-results || true
 	@echo "$(YELLOW)🖥️ Тестирование в WebKit...$(NC)"
 	TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/ -sv --browser=webkit --alluredir=reports/allure-results || true
 	@echo "$(GREEN)✅ Регрессионное тестирование на PROD завершено!$(NC)"
