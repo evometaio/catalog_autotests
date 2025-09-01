@@ -69,7 +69,7 @@ jobs:
           # Test Environment Configuration
           environment = $ENV
           url = $URL
-          OS = ubuntu-latest
+          OS = ${{ runner.os }}
           EOF
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
@@ -78,7 +78,7 @@ jobs:
         run: pytest --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
-          OS_NAME: "Ubuntu Linux"
+          OS_NAME: ${{ runner.os }}
           OS_PLATFORM: "ubuntu-latest"
 
       - uses: actions/upload-artifact@v4
@@ -120,7 +120,7 @@ jobs:
           # Test Environment Configuration
           environment = $env
           url = $url
-          OS = windows-latest
+          OS = ${{ runner.os }}
           "@ | Out-File -FilePath "${{ env.ALLURE_RESULTS_DIR }}/environment.properties" -Encoding UTF8
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
@@ -130,7 +130,7 @@ jobs:
         run: pytest --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
-          OS_NAME: "Windows"
+          OS_NAME: ${{ runner.os }}
           OS_PLATFORM: "windows-latest"
 
       - uses: actions/upload-artifact@v4
@@ -171,7 +171,7 @@ jobs:
           # Test Environment Configuration
           environment = $ENV
           url = $URL
-          OS = macos-latest
+          OS = ${{ runner.os }}
           EOF
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
@@ -180,7 +180,7 @@ jobs:
         run: pytest --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
-          OS_NAME: "macOS"
+          OS_NAME: ${{ runner.os }}
           OS_PLATFORM: "macos-latest"
 
       - uses: actions/upload-artifact@v4
