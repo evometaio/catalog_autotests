@@ -12,7 +12,6 @@ def test_capstone_map_page(capstone_map_page):
     with allure.step("Открываем карту проекта Capstone"):
         capstone_map_page.open_map_page()
 
-
     with allure.step("Проверяем загрузку карты"):
         # capstone_map_page.check_map_loaded()
         pass

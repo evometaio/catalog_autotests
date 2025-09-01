@@ -38,6 +38,13 @@ def _create_environment_properties():
 def setup_environment():
     """Фикстура для настройки окружения перед запуском тестов"""
     _create_environment_properties()
+
+    os_name = os.getenv("OS_NAME", "Unknown")
+    os_platform = os.getenv("OS_PLATFORM", "Unknown")
+
+    allure.dynamic.parameter("Operating System", os_name)
+    allure.dynamic.parameter("Platform", os_platform)
+
     return _get_urls_by_environment()
 
 
