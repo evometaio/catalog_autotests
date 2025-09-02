@@ -7,6 +7,11 @@ class ProjectLocators:
     AVIALABLE_APART = (
         "//span[@class='ant-menu-title-content' and text()='APARTMENT 104']"
     )
+    
+    # Универсальные локаторы для поиска апартаментов
+    ALL_APARTMENT_TITLES = "//h3[contains(@class, '_title_7sijn_9') and contains(text(), 'APT.')]"
+    APARTMENT_LOCK_ICON = "//span[@role='img' and @aria-label='lock' and contains(@class, 'anticon-lock')]"
+    AVAILABLE_APARTMENT_TITLE = "//h3[contains(@class, '_title_7sijn_9') and contains(text(), 'APT.') and not(.//span[@role='img' and @aria-label='lock'])]"
 
 
 class QubePageLocators(ProjectLocators):
@@ -40,6 +45,9 @@ class QubePageLocators(ProjectLocators):
         MAP_LOCATOR = 'div[aria-label*="Elire"], div[aria-label*="ELIRE"]'
         PROJECT_NAME = "elire"
         PROJECT_DISPLAY_NAME = "Elire"
+        RESIDENCES_BUTTON = "//span[@class='ant-menu-title-content' and text()='Residences']"
+        REQUEST_VIEWING_BUTTON = "(//button[.//span[text()='REQUEST VIEWING']])[6]"
+        SUBMIT_BUTTON_FOR_REQUEST_VIEWING = "(//button[.//span[text()='SUBMIT']])[1]"
 
     class Cubix:
         """Локаторы для проекта Cubix."""

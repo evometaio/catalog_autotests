@@ -24,8 +24,9 @@ def test_arisha_download_pdf_on_agent_page(arisha_agent_page):
         with allure.step("Кликаем на кнопку All units"):
             arisha_agent_page.click_on_all_units_button()
 
-        with allure.step("Кликаем на доступный апарт"):
-            arisha_agent_page.click_on_avialable_apartment()
+        with allure.step("Ищем и кликаем на первый доступный апартамент"):
+            selected_apartment = arisha_agent_page.find_and_click_available_apartment()
+            print(f"Выбран апартамент: {selected_apartment}")
 
         with allure.step("Кликаем на кнопку Sales Offer и скачиваем PDF"):
             arisha_agent_page.click_on_sales_offer_button()

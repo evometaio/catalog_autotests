@@ -5,7 +5,6 @@ import pytest
 @allure.feature("Qube - Проект Cubix")
 @allure.story("Агентский роут - Загрузка PDF")
 @pytest.mark.smoke
-@pytest.mark.skip(reason="Не работает")
 @pytest.mark.regression
 @pytest.mark.ui
 def test_cubix_download_pdf_on_agent_page(cubix_agent_page):
@@ -22,8 +21,9 @@ def test_cubix_download_pdf_on_agent_page(cubix_agent_page):
         with allure.step("Кликаем на проект Cubix"):
             cubix_agent_page.click_on_project("cubix")
 
-        with allure.step("Кликаем на доступный апарт"):
-            cubix_agent_page.click_on_avialable_apart_on_cubix()
+        with allure.step("Ищем и кликаем на первый доступный апартамент"):
+            selected_apartment = cubix_agent_page.find_and_click_available_apartment()
+            print(f"Выбран апартамент: {selected_apartment}")
 
         with allure.step("Кликаем на кнопку Sales Offer и скачиваем PDF"):
             cubix_agent_page.click_on_sales_offer_button()

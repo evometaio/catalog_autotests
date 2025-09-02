@@ -4,8 +4,8 @@ import pytest
 
 @allure.feature("Qube - Проект Elire")
 @allure.story("Агентский роут - Загрузка PDF")
-@pytest.mark.skip(reason="Другая логика")
 @pytest.mark.smoke
+@pytest.mark.skip(reason="Нет такого функционала")
 @pytest.mark.regression
 @pytest.mark.ui
 def test_elire_download_pdf_on_agent_page(elire_agent_page):
@@ -22,11 +22,12 @@ def test_elire_download_pdf_on_agent_page(elire_agent_page):
         with allure.step("Кликаем на проект Elire"):
             elire_agent_page.click_on_project("elire")
 
-        with allure.step("Кликаем на кнопку All units"):
+        with allure.step("Кликаем на главное здание"):
             elire_agent_page.click_on_all_units_button()
 
-        with allure.step("Кликаем на доступный апарт"):
-            elire_agent_page.click_on_avialable_apartment()
+        with allure.step("Ищем и кликаем на первый доступный апартамент"):
+            selected_apartment = elire_agent_page.find_and_click_available_apartment()
+            print(f"Выбран апартамент: {selected_apartment}")
 
         with allure.step("Кликаем на кнопку Sales Offer и скачиваем PDF"):
             elire_agent_page.click_on_sales_offer_button()
