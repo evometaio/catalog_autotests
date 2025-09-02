@@ -1,5 +1,4 @@
 from playwright.sync_api import Locator, Page, expect
-
 from locators.map_locators import MapLocators
 
 

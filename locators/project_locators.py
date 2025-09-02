@@ -47,6 +47,7 @@ class QubePageLocators(ProjectLocators):
         MAP_LOCATOR = 'div[aria-label*="Cubix"], div[aria-label*="CUBIX"]'
         PROJECT_NAME = "cubix"
         PROJECT_DISPLAY_NAME = "Cubix"
+        AVIALABLE_APART_CARD = "(//h3[contains(text(), 'APT. 104')])[1]"
 
     # Список всех проектов Qube
     ALL_PROJECTS = [Arisha, Elire, Cubix]

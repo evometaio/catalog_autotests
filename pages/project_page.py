@@ -1,5 +1,4 @@
 import os
-import time
 
 from playwright.sync_api import Page
 
@@ -21,12 +20,10 @@ class ProjectPage(MapPage):
     def open_agent_page(self):
         """Открыть страницу проекта (агент роут)."""
         self.open()
-        self.wait_for_page_load()
 
     def open_client_page(self):
         """Открыть страницу проекта (клиент роут)."""
         self.open()
-        self.wait_for_page_load()
 
     def fill_in_the_callback_form_on_project_client_page(self):
         """Заполнить поля формы Callback."""
@@ -55,6 +52,10 @@ class ProjectPage(MapPage):
         self.click(self.project_locators.AVIALABLE_APART_CARD)
         apart_text = self.get_text(self.project_locators.AVIALABLE_APART)
         assert apart_text == "APARTMENT 104"
+
+    def click_on_avialable_apart_on_cubix(self):
+        self.expect_visible(self.project_locators.Cubix.AVIALABLE_APART_CARD)
+        self.click(self.project_locators.Cubix.AVIALABLE_APART_CARD)
 
     def click_on_sales_offer_button(self):
         """Кликнуть на кнопку Sales Offer."""

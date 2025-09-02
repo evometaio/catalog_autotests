@@ -19,7 +19,6 @@ class MapPage(BasePage):
     def open_map_page(self):
         """Открыть страницу карты."""
         self.open()
-        self.wait_for_page_load()
 
         # Убеждаемся, что окно имеет правильный размер
         self.ensure_proper_window_size()
