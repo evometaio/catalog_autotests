@@ -5,8 +5,10 @@ import allure
 import pytest
 from playwright.sync_api import Page
 
-from pages.map_page import MapPage
+from pages.base_page import BasePage
 from pages.project_page import ProjectPage
+from pages.agent_page import AgentPage
+from pages.client_page import ClientPage
 
 
 def _create_environment_properties():
@@ -91,19 +93,14 @@ def browser_type_launch_args(browser_type):
     """Аргументы запуска браузера с учетом типа браузера."""
     headless = os.getenv("HEADLESS", "true").lower() == "true"
 
-    # Специфичные аргументы для Chromium
+    # Единые аргументы для всех браузеров
     if browser_type.name == "chromium":
         args = [
-            "--window-size=1920,1080",
             "--no-sandbox",
             "--disable-dev-shm-usage",
-            "--disable-gpu",
-            "--start-maximized",
         ]
-    # Специфичные аргументы для Firefox
     elif browser_type.name == "firefox":
-        args = ["--width=1920", "--height=1080"]
-    # Специфичные аргументы для WebKit - только базовые, без дополнительных флагов
+        args = []
     elif browser_type.name == "webkit":
         args = []
     else:
@@ -150,82 +147,46 @@ def fake():
     return Faker(["ru_RU", "en_US"])
 
 
-# Фикстуры для карты Qube (общая)
+# Фикстуры по типам страниц
 @pytest.fixture
-def qube_map_page(page: Page, base_url):
-    """Фикстура для карты Qube (содержит arisha, elire, cubix)"""
-    return MapPage(page, base_url)
-
-
-# Фикстуры для проекта Arisha
-@pytest.fixture
-def arisha_map_page(page: Page, base_url):
-    """Фикстура для карты проекта Arisha"""
-    return MapPage(page, base_url)
-
-
-@pytest.fixture
-def arisha_agent_page(page: Page, agent_url):
-    """Фикстура для агентской страницы проекта Arisha"""
-    return ProjectPage(page, agent_url)
-
-
-@pytest.fixture
-def arisha_client_page(page: Page, client_url):
-    """Фикстура для клиентской страницы проекта Arisha"""
-    return ProjectPage(page, client_url)
-
-
-# Фикстуры для проекта Elire
-@pytest.fixture
-def elire_map_page(page: Page, base_url):
-    """Фикстура для карты проекта Elire"""
-    return MapPage(page, base_url)
+def main_page(page: Page, request):
+    """Фикстура для главных страниц (карт) всех проектов."""
+    # Определяем проект из имени теста
+    project_name = "qube"  # по умолчанию
+    if hasattr(request, 'fixturename'):
+        fixture_name = request.fixturename
+        if 'capstone' in fixture_name:
+            project_name = "capstone"
+        elif 'wellcube' in fixture_name:
+            project_name = "wellcube"
+    
+    # Получаем URL для главной страницы
+    urls = _get_urls_by_environment()
+    
+    if project_name == "capstone":
+        url = urls["capstone_map"]
+    elif project_name == "wellcube":
+        url = urls["wellcube_map"]
+    else:  # qube
+        url = urls["map"]
+    
+    return BasePage(page, url)
 
 
 @pytest.fixture
-def elire_agent_page(page: Page, agent_url):
-    """Фикстура для агентской страницы проекта Elire"""
-    return ProjectPage(page, agent_url)
+def agent_page(page: Page):
+    """Фикстура для агентских страниц всех проектов."""
+    urls = _get_urls_by_environment()
+    url = urls["agent"]
+    return AgentPage(page, url)
 
 
 @pytest.fixture
-def elire_client_page(page: Page, client_url):
-    """Фикстура для клиентской страницы проекта Elire"""
-    return ProjectPage(page, client_url)
-
-
-# Фикстуры для проекта Cubix
-@pytest.fixture
-def cubix_map_page(page: Page, base_url):
-    """Фикстура для карты проекта Cubix"""
-    return MapPage(page, base_url)
-
-
-@pytest.fixture
-def cubix_agent_page(page: Page, agent_url):
-    """Фикстура для агентской страницы проекта Cubix"""
-    return ProjectPage(page, agent_url)
-
-
-@pytest.fixture
-def cubix_client_page(page: Page, client_url):
-    """Фикстура для клиентской страницы проекта Cubix"""
-    return ProjectPage(page, client_url)
-
-
-# Фикстуры для проекта Capstone (Peylaa)
-@pytest.fixture
-def capstone_map_page(page: Page, capstone_map_url):
-    """Фикстура для карты проекта Capstone"""
-    return MapPage(page, capstone_map_url)
-
-
-# Фикстуры для проекта Wellcube (Tranquil)
-@pytest.fixture
-def wellcube_map_page(page: Page, wellcube_map_url):
-    """Фикстура для карты проекта Wellcube (Tranquil)"""
-    return MapPage(page, wellcube_map_url)
+def client_page(page: Page):
+    """Фикстура для клиентских страниц всех проектов."""
+    urls = _get_urls_by_environment()
+    url = urls["client"]
+    return ClientPage(page, url)
 
 
 # Хук для обработки результатов тестов
