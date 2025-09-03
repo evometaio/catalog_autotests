@@ -51,6 +51,19 @@ test-api: ## Запустить все API тесты
 
 
 # Регрессионное тестирование
+regress-dev: ## Полное регрессионное тестирование на dev (все браузеры)
+	@echo "$(GREEN)🚀 Запуск полного регрессионного тестирования на DEV...$(NC)"
+	@echo "$(YELLOW)🖥️ Тестирование в Chromium...$(NC)"
+	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
+	@echo "$(YELLOW)🖥️ Тестирование в Firefox...$(NC)"
+	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=firefox --alluredir=reports/allure-results || true
+	@echo "$(YELLOW)🖥️ Тестирование в WebKit...$(NC)"
+	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=webkit --alluredir=reports/allure-results || true
+	@echo "$(GREEN)✅ Регрессионное тестирование на DEV завершено!$(NC)"
+	@echo "$(YELLOW)📊 Генерация итогового отчета...$(NC)"
+	$(ALLURE) generate reports/allure-results -o reports/allure-report --clean || true
+
+
 regress-prod: ## Полное регрессионное тестирование на prod (все браузеры)
 	@echo "$(GREEN)🚀 Запуск полного регрессионного тестирования на PROD...$(NC)"
 	@echo "$(YELLOW)🖥️ Тестирование в Chromium...$(NC)"
@@ -63,17 +76,6 @@ regress-prod: ## Полное регрессионное тестировани�
 	@echo "$(YELLOW)📊 Генерация итогового отчета...$(NC)"
 	$(ALLURE) generate reports/allure-results -o reports/allure-report --clean || true
 
-regress-dev: ## Полное регрессионное тестирование на dev (все браузеры)
-	@echo "$(GREEN)🚀 Запуск полного регрессионного тестирования на DEV...$(NC)"
-	@echo "$(YELLOW)🖥️ Тестирование в Chromium...$(NC)"
-	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
-	@echo "$(YELLOW)🖥️ Тестирование в Firefox...$(NC)"
-	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=firefox --alluredir=reports/allure-results || true
-	@echo "$(YELLOW)🖥️ Тестирование в WebKit...$(NC)"
-	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=webkit --alluredir=reports/allure-results || true
-	@echo "$(GREEN)✅ Регрессионное тестирование на DEV завершено!$(NC)"
-	@echo "$(YELLOW)📊 Генерация итогового отчета...$(NC)"
-	$(ALLURE) generate reports/allure-results -o reports/allure-report --clean || true
 
 # Отчеты
 report: ## Сгенерировать отчет
@@ -91,6 +93,9 @@ clean: ## Очистить временные файлы
 	rm -rf reports/ logs/ .pytest_cache/ __pycache__/
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	find . -type d -name "reports" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "allure-results" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "screenshots" -exec rm -rf {} + 2>/dev/null || true
 
 # Форматирование кода
 format: ## Отформатировать весь код (Black + isort)
