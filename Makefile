@@ -93,6 +93,9 @@ clean: ## Очистить временные файлы
 	rm -rf reports/ logs/ .pytest_cache/ __pycache__/
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	find . -type d -name "reports" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "allure-results" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "screenshots" -exec rm -rf {} + 2>/dev/null || true
 
 # Форматирование кода
 format: ## Отформатировать весь код (Black + isort)
