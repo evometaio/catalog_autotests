@@ -1,4 +1,3 @@
-import os
 from playwright.sync_api import Locator, Page, expect
 
 from locators.map_locators import MapLocators
@@ -18,10 +17,12 @@ class BasePage:
         self.locators = MapLocators()
         self.page = page
         self.base_url = base_url
-        
+
         # URL-ы для навигации (если base_url содержит /map)
         if base_url and "/map" in base_url:
-            self.project_url_template = base_url.replace("/map", "/project/{project}/area")
+            self.project_url_template = base_url.replace(
+                "/map", "/project/{project}/area"
+            )
             self.map_url = base_url
 
     def open(self, path: str = "", route_type: str = None):
@@ -36,7 +37,7 @@ class BasePage:
         )
         self.page.goto(url)
         self.wait_for_page_load()
-        
+
         # Принудительно сбрасываем масштаб страницы
         self.page.evaluate("document.body.style.zoom = '1'")
         self.page.evaluate("document.documentElement.style.zoom = '1'")
@@ -45,16 +46,21 @@ class BasePage:
         assert (
             url in current_url
         ), f"Не удалось открыть страницу. Ожидалось: {url}, Получено: {current_url}"
-        
+
         # Проверяем тип роута, если указан
         if route_type:
             if route_type == "client":
-                assert "client" in current_url, f"Не открылась клиентская страница. URL: {current_url}"
+                assert (
+                    "client" in current_url
+                ), f"Не открылась клиентская страница. URL: {current_url}"
             elif route_type == "agent":
-                assert "agent" in current_url, f"Не открылась агентская страница. URL: {current_url}"
+                assert (
+                    "agent" in current_url
+                ), f"Не открылась агентская страница. URL: {current_url}"
             elif route_type == "map":
-                assert "map" in current_url, f"Не открылась страница карты. URL: {current_url}"
-
+                assert (
+                    "map" in current_url
+                ), f"Не открылась страница карты. URL: {current_url}"
 
     def wait_for_element(self, selector: str, timeout: int = None) -> Locator:
         """Ожидать появления элемента."""
@@ -72,10 +78,11 @@ class BasePage:
         """Ожидать полной загрузки карты и проектов."""
         try:
             # Сначала ждем загрузки контейнера карты
-            self.wait_for_element(self.locators.MAP_CONTAINER, timeout=self.MAP_LOAD_TIMEOUT)
+            self.wait_for_element(
+                self.locators.MAP_CONTAINER, timeout=self.MAP_LOAD_TIMEOUT
+            )
 
             # Затем ждем появления хотя бы одного проекта
-            # Используем локатор из MapLocators вместо хардкода
             self.page.wait_for_selector(
                 self.locators.ALL_PROJECTS_SELECTOR,
                 state="visible",
@@ -138,35 +145,48 @@ class BasePage:
 
     # Методы для работы с картой (из MapPage)
 
+    def click_on_project(self, project_name: str):
+        """Кликнуть на проект и затем на кнопку Explore Project."""
+        self.wait_for_map_and_projects_loaded()
+        # Сначала кликаем на проект (используем метод из BasePage)
+        self.click_project(project_name)
+        self.expect_visible(self.map_locators.PROJECT_INFO_WINDOW)
+        self.expect_visible(self.map_locators.EXPLORE_PROJECT_BUTTON)
 
+        # Затем кликаем на кнопку Explore Project
+        self.click(self.map_locators.EXPLORE_PROJECT_BUTTON)
+
+        # Ждем изменения URL (универсально для всех типов страниц)
+        self.page.wait_for_url("**/project/**", timeout=10000)
+        # Простое ожидание загрузки DOM
+        self.page.wait_for_load_state("domcontentloaded", timeout=10000)
 
     def check_map_loaded(self):
         """Проверить загрузку карты."""
         self.expect_visible(self.locators.MAP_CONTAINER)
 
-
     def click_project(self, project_name: str):
         """Кликнуть по проекту на карте по названию."""
         # Получаем правильный локатор для проекта
         selector = self._get_project_selector(project_name)
-        
+
         # Ждем появления проекта
         self.page.wait_for_selector(selector, state="visible", timeout=10000)
         self.click(selector)
-    
+
     def _get_project_selector(self, project_name: str) -> str:
         """Получить селектор для проекта по названию."""
         project_name_lower = project_name.lower()
-        
+
         # Маппинг проектов на их селекторы
         project_selectors = {
             "elire": 'div[aria-label*="Elire"], div[aria-label*="ELIRE"]',
             "arisha": 'div[aria-label*="ARISHA TERACCES"], div[aria-label*="Arisha"], div[aria-label*="ARISHA"]',
             "cubix": 'div[aria-label*="CUBIX RESIDENCE"], div[aria-label*="Cubix"], div[aria-label*="CUBIX"]',
             "peylaa": 'li:has-text("peylaa"), span:has-text("Peylaa"), div[aria-label*="Peylaa"], div[aria-label*="PEYLAA"]',
-            "tranquil": 'li:has-text("tranquil"), span:has-text("Tranquil"), div[aria-label*="Tranquil"], div[aria-label*="TRANQUIL"]'
+            "tranquil": 'li:has-text("tranquil"), span:has-text("Tranquil"), div[aria-label*="Tranquil"], div[aria-label*="TRANQUIL"]',
         }
-        
+
         if project_name_lower in project_selectors:
             return project_selectors[project_name_lower]
         else:

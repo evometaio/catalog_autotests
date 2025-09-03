@@ -1,5 +1,6 @@
 import allure
 import pytest
+
 from tests.ui.qube.arisha.test_arisha_client_route import _test_client_page_generic
 
 
@@ -21,7 +22,7 @@ def test_cubix_send_callback_form_on_client_page(client_page):
 @pytest.mark.regression
 @pytest.mark.ui
 def test_cubix_request_viewing_form_with_mock(client_page, fake):
-    """Тест формы Register Interest с замоканным API для проекта Cubix."""
+    """Тест формы Register Interest проекта Cubix."""
 
     with allure.step("Открываем клиентскую страницу проекта Cubix"):
         client_page.open(route_type="client")

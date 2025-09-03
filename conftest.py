@@ -5,10 +5,10 @@ import allure
 import pytest
 from playwright.sync_api import Page
 
-from pages.base_page import BasePage
-from pages.project_page import ProjectPage
 from pages.agent_page import AgentPage
+from pages.base_page import BasePage
 from pages.client_page import ClientPage
+from pages.project_page import ProjectPage
 
 
 def _create_environment_properties():
@@ -49,12 +49,12 @@ def setup_test_parameters(page: Page, request):
     # Устанавливаем параметры OS для Allure
     os_name = os.getenv("OS_NAME", "Unknown")
     os_platform = os.getenv("OS_PLATFORM", "Unknown")
-    
+
     allure.dynamic.parameter("Operating System", os_name)
     allure.dynamic.parameter("Platform", os_platform)
-    
+
     yield
-    
+
     if request.node.rep_call.failed:
         # Создаем директорию для скриншотов если её нет
         os.makedirs("reports/screenshots", exist_ok=True)
@@ -153,23 +153,23 @@ def main_page(page: Page, request):
     """Фикстура для главных страниц (карт) всех проектов."""
     # Определяем проект из имени теста
     project_name = "qube"  # по умолчанию
-    if hasattr(request, 'fixturename'):
+    if hasattr(request, "fixturename"):
         fixture_name = request.fixturename
-        if 'capstone' in fixture_name:
+        if "capstone" in fixture_name:
             project_name = "capstone"
-        elif 'wellcube' in fixture_name:
+        elif "wellcube" in fixture_name:
             project_name = "wellcube"
-    
+
     # Получаем URL для главной страницы
     urls = _get_urls_by_environment()
-    
+
     if project_name == "capstone":
         url = urls["capstone_map"]
     elif project_name == "wellcube":
         url = urls["wellcube_map"]
     else:  # qube
         url = urls["map"]
-    
+
     return BasePage(page, url)
 
 

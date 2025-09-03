@@ -5,22 +5,20 @@ class ProjectLocators:
     ALL_UNITS_BUTTON = "//div[contains(@style, 'All units')]//button"
 
     # Универсальные локаторы для поиска апартаментов
-    ALL_APARTMENT_TITLES = (
-        "//span[contains(text(), 'VIEW APARTMENT')]"
-    )
+    ALL_APARTMENT_TITLES = "//span[contains(text(), 'VIEW APARTMENT')]"
 
 
 class QubePageLocators(ProjectLocators):
     """Локаторы для страниц проектов Qube (arisha, elire, cubix)."""
 
-    # Агентская страница - специфичные для Qube
+    # Агентская страница - для Qube
     class AgentPage:
         """Локаторы для агентских страниц проектов Qube."""
 
         SALES_OFFER_BUTTON = "//button[.//span[text() = 'Sales Offer']]"
         DOWNLOAD_PDF_BUTTON = "//button[.//span[text() = 'Download PDF']]"
 
-    # Клиентская страница - специфичные для Qube
+    # Клиентская страница -  для Qube
     class ClientPage:
         """Локаторы для клиентских страниц проектов Qube."""
 
@@ -41,13 +39,11 @@ class QubePageLocators(ProjectLocators):
         MAP_LOCATOR = 'div[aria-label*="Elire"], div[aria-label*="ELIRE"]'
         PROJECT_NAME = "elire"
         PROJECT_DISPLAY_NAME = "Elire"
-        RESIDENCES_BUTTON = (
-            "//li[@role='menuitem' and .//span[text()='Residences']]"
-        )
+        RESIDENCES_BUTTON = "//li[@role='menuitem' and .//span[text()='Residences']]"
         REQUEST_VIEWING_BUTTON = "(//button[.//span[text()='REQUEST VIEWING']])[6]"
-        SUBMIT_BUTTON_FOR_REQUEST_VIEWING = "(//button[.//span[text()='SUBMIT']])[1]"
+        SUBMIT_BUTTON_FOR_REQUEST_VIEWING = "(//button[.//span[text()='SUBMIT']])[2]"
 
-        # Локаторы для полей формы Request Viewing (используем [2] - вторые поля)
+        # Локаторы для полей формы Request Viewing
         FIRST_NAME_FIELD = "(//input[@id='first_name'])[2]"
         LAST_NAME_FIELD = "(//input[@id='last_name'])[2]"
         PHONE_FIELD = "(//input[@id='phone'])[2]"

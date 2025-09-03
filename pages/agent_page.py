@@ -1,11 +1,9 @@
-"""Page Object для агентских страниц всех проектов."""
-
 import os
-import time
+
+from locators.map_locators import MapLocators
+from locators.project_locators import QubePageLocators
 
 from .base_page import BasePage
-from locators.project_locators import QubePageLocators
-from locators.map_locators import MapLocators
 
 
 class AgentPage(BasePage):
@@ -13,7 +11,7 @@ class AgentPage(BasePage):
 
     def __init__(self, page, url: str):
         """Инициализация AgentPage.
-        
+
         Args:
             page: Playwright page объект
             url: URL агентской страницы
@@ -21,8 +19,6 @@ class AgentPage(BasePage):
         super().__init__(page, url)
         self.project_locators = QubePageLocators()
         self.map_locators = MapLocators()
-
-
 
     def click_on_download_pdf_button(self):
         """Кликает на кнопку скачивания PDF."""
@@ -74,29 +70,13 @@ class AgentPage(BasePage):
         """Очистка через системную команду."""
         os.system("rm -rf temp")
 
-    def click_on_project(self, project_name: str):
-        """Кликнуть на проект и затем на кнопку Explore Project."""
-        self.wait_for_map_and_projects_loaded()
-        # Сначала кликаем на проект (используем метод из BasePage)
-        self.click_project(project_name)
-        self.expect_visible(self.map_locators.PROJECT_INFO_WINDOW)
-        self.expect_visible(self.map_locators.EXPLORE_PROJECT_BUTTON)
-        
-        # Затем кликаем на кнопку Explore Project
-        self.click(self.map_locators.EXPLORE_PROJECT_BUTTON)
-
-        # Ждем изменения URL
-        self.page.wait_for_url("**/area", timeout=10000)
-        self.wait_for_page_load()
-
     def click_on_all_units_button(self):
         """Кликнуть на кнопку All units."""
         self.expect_visible(self.project_locators.ALL_UNITS_BUTTON)
         self.click(self.project_locators.ALL_UNITS_BUTTON)
-        
+
         # Ждем изменения URL на catalog_2d
         self.page.wait_for_url("**/catalog_2d", timeout=10000)
-
 
     def find_and_click_available_apartment(self, project_name: str = None):
         """
@@ -110,8 +90,10 @@ class AgentPage(BasePage):
             str: Название выбранного апартамента
         """
         # Ждем загрузки апартаментов
-        self.page.wait_for_selector(self.project_locators.ALL_APARTMENT_TITLES, state="attached", timeout=10000)
-        
+        self.page.wait_for_selector(
+            self.project_locators.ALL_APARTMENT_TITLES, state="attached", timeout=10000
+        )
+
         # Используем локатор из project_locators.py
         apartment_titles = self.page.locator(self.project_locators.ALL_APARTMENT_TITLES)
         apartment_count = apartment_titles.count()
@@ -142,4 +124,3 @@ class AgentPage(BasePage):
         """Кликнуть на кнопку Sales Offer."""
         self.expect_visible(self.project_locators.AgentPage.SALES_OFFER_BUTTON)
         self.click(self.project_locators.AgentPage.SALES_OFFER_BUTTON)
-

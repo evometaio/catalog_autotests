@@ -2,6 +2,7 @@ import os
 
 import allure
 import pytest
+
 from tests.ui.qube.arisha.test_arisha_client_route import _test_client_page_generic
 
 
@@ -22,7 +23,7 @@ def test_elire_send_callback_form_on_client_page(client_page):
 @pytest.mark.regression
 @pytest.mark.ui
 def test_elire_request_viewing_form(client_page, fake):
-    """Тест формы Request Viewing с замоканным API. Запускается только на DEV окружении."""
+    """Тест формы Request Viewing"""
 
     # Проверяем, что тест запускается только на DEV окружении
     env = os.getenv("TEST_ENVIRONMENT", "prod")

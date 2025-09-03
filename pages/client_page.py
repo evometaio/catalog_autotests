@@ -1,8 +1,7 @@
-"""Page Object для клиентских страниц всех проектов."""
+from locators.map_locators import MapLocators
+from locators.project_locators import QubePageLocators
 
 from .base_page import BasePage
-from locators.project_locators import QubePageLocators
-from locators.map_locators import MapLocators
 
 
 class ClientPage(BasePage):
@@ -10,7 +9,7 @@ class ClientPage(BasePage):
 
     def __init__(self, page, url: str):
         """Инициализация ClientPage.
-        
+
         Args:
             page: Playwright page объект
             url: URL клиентской страницы
@@ -19,37 +18,25 @@ class ClientPage(BasePage):
         self.map_locators = MapLocators()
         self.project_locators = QubePageLocators()
 
-    def click_on_project(self, project_name: str):
-        """Кликнуть на проект и затем на кнопку Explore Project."""
-        self.wait_for_map_and_projects_loaded()
-        # Сначала кликаем на проект (используем метод из BasePage)
-        self.click_project(project_name)
-        self.expect_visible(self.map_locators.PROJECT_INFO_WINDOW)
-        self.expect_visible(self.map_locators.EXPLORE_PROJECT_BUTTON)
-        
-        # Затем кликаем на кнопку Explore Project
-        self.click(self.map_locators.EXPLORE_PROJECT_BUTTON)
-        
-        # Ждем изменения URL
-        self.page.wait_for_url("**/area", timeout=10000)
-        # Простое ожидание загрузки DOM
-        self.page.wait_for_load_state("domcontentloaded", timeout=10000)
-
     def click_on_residences_button_and_request_viewing_form(self):
         """Кликает на кнопку Residences и открывает форму Request Viewing."""
         # Ждем появления кнопки Residences и кликаем
-        residences_button = self.page.locator(self.project_locators.Elire.RESIDENCES_BUTTON).first
+        residences_button = self.page.locator(
+            self.project_locators.Elire.RESIDENCES_BUTTON
+        ).first
         residences_button.wait_for(state="visible", timeout=10000)
         residences_button.click()
-        
+
         # Ждем появления кнопки REQUEST VIEWING и кликаем
-        request_viewing_button = self.page.locator(self.project_locators.Elire.REQUEST_VIEWING_BUTTON)
+        request_viewing_button = self.page.locator(
+            self.project_locators.Elire.REQUEST_VIEWING_BUTTON
+        )
         request_viewing_button.wait_for(state="visible", timeout=10000)
         request_viewing_button.click()
 
     def fill_and_submit_request_viewing_form(self, fake):
         """Заполняет форму Request Viewing.
-        
+
         Args:
             fake: Faker объект для генерации тестовых данных
         """
@@ -60,7 +47,6 @@ class ClientPage(BasePage):
         self.fill(self.project_locators.Elire.NOTE_FIELD, fake.text())
         self.click(self.project_locators.Elire.SUBMIT_BUTTON_FOR_REQUEST_VIEWING)
 
-
     def is_success_message_displayed(self) -> bool:
         """
         Проверяет, отображается ли сообщение об успешной отправке.
@@ -70,7 +56,7 @@ class ClientPage(BasePage):
         """
         # Нужны локаторы для модального окна
         project_locators = QubePageLocators()
-        
+
         # Проверяем модальное окно
         modal = self.page.locator(project_locators.Elire.SUCCESS_MODAL)
 
