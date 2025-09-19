@@ -37,7 +37,8 @@ class TestQubeMapProjects:
     @pytest.mark.regression
     @pytest.mark.smoke
     @allure.severity(allure.severity_level.CRITICAL)
-    @pytest.mark.parametrize("project_name", ["elire"])
+    # TODO: Добавить "cubix" после фикса локаторов
+    @pytest.mark.parametrize("project_name", ["arisha", "elire"])
     def test_full_navigation_cycle_on_map(self, main_page, project_name):
         """Тест полного цикла навигации: карта -> проект -> карта."""
         with allure.step(f"Открываем страницу карты"):

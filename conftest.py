@@ -189,6 +189,32 @@ def client_page(page: Page):
     return ClientPage(page, url)
 
 
+@pytest.fixture
+def project_page(page: Page):
+    """Фикстура для страниц проектов Qube."""
+    urls = _get_urls_by_environment()
+    url = urls["agent"]  # Используем agent URL для страниц проектов Qube
+    return ProjectPage(page, url)
+
+
+@pytest.fixture
+def capstone_project_page(page: Page):
+    """Фикстура для страниц проектов Capstone."""
+    urls = _get_urls_by_environment()
+    url = urls[
+        "capstone_map"
+    ]  # Используем capstone_map URL для страниц проектов Capstone
+    return ProjectPage(page, url)
+
+
+@pytest.fixture
+def capstone_direct_project_page(page: Page):
+    """Фикстура для прямых URL проектов Capstone (например, /project/peylaa/area)."""
+    urls = _get_urls_by_environment()
+    base_url = urls["capstone_map"].replace("/map", "")  # Убираем /map из базового URL
+    return ProjectPage(page, base_url)
+
+
 # Хук для обработки результатов тестов
 def pytest_runtest_makereport(item, call):
     """Обработчик результатов выполнения тестов."""

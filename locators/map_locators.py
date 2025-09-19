@@ -26,7 +26,6 @@ class MapLocators:
     ALL_BUTTONS = "button[aria-label]"
 
     # Навигация на странице проекта
-    DUBAI_BUTTON = '//span[@class="ant-menu-title-content" and text()="Dubai"]'
     PROJECT_PAGE_TITLE = "h1, h2, h3"
     PROJECT_NAVIGATION = '[class*="CompactNavigation"]'
     EXPLORE_PROJECT_BUTTON = "//span[text()='Explore Project']"

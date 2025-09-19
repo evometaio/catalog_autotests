@@ -1,7 +1,9 @@
+import time
+
 from playwright.sync_api import Locator, Page, expect
 
 from locators.map_locators import MapLocators
-from locators.project_locators import QubePageLocators
+from locators.project_locators import ProjectLocators, QubePageLocators
 
 
 class BasePage:
@@ -15,6 +17,7 @@ class BasePage:
 
     def __init__(self, page: Page, base_url: str = None):
         self.locators = MapLocators()
+        self.project_locators = ProjectLocators()
         self.page = page
         self.base_url = base_url
 
@@ -147,6 +150,8 @@ class BasePage:
         self.wait_for_map_and_projects_loaded()
         # Сначала кликаем на проект (используем метод из BasePage)
         self.click_project(project_name)
+
+        # Для остальных случаев ищем кнопку Explore Project
         self.expect_visible(self.locators.PROJECT_INFO_WINDOW)
         self.expect_visible(self.locators.EXPLORE_PROJECT_BUTTON)
 
@@ -167,18 +172,33 @@ class BasePage:
 
         # Ждем появления проекта
         self.page.wait_for_selector(selector, state="visible", timeout=10000)
-        self.click(selector)
+
+        # Для изображений на карте используем force_click из-за блокировки Google Maps
+        if project_name.lower() == "peylaa" and "img" in selector:
+            element = self.page.locator(selector)
+            element.click(force=True)
+        else:
+            self.click(selector)
 
     def _get_project_selector(self, project_name: str) -> str:
         """Получить селектор для проекта по названию."""
         project_name_lower = project_name.lower()
+
+        # Проверяем окружение для Peylaa
+        import os
+
+        environment = os.getenv("TEST_ENVIRONMENT", "dev")
 
         # Маппинг проектов на их селекторы
         project_selectors = {
             "elire": 'div[aria-label*="Elire"], div[aria-label*="ELIRE"]',
             "arisha": 'div[aria-label*="ARISHA TERACCES"], div[aria-label*="Arisha"], div[aria-label*="ARISHA"]',
             "cubix": 'div[aria-label*="CUBIX RESIDENCE"], div[aria-label*="Cubix"], div[aria-label*="CUBIX"]',
-            "peylaa": 'li:has-text("peylaa"), span:has-text("Peylaa"), div[aria-label*="Peylaa"], div[aria-label*="PEYLAA"]',
+            "peylaa": (
+                'img[src*="map_pin_peylaa.png"]'
+                if environment == "dev"
+                else 'div[aria-label*="Peylaa"]'
+            ),
             "tranquil": 'li:has-text("tranquil"), span:has-text("Tranquil"), div[aria-label*="Tranquil"], div[aria-label*="TRANQUIL"]',
         }
 
@@ -191,25 +211,6 @@ class BasePage:
     def check_project_info_visible(self, project_name: str):
         """Проверить видимость информации о проекте."""
         self.expect_visible(self.locators.PROJECT_INFO_WINDOW)
-
-    def open_project_page(self, project_name: str):
-        """Открыть страницу проекта."""
-        # Находим проект по имени
-        project = None
-        for p in QubePageLocators.ALL_PROJECTS:
-            if p.PROJECT_NAME == project_name.lower():
-                project = p
-                break
-
-        if not project:
-            available_projects = [p.PROJECT_NAME for p in QubePageLocators.ALL_PROJECTS]
-            raise ValueError(
-                f"Неизвестный проект Qube: {project_name}. Доступные: {available_projects}"
-            )
-
-        project_url = self.project_url_template.format(project=project.PROJECT_NAME)
-        self.page.goto(project_url)
-        self.wait_for_page_load()
 
     def check_project_page_loaded(self, project_name: str):
         """Проверить загрузку страницы проекта."""
@@ -232,5 +233,5 @@ class BasePage:
 
     def return_to_map_from_project_and_verify_returned_to_map(self):
         """Вернуться на карту со страницы проекта."""
-        self.click(self.locators.DUBAI_BUTTON)
+        self.click(self.project_locators.DUBAI_BUTTON)
         self.wait_for_page_load()

@@ -1,3 +1,5 @@
+import os
+
 import allure
 import pytest
 
@@ -7,6 +9,10 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
+@pytest.mark.skipif(
+    os.getenv("TEST_ENVIRONMENT", "dev") == "prod",
+    reason="После выкатки локаторов тест будет активен",
+)
 def test_arisha_download_pdf_on_agent_page(agent_page):
     """Тест скачивания PDF на агентской странице проекта Arisha."""
     downloaded_file_path = ""

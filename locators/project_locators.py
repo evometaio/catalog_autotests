@@ -6,6 +6,8 @@ class ProjectLocators:
 
     # Универсальные локаторы для поиска апартаментов
     ALL_APARTMENT_TITLES = "//span[contains(text(), 'VIEW APARTMENT')]"
+    DUBAI_BUTTON = '(//span[text()="Dubai"])[1]'
+    DUBAI_BUTTON_CUB = '(//span[text()="Dubai"])'
 
 
 class QubePageLocators(ProjectLocators):
@@ -17,6 +19,17 @@ class QubePageLocators(ProjectLocators):
 
         SALES_OFFER_BUTTON = "//span[text()='Sales Offer']"
         DOWNLOAD_PDF_BUTTON = "//button[.//span[text() = 'Download PDF']]"
+        AREA_TOUR_360_BUTTON = '[data-test-id="nav-rotation-view-controls-button"]'
+        # Временный локатор для продакшена (до добавления data-test-id)
+        AREA_TOUR_360_BUTTON_PROD = '[data-test-id="nav-rotation-view-controls-button"]'
+
+        # Локаторы для модального окна 360 Area Tour
+        AREA_TOUR_360_MODAL = "//div[contains(@class, 'modal')]"
+        AREA_TOUR_360_OVERLAY = "//div[contains(@class, 'overlay')]"
+        AREA_TOUR_360_CLOSE_BUTTON = (
+            "//button[contains(@class, 'close') or @aria-label='close']"
+        )
+        AREA_TOUR_360_CONTENT = "//img[contains(@class, '__react-image-turntable-img')] | //video | //canvas"
 
     # Клиентская страница -  для Qube
     class ClientPage:
@@ -71,11 +84,27 @@ class QubePageLocators(ProjectLocators):
 class CapstonePageLocators(ProjectLocators):
     """Локаторы для страниц проектов Capstone."""
 
+    # Агентская страница - для Capstone
+    class AgentPage:
+        """Локаторы для агентских страниц проектов Capstone."""
+
+        AREA_TOUR_360_BUTTON = '[data-test-id="nav-rotation-view-controls-button"]'
+        # Временный локатор для продакшена (до добавления data-test-id)
+        AREA_TOUR_360_BUTTON_PROD = '[data-test-id="nav-rotation-view-controls-button"]'
+
+        # Локаторы для модального окна 360 Area Tour
+        AREA_TOUR_360_MODAL = "//div[contains(@class, 'modal')]"
+        AREA_TOUR_360_OVERLAY = "//div[contains(@class, 'overlay')]"
+        AREA_TOUR_360_CLOSE_BUTTON = (
+            "//button[contains(@class, 'close') or @aria-label='close']"
+        )
+        AREA_TOUR_360_CONTENT = "//img[contains(@class, '__react-image-turntable-img')] | //video | //canvas"
+
     # Проекты Capstone
     class Peylaa:
         """Локаторы для проекта Peylaa."""
 
-        MAP_LOCATOR = 'li:has-text("peylaa"), span:has-text("Peylaa"), div[aria-label*="Peylaa"], div[aria-label*="PEYLAA"]'
+        MAP_LOCATOR = 'img[src*="map_pin_peylaa.png"]'
         PROJECT_NAME = "peylaa"
         PROJECT_DISPLAY_NAME = "Peylaa"
 
