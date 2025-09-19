@@ -16,7 +16,7 @@ def test_arisha_download_pdf_on_agent_page(agent_page):
             agent_page.open(route_type="agent")
 
         with allure.step("Кликаем на проект Arisha"):
-            agent_page.click_on_project("arisha")
+            agent_page.click_project_on_map("arisha")
 
         with allure.step("Кликаем на кнопку All units"):
             agent_page.click_on_all_units_button()

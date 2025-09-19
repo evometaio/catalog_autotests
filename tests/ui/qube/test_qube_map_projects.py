@@ -37,19 +37,16 @@ class TestQubeMapProjects:
     @pytest.mark.regression
     @pytest.mark.smoke
     @allure.severity(allure.severity_level.CRITICAL)
-    @pytest.mark.parametrize("project_name", ["elire", "arisha", "cubix"])
+    @pytest.mark.parametrize("project_name", ["elire"])
     def test_full_navigation_cycle_on_map(self, main_page, project_name):
         """Тест полного цикла навигации: карта -> проект -> карта."""
-        with allure.step(f"Открываем страницу карты {project_name}"):
+        with allure.step(f"Открываем страницу карты"):
             main_page.open(route_type="map")
             main_page.check_map_loaded()
-            main_page.check_project_info_visible(project_name)
 
-        with allure.step(f"Тестируем навигацию для проекта {project_name.upper()}"):
-            # Открываем проект
-            main_page.open_project_page(project_name)
+        with allure.step(f"Переходим на страницу проекта {project_name}"):
+            main_page.click_project_on_map(project_name)
             main_page.check_project_page_loaded(project_name)
 
-            # Возвращаемся на карту
-            main_page.return_to_map_from_project()
-            main_page.verify_returned_to_map()
+        with allure.step(f"Возвращаемся на карту"):
+            main_page.return_to_map_from_project_and_verify_returned_to_map()

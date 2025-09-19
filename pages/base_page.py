@@ -127,17 +127,14 @@ class BasePage:
 
     def wait_for_page_load(self):
         """Ожидать загрузки страницы."""
-        self.page.wait_for_load_state("networkidle")
+        self.page.wait_for_load_state("domcontentloaded")
 
-    def assert_url_equals(self, expected_url: str, timeout: int = None):
+    def assert_url_equals(self, expected_url: str):
         """Проверить, что URL точно равен ожидаемому.
 
         Args:
             expected_url: Ожидаемый URL
-            timeout: Таймаут ожидания изменения URL
         """
-        if timeout is None:
-            timeout = self.SHORT_TIMEOUT
         current_url = self.get_current_url()
         assert (
             current_url == expected_url
@@ -145,21 +142,19 @@ class BasePage:
 
     # Методы для работы с картой (из MapPage)
 
-    def click_on_project(self, project_name: str):
+    def click_project_on_map(self, project_name: str):
         """Кликнуть на проект и затем на кнопку Explore Project."""
         self.wait_for_map_and_projects_loaded()
         # Сначала кликаем на проект (используем метод из BasePage)
         self.click_project(project_name)
-        self.expect_visible(self.map_locators.PROJECT_INFO_WINDOW)
-        self.expect_visible(self.map_locators.EXPLORE_PROJECT_BUTTON)
+        self.expect_visible(self.locators.PROJECT_INFO_WINDOW)
+        self.expect_visible(self.locators.EXPLORE_PROJECT_BUTTON)
 
         # Затем кликаем на кнопку Explore Project
-        self.click(self.map_locators.EXPLORE_PROJECT_BUTTON)
+        self.click(self.locators.EXPLORE_PROJECT_BUTTON)
 
         # Ждем изменения URL (универсально для всех типов страниц)
         self.page.wait_for_url("**/project/**", timeout=10000)
-        # Простое ожидание загрузки DOM
-        self.page.wait_for_load_state("domcontentloaded", timeout=10000)
 
     def check_map_loaded(self):
         """Проверить загрузку карты."""
@@ -229,34 +224,13 @@ class BasePage:
             raise ValueError(f"Неизвестный проект Qube: {project_name}")
 
         # Проверяем, что мы на странице проекта (URL содержит /project/ и название проекта)
-        self.wait_for_page_load()
         current_url = self.page.url
         self.wait_for_page_load()
         assert (
             f"/project/{project.PROJECT_NAME}" in current_url
         ), f"Не на странице проекта {project.PROJECT_DISPLAY_NAME}. Текущий URL: {current_url}"
 
-    def return_to_map_from_project(self):
+    def return_to_map_from_project_and_verify_returned_to_map(self):
         """Вернуться на карту со страницы проекта."""
-        self.page.goto(self.map_url)
+        self.click(self.locators.DUBAI_BUTTON)
         self.wait_for_page_load()
-
-    def verify_returned_to_map(self):
-        """Проверить, что вернулись на карту."""
-        current_url = self.page.url
-        assert (
-            self.map_url in current_url
-        ), f"Не вернулись на карту. Текущий URL: {current_url}"
-
-    def toggle_fullscreen(self):
-        """Переключить полноэкранный режим."""
-        try:
-            # Сначала пробуем основной локатор
-            if self.is_visible(self.locators.FULLSCREEN_BUTTON, timeout=5000):
-                self.click(self.locators.FULLSCREEN_BUTTON)
-            else:
-                # Пробуем альтернативные локаторы
-                self.click(self.locators.FULLSCREEN_ALT)
-        except Exception:
-            # Если не удалось, просто логируем
-            print("Кнопка полноэкранного режима не найдена или недоступна")

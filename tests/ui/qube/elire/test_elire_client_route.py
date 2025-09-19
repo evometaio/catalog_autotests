@@ -39,7 +39,7 @@ def test_elire_request_viewing_form(client_page, fake):
         assert "client" in current_url, "Не открылась клиентская страница"
 
     with allure.step("Кликаем на проект Elire"):
-        client_page.click_on_project("elire")
+        client_page.click_project_on_map("elire")
 
     with allure.step("Кликаем на Request Viewing"):
         client_page.click_on_residences_button_and_request_viewing_form()

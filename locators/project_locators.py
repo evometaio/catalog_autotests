@@ -2,7 +2,7 @@ class ProjectLocators:
     """Базовый класс для локаторов страниц проектов."""
 
     # Общие локаторы для всех проектов
-    ALL_UNITS_BUTTON = "//div[contains(@style, 'All units')]//button"
+    ALL_UNITS_BUTTON = '[data-test-id="nav-desktop-catalog2d-standalone"]'
 
     # Универсальные локаторы для поиска апартаментов
     ALL_APARTMENT_TITLES = "//span[contains(text(), 'VIEW APARTMENT')]"
@@ -15,7 +15,7 @@ class QubePageLocators(ProjectLocators):
     class AgentPage:
         """Локаторы для агентских страниц проектов Qube."""
 
-        SALES_OFFER_BUTTON = "//button[.//span[text() = 'Sales Offer']]"
+        SALES_OFFER_BUTTON = "//span[text()='Sales Offer']"
         DOWNLOAD_PDF_BUTTON = "//button[.//span[text() = 'Download PDF']]"
 
     # Клиентская страница -  для Qube
@@ -39,8 +39,8 @@ class QubePageLocators(ProjectLocators):
         MAP_LOCATOR = 'div[aria-label*="Elire"], div[aria-label*="ELIRE"]'
         PROJECT_NAME = "elire"
         PROJECT_DISPLAY_NAME = "Elire"
-        RESIDENCES_BUTTON = "//li[@role='menuitem' and .//span[text()='Residences']]"
-        REQUEST_VIEWING_BUTTON = "(//button[.//span[text()='REQUEST VIEWING']])[6]"
+        RESIDENCES_BUTTON = '[data-test-id="nav-desktop-catalog2d"]'
+        REQUEST_VIEWING_BUTTON = "(//button[@data-test-id='property-info-secondary-button-1 BEDROOM RESIDENCE'])[2]"
         SUBMIT_BUTTON_FOR_REQUEST_VIEWING = "(//button[.//span[text()='SUBMIT']])[2]"
 
         # Локаторы для полей формы Request Viewing

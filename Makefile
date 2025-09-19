@@ -35,7 +35,7 @@ test-head-dev: ## Запустить все UI тесты в head режиме �
 
 test-prod: ## Запустить все тесты на PROD
 	@echo "$(GREEN)🧪 Запуск всех тестов на PROD...$(NC)"
-	$(PYTEST) -sv --alluredir=reports/allure-results || true
+	$(PYTEST) tests/ui/ -sv --alluredir=reports/allure-results || true
 
 test-head-prod: ## Запустить все UI тесты в head режиме
 	@echo "$(GREEN)👁️ Запуск UI тестов в head режиме на PROD...$(NC)"

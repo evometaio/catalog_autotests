@@ -16,7 +16,7 @@ def test_cubix_download_pdf_on_agent_page(agent_page):
             agent_page.open(route_type="agent")
 
         with allure.step("Кликаем на проект Cubix"):
-            agent_page.click_on_project("cubix")
+            agent_page.click_project_on_map("cubix")
 
         with allure.step("Ищем и кликаем на первый доступный апартамент"):
             agent_page.find_and_click_available_apartment("cubix")
