@@ -16,8 +16,7 @@ class AgentPage(BasePage):
             page: Playwright page объект
             url: URL агентской страницы
         """
-        super().__init__(page, url)
-        self.project_locators = QubePageLocators()
+        super().__init__(page, url, QubePageLocators)
         self.map_locators = MapLocators()
 
     def click_on_download_pdf_button(self):

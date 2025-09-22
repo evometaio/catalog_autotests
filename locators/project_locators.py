@@ -9,6 +9,21 @@ class ProjectLocators:
     DUBAI_BUTTON = '(//span[text()="Dubai"])[1]'
     DUBAI_BUTTON_CUB = '(//span[text()="Dubai"])'
 
+    # Базовые локаторы для Explore Amenities (могут быть переопределены в подклассах)
+    EXPLORE_AMENITIES_BUTTON = (
+        '(//button[@data-test-id="project-info-window-explore-amenities"])[2]'
+    )
+    AMENITIES_MODAL = ".ant-modal-content"
+    AMENITIES_MODAL_TITLE = ".ant-modal-content h3"
+    AMENITIES_MODAL_CLOSE_BUTTON = ".ant-modal-close"
+
+    # Локаторы для слайдера в модалке amenities
+    AMENITIES_SLIDER = ".slick-slider"
+    AMENITIES_SLIDER_IMAGES = ".slick-slider img"
+    AMENITIES_SLIDER_INDICATORS = ".slick-dots li"
+    AMENITIES_SLIDER_PREV_BUTTON = ".slick-prev"
+    AMENITIES_SLIDER_NEXT_BUTTON = ".slick-next"
+
 
 class QubePageLocators(ProjectLocators):
     """Локаторы для страниц проектов Qube (arisha, elire, cubix)."""
@@ -69,6 +84,14 @@ class QubePageLocators(ProjectLocators):
         SUCCESS_MODAL_TEXT = (
             'xpath=.//div[contains(text(), "Our specialist will contact you shortly.")]'
         )
+
+        # Специфичные локаторы для Explore Amenities в Elire
+        EXPLORE_AMENITIES_BUTTON = (
+            '(//button[@data-test-id="project-info-window-explore-amenities"])[2]'
+        )
+        AMENITIES_MODAL = ".ant-modal-content"
+        AMENITIES_MODAL_TITLE = ".ant-modal-content h3._title_6w0b9_41"
+        AMENITIES_MODAL_CLOSE_BUTTON = ".ant-modal-close"
 
     class Cubix:
         """Локаторы для проекта Cubix."""

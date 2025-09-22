@@ -14,25 +14,16 @@ class ClientPage(BasePage):
             page: Playwright page объект
             url: URL клиентской страницы
         """
-        super().__init__(page, url)
+        super().__init__(page, url, QubePageLocators)
         self.map_locators = MapLocators()
-        self.project_locators = QubePageLocators()
 
     def click_on_residences_button_and_request_viewing_form(self):
         """Кликает на кнопку Residences и открывает форму Request Viewing."""
-        # Ждем появления кнопки Residences и кликаем
-        residences_button = self.page.locator(
-            self.project_locators.Elire.RESIDENCES_BUTTON
-        ).first
-        residences_button.wait_for(state="visible", timeout=10000)
-        residences_button.click()
+        # Используем QubePages для работы с кнопками
+        from .qube.qube_pages import QubePages
 
-        # Ждем появления кнопки REQUEST VIEWING и кликаем
-        request_viewing_button = self.page.locator(
-            self.project_locators.Elire.REQUEST_VIEWING_BUTTON
-        )
-        request_viewing_button.wait_for(state="visible", timeout=10000)
-        request_viewing_button.click()
+        qube_pages = QubePages(self.page, self.base_url)
+        qube_pages.click_on_residences_button_and_request_viewing_form()
 
     def fill_and_submit_request_viewing_form(self, fake):
         """Заполняет форму Request Viewing.

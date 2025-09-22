@@ -12,10 +12,10 @@ def test_arisha_send_callback_form_on_client_page(client_page):
     _test_client_page_generic(client_page, "arisha")
 
 
-def _test_client_page_generic(project_page, project_name):
+def _test_client_page_generic(client_page, project_name):
     """Универсальная функция для тестирования client страниц."""
     with allure.step(f"Открываем клиентскую страницу проекта {project_name.title()}"):
-        project_page.open(route_type="client")
+        client_page.open(route_type="client")
 
-        current_url = project_page.get_current_url()
+        current_url = client_page.get_current_url()
         assert "client" in current_url, "Не открылась клиентская страница"

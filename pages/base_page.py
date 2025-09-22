@@ -3,7 +3,12 @@ import time
 from playwright.sync_api import Locator, Page, expect
 
 from locators.map_locators import MapLocators
-from locators.project_locators import ProjectLocators, QubePageLocators
+from locators.project_locators import (
+    CapstonePageLocators,
+    ProjectLocators,
+    QubePageLocators,
+    WellcubePageLocators,
+)
 
 
 class BasePage:
@@ -15,9 +20,15 @@ class BasePage:
     SHORT_TIMEOUT = 5000
     MAP_LOAD_TIMEOUT = 30000
 
-    def __init__(self, page: Page, base_url: str = None):
+    def __init__(
+        self, page: Page, base_url: str = None, project_locators_class: type = None
+    ):
         self.locators = MapLocators()
-        self.project_locators = ProjectLocators()
+        # Используем переданный класс локаторов или базовый по умолчанию
+        if project_locators_class:
+            self.project_locators = project_locators_class()
+        else:
+            self.project_locators = ProjectLocators()
         self.page = page
         self.base_url = base_url
 
@@ -76,6 +87,46 @@ class BasePage:
     def get_current_url(self) -> str:
         """Получить текущий URL."""
         return self.page.url
+
+    def get_project_url(self, project_name: str, page_type: str = "catalog2d") -> str:
+        """Получить URL для конкретного проекта и типа страницы.
+
+        Args:
+            project_name: Название проекта (arisha, cubix, elire, peylaa, tranquil)
+            page_type: Тип страницы (catalog2d, area, map)
+
+        Returns:
+            str: URL для проекта
+        """
+        import os
+
+        from conftest import _get_urls_by_environment
+
+        urls = _get_urls_by_environment()
+        project_name_lower = project_name.lower()
+
+        # Определяем базовый URL в зависимости от проекта
+        if project_name_lower in ["arisha", "cubix", "elire"]:
+            # Qube проекты
+            base_url = urls["map"].replace("/map", "")
+        elif project_name_lower == "peylaa":
+            # Capstone проект
+            base_url = urls["capstone_map"].replace("/map", "")
+        elif project_name_lower == "tranquil":
+            # Wellcube проект
+            base_url = urls["wellcube_map"].replace("/map", "")
+        else:
+            raise ValueError(f"Неизвестный проект: {project_name}")
+
+        # Формируем полный URL
+        if page_type == "catalog2d":
+            return f"{base_url}/project/{project_name_lower}/catalog_2d"
+        elif page_type == "area":
+            return f"{base_url}/project/{project_name_lower}/area"
+        elif page_type == "map":
+            return urls.get(f"{project_name_lower}_map", urls["map"])
+        else:
+            raise ValueError(f"Неизвестный тип страницы: {page_type}")
 
     def wait_for_map_and_projects_loaded(self):
         """Ожидать полной загрузки карты и проектов."""
@@ -199,7 +250,7 @@ class BasePage:
                 if environment == "dev"
                 else 'div[aria-label*="Peylaa"]'
             ),
-            "tranquil": 'li:has-text("tranquil"), span:has-text("Tranquil"), div[aria-label*="Tranquil"], div[aria-label*="TRANQUIL"]',
+            "tranquil": '[aria-label="Tranquil Wellness Tower"]',
         }
 
         if project_name_lower in project_selectors:
@@ -235,3 +286,158 @@ class BasePage:
         """Вернуться на карту со страницы проекта."""
         self.click(self.project_locators.DUBAI_BUTTON)
         self.wait_for_page_load()
+
+    # Методы для работы с Explore Amenities модалкой
+
+    def click_explore_amenities_button(self):
+        """Кликнуть на кнопку Explore Amenities."""
+        self.click(self.project_locators.EXPLORE_AMENITIES_BUTTON)
+
+    def verify_amenities_modal_displayed(self):
+        """Проверить отображение модального окна amenities."""
+        self.expect_visible(self.project_locators.AMENITIES_MODAL)
+
+    def verify_amenities_modal_title(self):
+        """Проверить наличие заголовка модального окна amenities."""
+        # Проверяем, что есть хотя бы один заголовок h3 в модальном окне
+        titles = self.page.query_selector_all(
+            self.project_locators.AMENITIES_MODAL_TITLE
+        )
+        assert len(titles) > 0, "Заголовок модального окна amenities не найден"
+
+    def verify_amenities_modal_close_button(self):
+        """Проверить наличие кнопки закрытия модального окна amenities."""
+        self.expect_visible(self.project_locators.AMENITIES_MODAL_CLOSE_BUTTON)
+
+    def close_amenities_modal(self):
+        """Закрыть модальное окно amenities."""
+        self.click(self.project_locators.AMENITIES_MODAL_CLOSE_BUTTON)
+
+    def verify_amenities_slider_displayed(self):
+        """Проверить отображение слайдера в модалке amenities."""
+        self.expect_visible(self.project_locators.AMENITIES_SLIDER)
+
+    def verify_amenities_slider_images(self):
+        """Проверить наличие изображений в слайдере amenities."""
+        images = self.page.query_selector_all(
+            self.project_locators.AMENITIES_SLIDER_IMAGES
+        )
+        assert len(images) > 0, "В слайдере amenities не найдено изображений"
+        return len(images)
+
+    def verify_amenities_slider_indicators(self):
+        """Проверить наличие индикаторов слайдера amenities."""
+        indicators = self.page.query_selector_all(
+            self.project_locators.AMENITIES_SLIDER_INDICATORS
+        )
+        assert len(indicators) > 0, "Не найдены индикаторы слайдера amenities"
+        return len(indicators)
+
+    def click_amenities_slider_indicator(self, index: int):
+        """Кликнуть на индикатор слайдера amenities по индексу (начиная с 0)."""
+        indicators = self.page.query_selector_all(
+            self.project_locators.AMENITIES_SLIDER_INDICATORS
+        )
+        assert (
+            0 <= index < len(indicators)
+        ), f"Индекс {index} вне диапазона (0-{len(indicators)-1})"
+        indicators[index].click()
+
+    def click_amenities_slider_next(self):
+        """Кликнуть на кнопку 'Вперед' слайдера amenities."""
+        if self.is_visible(
+            self.project_locators.AMENITIES_SLIDER_NEXT_BUTTON, timeout=2000
+        ):
+            self.click(self.project_locators.AMENITIES_SLIDER_NEXT_BUTTON)
+
+    def click_amenities_slider_prev(self):
+        """Кликнуть на кнопку 'Назад' слайдера amenities."""
+        if self.is_visible(
+            self.project_locators.AMENITIES_SLIDER_PREV_BUTTON, timeout=2000
+        ):
+            self.click(self.project_locators.AMENITIES_SLIDER_PREV_BUTTON)
+
+    def verify_amenities_modal_closed(self):
+        """Проверить, что модальное окно amenities закрылось."""
+        self.page.wait_for_selector(
+            self.project_locators.AMENITIES_MODAL, state="hidden", timeout=5000
+        )
+
+    # Методы из ProjectPage для работы с проектами
+
+    def click_on_all_units_button(self):
+        """Кликнуть на кнопку All units."""
+        self.expect_visible(self.project_locators.ALL_UNITS_BUTTON)
+        self.click(self.project_locators.ALL_UNITS_BUTTON)
+
+    def click_on_sales_offer_button(self):
+        """Кликнуть на кнопку Sales Offer."""
+        self.expect_visible(self.project_locators.AgentPage.SALES_OFFER_BUTTON)
+        self.click(self.project_locators.AgentPage.SALES_OFFER_BUTTON)
+
+    # Методы для работы с 360 Area Tour (для всех проектов)
+
+    def click_360_area_tour_button(self):
+        """Кликнуть на кнопку 360 Area Tour."""
+        # Используем универсальный локатор для всех проектов
+        button_selector = '[data-test-id="nav-rotation-view-controls-button"]'
+        self.expect_visible(button_selector)
+        self.click(button_selector)
+
+    def verify_360_area_tour_modal_displayed(self):
+        """Проверить отображение модального окна 360 Area Tour."""
+        modal_selector = "//div[contains(@class, 'modal')]"
+        self.expect_visible(modal_selector)
+
+    def verify_360_area_tour_content(self):
+        """Проверить наличие контента в модальном окне 360 Area Tour."""
+        # Проверяем наличие модального окна
+        self.verify_360_area_tour_modal_displayed()
+
+        # Проверяем наличие контента (изображения, видео или другие элементы)
+        content_selector = "//img[contains(@class, '__react-image-turntable-img')] | //video | //canvas"
+        content_element = self.page.locator(content_selector)
+        assert (
+            content_element.count() > 0
+        ), "Контент 360 Area Tour не найден в модальном окне"
+
+    def close_360_area_tour_modal(self):
+        """Закрыть модальное окно 360 Area Tour."""
+        # Ищем кнопку закрытия модального окна
+        close_button = self.page.locator(
+            '.ant-modal-close, .modal-close, [aria-label="Close"]'
+        )
+        if close_button.is_visible():
+            close_button.click()
+        else:
+            # Если кнопки закрытия нет, нажимаем Escape
+            self.page.keyboard.press("Escape")
+
+    # Методы для инкапсуляции работы с page
+    def click_element(self, selector: str):
+        """Кликнуть по элементу по селектору."""
+        self.page.click(selector)
+
+    def query_selector_all(self, selector: str):
+        """Найти все элементы по селектору."""
+        return self.page.query_selector_all(selector)
+
+    def wait_for_timeout(self, timeout: int):
+        """Ждать указанное количество миллисекунд."""
+        self.page.wait_for_timeout(timeout)
+
+    def is_element_visible(self, selector: str, timeout: int = 5000) -> bool:
+        """Проверить, виден ли элемент."""
+        try:
+            element = self.page.locator(selector)
+            return element.is_visible(timeout=timeout)
+        except:
+            return False
+
+    def get_element_text(self, selector: str) -> str:
+        """Получить текст элемента."""
+        return self.page.locator(selector).text_content()
+
+    def get_element_count(self, selector: str) -> int:
+        """Получить количество элементов по селектору."""
+        return self.page.locator(selector).count()
