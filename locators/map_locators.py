@@ -1,4 +1,4 @@
-from .project_locators import QubePageLocators
+from .project_locators import QubeLocators
 
 
 class MapLocators:
@@ -8,9 +8,9 @@ class MapLocators:
     MAP_CONTAINER = '[data-testid="map"]'
 
     # Локаторы для проектов Qube через новый класс
-    PROJECT_ELIRE = QubePageLocators.Elire.MAP_LOCATOR
-    PROJECT_ARISHA = QubePageLocators.Arisha.MAP_LOCATOR
-    PROJECT_CUBIX = QubePageLocators.Cubix.MAP_LOCATOR
+    PROJECT_ELIRE = QubeLocators.Elire.MAP_LOCATOR
+    PROJECT_ARISHA = QubeLocators.Arisha.MAP_LOCATOR
+    PROJECT_CUBIX = QubeLocators.Cubix.MAP_LOCATOR
 
     # Универсальный селектор для всех проектов Qube
     ALL_PROJECTS = f"{PROJECT_ELIRE}, {PROJECT_ARISHA}, {PROJECT_CUBIX}"

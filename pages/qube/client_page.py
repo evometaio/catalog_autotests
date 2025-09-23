@@ -1,5 +1,5 @@
 from locators.map_locators import MapLocators
-from locators.project_locators import QubePageLocators
+from locators.project_locators import QubeLocators
 
 from ..base_page import BasePage
 
@@ -14,16 +14,13 @@ class ClientPage(BasePage):
             page: Playwright page объект
             url: URL клиентской страницы
         """
-        super().__init__(page, url, QubePageLocators)
+        super().__init__(page, url, QubeLocators)
         self.map_locators = MapLocators()
 
     def click_on_residences_button_and_request_viewing_form(self):
         """Кликает на кнопку Residences и открывает форму Request Viewing."""
-        # Используем QubePages для работы с кнопками
-        from .qube_pages import QubePages
-
-        qube_pages = QubePages(self.page, self.base_url)
-        qube_pages.click_on_residences_button_and_request_viewing_form()
+        # Используем методы из внутреннего класса Elire
+        self.elire.click_on_residences_button_and_request_viewing_form()
 
     def fill_and_submit_request_viewing_form(self, fake):
         """Заполняет форму Request Viewing.
@@ -46,7 +43,7 @@ class ClientPage(BasePage):
             bool: True если сообщение об успехе отображается
         """
         # Нужны локаторы для модального окна
-        project_locators = QubePageLocators()
+        project_locators = QubeLocators()
 
         # Проверяем модальное окно
         modal = self.page.locator(project_locators.Elire.SUCCESS_MODAL)

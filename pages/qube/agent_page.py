@@ -2,7 +2,7 @@ import os
 import time
 
 from locators.map_locators import MapLocators
-from locators.project_locators import QubePageLocators
+from locators.project_locators import QubeLocators
 
 from ..base_page import BasePage
 
@@ -17,7 +17,7 @@ class AgentPage(BasePage):
             page: Playwright page объект
             url: URL агентской страницы
         """
-        super().__init__(page, url, QubePageLocators)
+        super().__init__(page, url, QubeLocators)
 
     def click_on_download_pdf_button(self):
         """Кликает на кнопку скачивания PDF."""

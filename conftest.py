@@ -7,7 +7,7 @@ from playwright.sync_api import Page
 
 from locators.project_locators import (
     CapstonePageLocators,
-    QubePageLocators,
+    QubeLocators,
     WellcubePageLocators,
 )
 from pages.base_page import BasePage
@@ -175,7 +175,7 @@ def map_page(page: Page, request):
         return BasePage(page, url, WellcubePageLocators)
     else:  # qube
         url = urls["map"]
-        return BasePage(page, url, QubePageLocators)
+        return BasePage(page, url, QubeLocators)
 
 
 @pytest.fixture

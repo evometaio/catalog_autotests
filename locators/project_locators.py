@@ -1,14 +1,9 @@
-class ProjectLocators:
-    """Базовый класс для локаторов страниц проектов."""
+class BaseProjectLocators:
+    """Базовый класс для всех локаторов проектов."""
 
     # Общие константы
     PROJECT_URL_PATTERN = "**/project/**"
     PAGE_TYPES = ["catalog2d", "area", "map"]
-
-    # Названия проектов по застройщикам
-    QUBE_PROJECTS = ["arisha", "cubix", "elire"]
-    CAPSTONE_PROJECTS = ["peylaa"]
-    WELLCUBE_PROJECTS = ["tranquil"]
 
     # Общие локаторы для всех проектов
     ALL_UNITS_BUTTON = '[data-test-id="nav-desktop-catalog2d-standalone"]'
@@ -48,24 +43,35 @@ class ProjectLocators:
     SALES_OFFER_BUTTON = "//span[text()='Sales Offer']"
     DOWNLOAD_PDF_BUTTON = "//button[.//span[text() = 'Download PDF']]"
 
+    # Навигация по зданиям и этажам - доступны на всех страницах проектов
+    BUILDING_NAV_BUTTON = '[data-test-id="nav-desktop-building"]'
+    FLOOR_NAV_BUTTON = '[data-test-id="nav-desktop-floor"]'
+    APARTMENT_NAV_BUTTON = '[data-test-id="nav-desktop-apartment"]'
 
-class QubePageLocators(ProjectLocators):
-    """Локаторы для страниц проектов Qube (arisha, elire, cubix)."""
+    # Селекторы для конкретных зданий и этажей
+    BUILDING_1_BUTTON = '[data-test-id="nav-desktop-building-1"]'
+    BUILDING_2_BUTTON = '[data-test-id="nav-desktop-building-2"]'
+    BUILDING_3_BUTTON = '[data-test-id="nav-desktop-building-3"]'
 
-    # Агентская страница - для Qube
-    class AgentPage:
-        """Локаторы для агентских страниц проектов Qube."""
+    FLOOR_1_BUTTON = '[data-test-id="nav-desktop-floor-1"]'
+    FLOOR_2_BUTTON = '[data-test-id="nav-desktop-floor-2"]'
+    FLOOR_3_BUTTON = '[data-test-id="nav-desktop-floor-3"]'
+    FLOOR_4_BUTTON = '[data-test-id="nav-desktop-floor-4"]'
+    FLOOR_5_BUTTON = '[data-test-id="nav-desktop-floor-5"]'
+    FLOOR_6_BUTTON = '[data-test-id="nav-desktop-floor-6"]'
+    FLOOR_7_BUTTON = '[data-test-id="nav-desktop-floor-7"]'
 
-        pass  # Все локаторы перенесены в базовый класс ProjectLocators
+    # Селектор для апартаментов на плане этажа
+    FLOOR_PLAN_APARTMENTS = 'svg [class*="apartment"]'
 
-    # Клиентская страница -  для Qube
-    class ClientPage:
-        """Локаторы для клиентских страниц проектов Qube."""
 
-        CALLBACK_FORM_BUTTON = "//button[.//*[@aria-label='phone']]"
-        CALLBACK_FORM_MODAL = "//div[@class='ant-modal-content']"
+class QubeLocators(BaseProjectLocators):
+    """Локаторы для проектов Qube (Arisha, Elire, Cubix)."""
 
-    # Проекты Qube
+    # Названия проектов Qube
+    QUBE_PROJECTS = ["arisha", "cubix", "elire"]
+    ALL_PROJECTS = []
+
     class Arisha:
         """Локаторы для проекта Arisha."""
 
@@ -81,6 +87,7 @@ class QubePageLocators(ProjectLocators):
         PROJECT_DISPLAY_NAME = "Elire"
         RESIDENCES_BUTTON = '[data-test-id="nav-desktop-catalog2d"]'
         REQUEST_VIEWING_BUTTON = "(//button[@data-test-id='property-info-secondary-button-1 BEDROOM RESIDENCE'])[2]"
+        START_3D_EXPANSION_BUTTON = "//button[contains(text(), 'Start 3D Experience')]"
         SUBMIT_BUTTON_FOR_REQUEST_VIEWING = "(//button[.//span[text()='SUBMIT']])[2]"
 
         # Локаторы для полей формы Request Viewing
@@ -105,6 +112,9 @@ class QubePageLocators(ProjectLocators):
         AMENITIES_MODAL_TITLE = ".ant-modal-content h3._title_6w0b9_41"
         AMENITIES_MODAL_CLOSE_BUTTON = ".ant-modal-close"
 
+        # Локатор для Start 3D Experience 1 Bedroom Residence
+        START3DEXPREINCE_1BEDROOM_RESIDENCE = '(//button[@data-test-id="property-info-primary-button-1 BEDROOM RESIDENCE"])[2]'
+
     class Cubix:
         """Локаторы для проекта Cubix."""
 
@@ -112,14 +122,41 @@ class QubePageLocators(ProjectLocators):
         PROJECT_NAME = "cubix"
         PROJECT_DISPLAY_NAME = "Cubix"
 
-    # Список всех проектов Qube
-    ALL_PROJECTS = [Arisha, Elire, Cubix]
+    # Локаторы для клиентских страниц Qube проектов
+    CALLBACK_FORM_BUTTON = "//button[.//*[@aria-label='phone']]"
+    CALLBACK_FORM_MODAL = "//div[@class='ant-modal-content']"
+
+    def __init__(self):
+        """Инициализация списка всех проектов Qube."""
+        self.ALL_PROJECTS = [self.Arisha, self.Elire, self.Cubix]
 
 
-class CapstonePageLocators(ProjectLocators):
-    """Локаторы для страниц проектов Capstone."""
+class WellcubePageLocators(BaseProjectLocators):
+    """Локаторы для проектов Wellcube."""
 
-    # Проекты Capstone
+    # Названия проектов Wellcube
+    WELLCUBE_PROJECTS = ["tranquil"]
+    ALL_PROJECTS = []
+
+    class Tranquil:
+        """Локаторы для проекта Tranquil."""
+
+        MAP_LOCATOR = 'div[aria-label*="Tranquil"], div[aria-label*="TRANQUIL"]'
+        PROJECT_NAME = "tranquil"
+        PROJECT_DISPLAY_NAME = "Tranquil"
+
+    def __init__(self):
+        """Инициализация списка всех проектов Wellcube."""
+        self.ALL_PROJECTS = [self.Tranquil]
+
+
+class CapstonePageLocators(BaseProjectLocators):
+    """Локаторы для проектов Capstone."""
+
+    # Названия проектов Capstone
+    CAPSTONE_PROJECTS = ["peylaa"]
+    ALL_PROJECTS = []
+
     class Peylaa:
         """Локаторы для проекта Peylaa."""
 
@@ -128,20 +165,6 @@ class CapstonePageLocators(ProjectLocators):
         PROJECT_NAME = "peylaa"
         PROJECT_DISPLAY_NAME = "Peylaa"
 
-    # Список всех проектов Capstone
-    ALL_PROJECTS = [Peylaa]
-
-
-class WellcubePageLocators(ProjectLocators):
-    """Локаторы для страниц проектов Wellcube."""
-
-    # Проекты Wellcube
-    class Tranquil:
-        """Локаторы для проекта Tranquil."""
-
-        MAP_LOCATOR = 'div[aria-label*="Tranquil"], div[aria-label*="TRANQUIL"]'
-        PROJECT_NAME = "tranquil"
-        PROJECT_DISPLAY_NAME = "Tranquil"
-
-    # Список всех проектов Wellcube
-    ALL_PROJECTS = [Tranquil]
+    def __init__(self):
+        """Инициализация списка всех проектов Capstone."""
+        self.ALL_PROJECTS = [self.Peylaa]

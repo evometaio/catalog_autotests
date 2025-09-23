@@ -1,7 +1,9 @@
 """Фабрика для создания page objects."""
 
+from conftest import _get_urls_by_environment
+from locators.project_locators import QubeLocators
+from pages.base_page import BasePage
 from pages.capstone.capstone_pages import CapstonePages
-from pages.qube.qube_pages import QubePages
 from pages.wellcube.wellcube_pages import WellcubePages
 
 
@@ -20,7 +22,7 @@ class PageFactory:
             Соответствующий page object
         """
         page_objects = {
-            "qube": QubePages,
+            "qube": BasePage,
             "wellcube": WellcubePages,
             "capstone": CapstonePages,
         }
@@ -28,4 +30,9 @@ class PageFactory:
         if developer_type not in page_objects:
             raise ValueError(f"Неизвестный тип застройщика: {developer_type}")
 
-        return page_objects[developer_type](page)
+        if developer_type == "qube":
+
+            urls = _get_urls_by_environment()
+            return BasePage(page, urls["map"], QubeLocators)
+        else:
+            return page_objects[developer_type](page)

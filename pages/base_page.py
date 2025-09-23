@@ -4,9 +4,9 @@ from playwright.sync_api import Locator, Page, expect
 
 from locators.map_locators import MapLocators
 from locators.project_locators import (
+    BaseProjectLocators,
     CapstonePageLocators,
-    ProjectLocators,
-    QubePageLocators,
+    QubeLocators,
     WellcubePageLocators,
 )
 
@@ -14,11 +14,11 @@ from locators.project_locators import (
 class BasePage:
     """Базовый класс для всех страниц."""
 
-    # Константы для таймаутов
-    DEFAULT_TIMEOUT = 20000
-    LONG_TIMEOUT = 30000
+    # Константы для таймаутов (оптимизированы)
+    DEFAULT_TIMEOUT = 10000  # Оптимизировано с 20000
+    LONG_TIMEOUT = 15000  # Оптимизировано с 30000
     SHORT_TIMEOUT = 5000
-    MAP_LOAD_TIMEOUT = 30000
+    MAP_LOAD_TIMEOUT = 20000  # Оптимизировано с 30000
 
     def __init__(
         self, page: Page, base_url: str = None, project_locators_class: type = None
@@ -28,7 +28,7 @@ class BasePage:
         if project_locators_class:
             self.project_locators = project_locators_class()
         else:
-            self.project_locators = ProjectLocators()
+            self.project_locators = BaseProjectLocators()
         self.page = page
         self.base_url = base_url
 
@@ -38,6 +38,13 @@ class BasePage:
                 "/map", "/project/{project}/area"
             )
             self.map_url = base_url
+
+        # Инициализируем внутренние классы для организации методов
+        self.map_navigation = self.MapNavigation(self)
+        self.project = self.ProjectPage(self)
+        self.amenities = self.Amenities(self)
+        self.area_tour_360 = self.AreaTour360(self)
+        self.elire = self.Elire(self)
 
     def open(self, path: str = "", route_type: str = None):
         """Открыть страницу.
@@ -128,27 +135,6 @@ class BasePage:
         elif page_type == "map":
             return urls.get(f"{project_name_lower}_map", urls["map"])
 
-    def wait_for_map_and_projects_loaded(self):
-        """Ожидать полной загрузки карты и проектов."""
-        try:
-            # Сначала ждем загрузки контейнера карты
-            self.wait_for_element(
-                self.locators.MAP_CONTAINER, timeout=self.MAP_LOAD_TIMEOUT
-            )
-
-            # Затем ждем появления хотя бы одного проекта
-            self.page.wait_for_selector(
-                self.locators.ALL_PROJECTS_SELECTOR,
-                state="visible",
-                timeout=self.MAP_LOAD_TIMEOUT,
-            )
-
-            # Дополнительная пауза для стабилизации карты
-            self.page.wait_for_timeout(2000)
-
-        except Exception as e:
-            print(f"Ошибка при ожидании загрузки карты: {e}")
-
     def click(self, selector: str, timeout: int = None):
         """Кликнуть по элементу."""
         element = self.wait_for_element(selector, timeout)
@@ -194,42 +180,7 @@ class BasePage:
             current_url == expected_url
         ), f"URL не совпадает. Ожидалось: {expected_url}, Получено: {current_url}"
 
-    # Методы для работы с картой (из MapPage)
-
-    def click_project_on_map(self, project_name: str):
-        """Кликнуть на проект и затем на кнопку Explore Project."""
-        self.wait_for_map_and_projects_loaded()
-        # Сначала кликаем на проект (используем метод из BasePage)
-        self.click_project(project_name)
-
-        # Для остальных случаев ищем кнопку Explore Project
-        self.expect_visible(self.locators.PROJECT_INFO_WINDOW)
-        self.expect_visible(self.locators.EXPLORE_PROJECT_BUTTON)
-
-        # Затем кликаем на кнопку Explore Project
-        self.click(self.locators.EXPLORE_PROJECT_BUTTON)
-
-        # Ждем изменения URL (универсально для всех типов страниц)
-        self.page.wait_for_url(self.project_locators.PROJECT_URL_PATTERN, timeout=10000)
-
-    def check_map_loaded(self):
-        """Проверить загрузку карты."""
-        self.expect_visible(self.locators.MAP_CONTAINER)
-
-    def click_project(self, project_name: str):
-        """Кликнуть по проекту на карте по названию."""
-        # Получаем правильный локатор для проекта
-        selector = self._get_project_selector(project_name)
-
-        # Ждем появления проекта
-        self.page.wait_for_selector(selector, state="visible", timeout=10000)
-
-        # Для изображений на карте используем force_click из-за блокировки Google Maps
-        if project_name.lower() == "peylaa" and "img" in selector:
-            element = self.page.locator(selector)
-            element.click(force=True)
-        else:
-            self.click(selector)
+    # Методы для работы с картой (перенесены в MapNavigation класс)
 
     def _get_project_selector(self, project_name: str) -> str:
         """Получить селектор для проекта по названию."""
@@ -266,109 +217,7 @@ class BasePage:
                     return project_class
         return None
 
-    def check_project_info_visible(self, project_name: str):
-        """Проверить видимость информации о проекте."""
-        self.expect_visible(self.locators.PROJECT_INFO_WINDOW)
-
-    def check_project_page_loaded(self, project_name: str):
-        """Проверить загрузку страницы проекта."""
-        # Находим проект по имени
-        project = None
-        for p in QubePageLocators.ALL_PROJECTS:
-            if p.PROJECT_NAME == project_name.lower():
-                project = p
-                break
-
-        if not project:
-            raise ValueError(f"Неизвестный проект Qube: {project_name}")
-
-        # Проверяем, что мы на странице проекта (URL содержит /project/ и название проекта)
-        current_url = self.page.url
-        self.wait_for_page_load()
-        assert (
-            f"/project/{project.PROJECT_NAME}" in current_url
-        ), f"Не на странице проекта {project.PROJECT_DISPLAY_NAME}. Текущий URL: {current_url}"
-
-    def return_to_map_from_project_and_verify_returned_to_map(self):
-        """Вернуться на карту со страницы проекта."""
-        self.click(self.project_locators.DUBAI_BUTTON)
-        self.wait_for_page_load()
-
-    # Методы для работы с Explore Amenities модалкой
-
-    def click_explore_amenities_button(self):
-        """Кликнуть на кнопку Explore Amenities."""
-        self.click(self.project_locators.EXPLORE_AMENITIES_BUTTON)
-
-    def verify_amenities_modal_displayed(self):
-        """Проверить отображение модального окна amenities."""
-        self.expect_visible(self.project_locators.AMENITIES_MODAL)
-
-    def verify_amenities_modal_title(self):
-        """Проверить наличие заголовка модального окна amenities."""
-        # Проверяем, что есть хотя бы один заголовок h3 в модальном окне
-        titles = self.page.query_selector_all(
-            self.project_locators.AMENITIES_MODAL_TITLE
-        )
-        assert len(titles) > 0, "Заголовок модального окна amenities не найден"
-
-    def verify_amenities_modal_close_button(self):
-        """Проверить наличие кнопки закрытия модального окна amenities."""
-        self.expect_visible(self.project_locators.AMENITIES_MODAL_CLOSE_BUTTON)
-
-    def close_amenities_modal(self):
-        """Закрыть модальное окно amenities."""
-        self.click(self.project_locators.AMENITIES_MODAL_CLOSE_BUTTON)
-
-    def verify_amenities_slider_displayed(self):
-        """Проверить отображение слайдера в модалке amenities."""
-        self.expect_visible(self.project_locators.AMENITIES_SLIDER)
-
-    def verify_amenities_slider_images(self):
-        """Проверить наличие изображений в слайдере amenities."""
-        images = self.page.query_selector_all(
-            self.project_locators.AMENITIES_SLIDER_IMAGES
-        )
-        assert len(images) > 0, "В слайдере amenities не найдено изображений"
-        return len(images)
-
-    def verify_amenities_slider_indicators(self):
-        """Проверить наличие индикаторов слайдера amenities."""
-        indicators = self.page.query_selector_all(
-            self.project_locators.AMENITIES_SLIDER_INDICATORS
-        )
-        assert len(indicators) > 0, "Не найдены индикаторы слайдера amenities"
-        return len(indicators)
-
-    def click_amenities_slider_indicator(self, index: int):
-        """Кликнуть на индикатор слайдера amenities по индексу (начиная с 0)."""
-        indicators = self.page.query_selector_all(
-            self.project_locators.AMENITIES_SLIDER_INDICATORS
-        )
-        assert (
-            0 <= index < len(indicators)
-        ), f"Индекс {index} вне диапазона (0-{len(indicators)-1})"
-        indicators[index].click()
-
-    def click_amenities_slider_next(self):
-        """Кликнуть на кнопку 'Вперед' слайдера amenities."""
-        if self.is_visible(
-            self.project_locators.AMENITIES_SLIDER_NEXT_BUTTON, timeout=2000
-        ):
-            self.click(self.project_locators.AMENITIES_SLIDER_NEXT_BUTTON)
-
-    def click_amenities_slider_prev(self):
-        """Кликнуть на кнопку 'Назад' слайдера amenities."""
-        if self.is_visible(
-            self.project_locators.AMENITIES_SLIDER_PREV_BUTTON, timeout=2000
-        ):
-            self.click(self.project_locators.AMENITIES_SLIDER_PREV_BUTTON)
-
-    def verify_amenities_modal_closed(self):
-        """Проверить, что модальное окно amenities закрылось."""
-        self.page.wait_for_selector(
-            self.project_locators.AMENITIES_MODAL, state="hidden", timeout=5000
-        )
+    # Методы для работы с Explore Amenities (перенесены в Amenities класс)
 
     # Методы из ProjectPage для работы с проектами
 
@@ -382,39 +231,7 @@ class BasePage:
         self.expect_visible(self.project_locators.SALES_OFFER_BUTTON)
         self.click(self.project_locators.SALES_OFFER_BUTTON)
 
-    # Методы для работы с 360 Area Tour (для всех проектов)
-
-    def click_360_area_tour_button(self):
-        """Кликнуть на кнопку 360 Area Tour."""
-        self.expect_visible(self.project_locators.AREA_TOUR_360_BUTTON)
-        self.click(self.project_locators.AREA_TOUR_360_BUTTON)
-
-    def verify_360_area_tour_modal_displayed(self):
-        """Проверить отображение модального окна 360 Area Tour."""
-        self.expect_visible(self.project_locators.AREA_TOUR_360_MODAL)
-
-    def verify_360_area_tour_content(self):
-        """Проверить наличие контента в модальном окне 360 Area Tour."""
-        # Проверяем наличие модального окна
-        self.verify_360_area_tour_modal_displayed()
-
-        # Проверяем наличие контента (изображения, видео или другие элементы)
-        content_element = self.page.locator(self.project_locators.AREA_TOUR_360_CONTENT)
-        assert (
-            content_element.count() > 0
-        ), "Контент 360 Area Tour не найден в модальном окне"
-
-    def close_360_area_tour_modal(self):
-        """Закрыть модальное окно 360 Area Tour."""
-        # Ищем кнопку закрытия модального окна
-        close_button = self.page.locator(
-            self.project_locators.AREA_TOUR_360_CLOSE_BUTTON
-        )
-        if close_button.is_visible():
-            close_button.click()
-        else:
-            # Если кнопки закрытия нет, нажимаем Escape
-            self.page.keyboard.press("Escape")
+    # Методы для работы с 360 Area Tour (перенесены в AreaTour360 класс)
 
     # Методы для инкапсуляции работы с page
     def click_element(self, selector: str):
@@ -444,3 +261,414 @@ class BasePage:
     def get_element_count(self, selector: str) -> int:
         """Получить количество элементов по селектору."""
         return self.page.locator(selector).count()
+
+    # ==================== МЕТОДЫ-ОБЕРТКИ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ ====================
+
+    # Методы для работы с картой (делегируются к map_navigation)
+    def wait_for_map_and_projects_loaded(self):
+        """Ожидать полной загрузки карты и проектов."""
+        return self.map_navigation.wait_for_map_and_projects_loaded()
+
+    def check_map_loaded(self):
+        """Проверить загрузку карты."""
+        return self.map_navigation.check_map_loaded()
+
+    def click_project(self, project_name: str):
+        """Кликнуть по проекту на карте по названию."""
+        return self.map_navigation.click_project(project_name)
+
+    def click_project_on_map(self, project_name: str):
+        """Кликнуть на проект и затем на кнопку Explore Project."""
+        return self.map_navigation.click_project_on_map(project_name)
+
+    def check_project_info_visible(self, project_name: str):
+        """Проверить видимость информации о проекте."""
+        return self.map_navigation.check_project_info_visible(project_name)
+
+    def check_project_page_loaded(self, project_name: str):
+        """Проверить загрузку страницы проекта."""
+        return self.map_navigation.check_project_page_loaded(project_name)
+
+    def return_to_map_from_project_and_verify_returned_to_map(self):
+        """Вернуться на карту со страницы проекта."""
+        return (
+            self.map_navigation.return_to_map_from_project_and_verify_returned_to_map()
+        )
+
+    # Методы для работы с amenities (делегируются к amenities)
+    def click_explore_amenities_button(self):
+        """Кликнуть на кнопку Explore Amenities."""
+        return self.amenities.click_explore_amenities_button()
+
+    def verify_amenities_modal_displayed(self):
+        """Проверить отображение модального окна amenities."""
+        return self.amenities.verify_amenities_modal_displayed()
+
+    def verify_amenities_modal_title(self):
+        """Проверить наличие заголовка модального окна amenities."""
+        return self.amenities.verify_amenities_modal_title()
+
+    def verify_amenities_modal_close_button(self):
+        """Проверить наличие кнопки закрытия модального окна amenities."""
+        return self.amenities.verify_amenities_modal_close_button()
+
+    def close_amenities_modal(self):
+        """Закрыть модальное окно amenities."""
+        return self.amenities.close_amenities_modal()
+
+    def verify_amenities_slider_displayed(self):
+        """Проверить отображение слайдера в модалке amenities."""
+        return self.amenities.verify_amenities_slider_displayed()
+
+    def verify_amenities_slider_images(self):
+        """Проверить наличие изображений в слайдере amenities."""
+        return self.amenities.verify_amenities_slider_images()
+
+    def verify_amenities_slider_indicators(self):
+        """Проверить наличие индикаторов слайдера amenities."""
+        return self.amenities.verify_amenities_slider_indicators()
+
+    def click_amenities_slider_indicator(self, index: int):
+        """Кликнуть на индикатор слайдера amenities по индексу."""
+        return self.amenities.click_amenities_slider_indicator(index)
+
+    def click_amenities_slider_next(self):
+        """Кликнуть на кнопку 'Вперед' слайдера amenities."""
+        return self.amenities.click_amenities_slider_next()
+
+    def click_amenities_slider_prev(self):
+        """Кликнуть на кнопку 'Назад' слайдера amenities."""
+        return self.amenities.click_amenities_slider_prev()
+
+    def verify_amenities_modal_closed(self):
+        """Проверить, что модальное окно amenities закрылось."""
+        return self.amenities.verify_amenities_modal_closed()
+
+    # Методы для работы с 360 Area Tour (делегируются к area_tour_360)
+    def click_360_area_tour_button(self):
+        """Кликнуть на кнопку 360 Area Tour."""
+        return self.area_tour_360.click_360_area_tour_button()
+
+    def verify_360_area_tour_modal_displayed(self):
+        """Проверить отображение модального окна 360 Area Tour."""
+        return self.area_tour_360.verify_360_area_tour_modal_displayed()
+
+    def verify_360_area_tour_content(self):
+        """Проверить наличие контента в модальном окне 360 Area Tour."""
+        return self.area_tour_360.verify_360_area_tour_content()
+
+    def close_360_area_tour_modal(self):
+        """Закрыть модальное окно 360 Area Tour."""
+        return self.area_tour_360.close_360_area_tour_modal()
+
+    # Методы для работы с Elire (делегируются к elire)
+    def click_on_residences_button(self):
+        """Кликнуть на кнопку Residences."""
+        return self.elire.click_on_residences_button()
+
+    def click_on_residences_button_and_request_viewing_form(self):
+        """Кликнуть на кнопку Residences и открыть форму Request Viewing."""
+        return self.elire.click_on_residences_button_and_request_viewing_form()
+
+    def click_on_start3d_expansion_button(self):
+        """Кликнуть на кнопку Start 3D Expansion."""
+        return self.elire.click_on_start3d_expansion_button()
+
+    # Методы для работы с проектами (делегируются к project)
+    def click_available_apartment(
+        self, apartment_selector: str = None, max_attempts: int = 10
+    ) -> bool:
+        """Найти и кликнуть на первый доступный апартамент на плане этажа."""
+        return self.project.click_available_apartment(apartment_selector, max_attempts)
+
+    # ==================== ВНУТРЕННИЕ КЛАССЫ ДЛЯ ОРГАНИЗАЦИИ МЕТОДОВ ====================
+
+    class MapNavigation:
+        """Методы для навигации по карте и проектам."""
+
+        def __init__(self, parent):
+            self.parent = parent
+
+        def wait_for_map_and_projects_loaded(self):
+            """Ожидать полной загрузки карты и проектов."""
+            try:
+                # Сначала ждем загрузки контейнера карты
+                self.parent.wait_for_element(
+                    self.parent.locators.MAP_CONTAINER,
+                    timeout=self.parent.MAP_LOAD_TIMEOUT,
+                )
+
+                # Затем ждем появления хотя бы одного проекта
+                self.parent.page.wait_for_selector(
+                    self.parent.locators.ALL_PROJECTS_SELECTOR,
+                    state="visible",
+                    timeout=self.parent.MAP_LOAD_TIMEOUT,
+                )
+
+                # Дополнительная пауза для стабилизации карты
+                self.parent.page.wait_for_timeout(2000)
+
+            except Exception as e:
+                print(f"Ошибка при ожидании загрузки карты: {e}")
+
+        def check_map_loaded(self):
+            """Проверить загрузку карты."""
+            self.parent.expect_visible(self.parent.locators.MAP_CONTAINER)
+
+        def click_project(self, project_name: str):
+            """Кликнуть по проекту на карте по названию."""
+            # Получаем правильный локатор для проекта
+            selector = self.parent._get_project_selector(project_name)
+
+            # Ждем появления проекта
+            self.parent.page.wait_for_selector(selector, state="visible", timeout=10000)
+
+            # Для изображений на карте используем force_click из-за блокировки Google Maps
+            if project_name.lower() == "peylaa" and "img" in selector:
+                element = self.parent.page.locator(selector)
+                element.click(force=True)
+            else:
+                self.parent.click(selector)
+
+        def click_project_on_map(self, project_name: str):
+            """Кликнуть на проект и затем на кнопку Explore Project."""
+            self.wait_for_map_and_projects_loaded()
+            # Сначала кликаем на проект
+            self.click_project(project_name)
+
+            # Для остальных случаев ищем кнопку Explore Project
+            self.parent.expect_visible(self.parent.locators.PROJECT_INFO_WINDOW)
+            self.parent.expect_visible(self.parent.locators.EXPLORE_PROJECT_BUTTON)
+
+            # Затем кликаем на кнопку Explore Project
+            self.parent.click(self.parent.locators.EXPLORE_PROJECT_BUTTON)
+
+            # Ждем изменения URL (универсально для всех типов страниц)
+            self.parent.page.wait_for_url(
+                self.parent.project_locators.PROJECT_URL_PATTERN, timeout=10000
+            )
+
+        def check_project_info_visible(self, project_name: str):
+            """Проверить видимость информации о проекте."""
+            self.parent.expect_visible(self.parent.locators.PROJECT_INFO_WINDOW)
+
+        def check_project_page_loaded(self, project_name: str):
+            """Проверить загрузку страницы проекта."""
+            # Находим проект по имени
+            project = None
+            for p in self.parent.project_locators.ALL_PROJECTS:
+                if p.PROJECT_NAME == project_name.lower():
+                    project = p
+                    break
+
+            if not project:
+                raise ValueError(f"Неизвестный проект: {project_name}")
+
+            # Проверяем, что мы на странице проекта (URL содержит /project/ и название проекта)
+            current_url = self.parent.page.url
+            self.parent.wait_for_page_load()
+            assert (
+                f"/project/{project.PROJECT_NAME}" in current_url
+            ), f"Не на странице проекта {project.PROJECT_DISPLAY_NAME}. Текущий URL: {current_url}"
+
+        def return_to_map_from_project_and_verify_returned_to_map(self):
+            """Вернуться на карту из проекта и проверить, что мы на карте."""
+            self.parent.page.go_back()
+            self.check_map_loaded()
+
+    class ProjectPage:
+        """Методы для работы с проектами."""
+
+        def __init__(self, parent):
+            self.parent = parent
+
+        def click_available_apartment(
+            self, apartment_selector: str = None, max_attempts: int = 10
+        ) -> bool:
+            """
+            Найти и кликнуть на первый доступный апартамент на плане этажа.
+
+            Args:
+                apartment_selector: Селектор для поиска апартаментов (по умолчанию из project_locators)
+                max_attempts: Максимальное количество попыток клика
+
+            Returns:
+                bool: True если удалось кликнуть на апартамент
+            """
+            if apartment_selector is None:
+                apartment_selector = self.parent.project_locators.FLOOR_PLAN_APARTMENTS
+
+            # Ждем загрузки апартаментов
+            self.parent.page.wait_for_selector(apartment_selector, timeout=10000)
+
+            apartment_elements = self.parent.page.locator(apartment_selector)
+            apartment_count = apartment_elements.count()
+
+            if apartment_count == 0:
+                return False
+
+            # Ищем первый доступный апартамент (без замка)
+            for i in range(min(apartment_count, max_attempts)):
+                try:
+                    apartment = apartment_elements.nth(i)
+
+                    # Проверяем, есть ли замок
+                    lock_icon = apartment.locator(
+                        "xpath=.//span[@role='img' and @aria-label='lock']"
+                    )
+                    has_lock = lock_icon.count() > 0
+
+                    if not has_lock:
+                        apartment.click()
+                        self.parent.page.wait_for_timeout(2000)
+
+                        # Проверяем, перешли ли мы на страницу апартамента
+                        current_url = self.parent.page.url
+                        if "/apartment/" in current_url or "/unit/" in current_url:
+                            return True
+
+                except Exception:
+                    continue
+
+            return False
+
+    class Amenities:
+        """Методы для работы с amenities."""
+
+        def __init__(self, parent):
+            self.parent = parent
+
+        def click_explore_amenities_button(self):
+            """Кликнуть на кнопку Explore Amenities."""
+            self.parent.click(self.parent.project_locators.EXPLORE_AMENITIES_BUTTON)
+
+        def verify_amenities_modal_displayed(self):
+            """Проверить отображение модального окна amenities."""
+            self.parent.expect_visible(self.parent.project_locators.AMENITIES_MODAL)
+
+        def verify_amenities_modal_title(self):
+            """Проверить наличие заголовка модального окна."""
+            self.parent.expect_visible(
+                self.parent.project_locators.AMENITIES_MODAL_TITLE
+            )
+
+        def verify_amenities_modal_close_button(self):
+            """Проверить наличие кнопки закрытия модального окна."""
+            self.parent.expect_visible(
+                self.parent.project_locators.AMENITIES_MODAL_CLOSE_BUTTON
+            )
+
+        def close_amenities_modal(self):
+            """Закрыть модальное окно amenities."""
+            self.parent.click(self.parent.project_locators.AMENITIES_MODAL_CLOSE_BUTTON)
+
+        def verify_amenities_slider_displayed(self):
+            """Проверить отображение слайдера amenities."""
+            self.parent.expect_visible(self.parent.project_locators.AMENITIES_SLIDER)
+
+        def verify_amenities_slider_images(self):
+            """Проверить наличие изображений в слайдере amenities."""
+            slider_images = self.parent.page.locator(
+                self.parent.project_locators.AMENITIES_SLIDER_IMAGES
+            )
+            assert (
+                slider_images.count() > 0
+            ), "Изображения в слайдере amenities не найдены"
+
+        def verify_amenities_slider_indicators(self):
+            """Проверить наличие индикаторов слайдера amenities."""
+            slider_indicators = self.parent.page.locator(
+                self.parent.project_locators.AMENITIES_SLIDER_INDICATORS
+            )
+            assert (
+                slider_indicators.count() > 0
+            ), "Индикаторы слайдера amenities не найдены"
+
+        def click_amenities_slider_indicator(self, index: int):
+            """Кликнуть на индикатор слайдера amenities по индексу."""
+            indicators = self.parent.page.locator(
+                self.parent.project_locators.AMENITIES_SLIDER_INDICATORS
+            )
+            indicators.nth(index).click()
+
+        def click_amenities_slider_next(self):
+            """Кликнуть на кнопку 'следующий' слайдера amenities."""
+            self.parent.click(self.parent.project_locators.AMENITIES_SLIDER_NEXT)
+
+        def click_amenities_slider_prev(self):
+            """Кликнуть на кнопку 'предыдущий' слайдера amenities."""
+            self.parent.click(self.parent.project_locators.AMENITIES_SLIDER_PREV)
+
+        def verify_amenities_modal_closed(self):
+            """Проверить, что модальное окно amenities закрыто."""
+            self.parent.page.wait_for_selector(
+                self.parent.project_locators.AMENITIES_MODAL,
+                state="hidden",
+                timeout=5000,
+            )
+
+    class AreaTour360:
+        """Методы для работы с 360 Area Tour."""
+
+        def __init__(self, parent):
+            self.parent = parent
+
+        def click_360_area_tour_button(self):
+            """Кликнуть на кнопку 360 Area Tour."""
+            self.parent.click(self.parent.project_locators.AREA_TOUR_360_BUTTON)
+
+        def verify_360_area_tour_modal_displayed(self):
+            """Проверить отображение модального окна 360 Area Tour."""
+            self.parent.expect_visible(self.parent.project_locators.AREA_TOUR_360_MODAL)
+
+        def verify_360_area_tour_content(self):
+            """Проверить наличие контента в модальном окне 360 Area Tour."""
+            # Проверяем наличие контента (изображения, видео или другие элементы)
+            content_element = self.parent.page.locator(
+                self.parent.project_locators.AREA_TOUR_360_CONTENT
+            )
+            assert (
+                content_element.count() > 0
+            ), "Контент 360 Area Tour не найден в модальном окне"
+
+        def close_360_area_tour_modal(self):
+            """Закрыть модальное окно 360 Area Tour."""
+            # Ищем кнопку закрытия модального окна
+            close_button = self.parent.page.locator(
+                self.parent.project_locators.AREA_TOUR_360_CLOSE_BUTTON
+            )
+            if close_button.is_visible():
+                close_button.click()
+            else:
+                # Если кнопки закрытия нет, нажимаем Escape
+                self.parent.page.keyboard.press("Escape")
+
+    class Elire:
+        """Методы специфичные для проекта Elire."""
+
+        def __init__(self, parent):
+            self.parent = parent
+
+        def click_on_residences_button(self):
+            """Кликнуть на кнопку Residences."""
+            self.parent.expect_visible(
+                self.parent.project_locators.Elire.RESIDENCES_BUTTON
+            )
+            self.parent.click(self.parent.project_locators.Elire.RESIDENCES_BUTTON)
+
+        def click_on_residences_button_and_request_viewing_form(self):
+            """Кликнуть на кнопку Residences и открыть форму Request Viewing."""
+            self.parent.expect_visible(
+                self.parent.project_locators.Elire.RESIDENCES_BUTTON
+            )
+            self.parent.click(self.parent.project_locators.Elire.RESIDENCES_BUTTON)
+            self.parent.click(self.parent.project_locators.Elire.REQUEST_VIEWING_BUTTON)
+
+        def click_on_start3d_expansion_button(self):
+            """Кликнуть на кнопку Start 3D Expansion."""
+            self.parent.expect_visible(
+                self.parent.project_locators.Elire.START_3D_EXPANSION_BUTTON
+            )
+            self.parent.click(
+                self.parent.project_locators.Elire.START_3D_EXPANSION_BUTTON
+            )
