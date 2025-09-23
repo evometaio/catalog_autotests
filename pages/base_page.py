@@ -98,21 +98,23 @@ class BasePage:
         Returns:
             str: URL для проекта
         """
-        import os
-
         from conftest import _get_urls_by_environment
 
         urls = _get_urls_by_environment()
         project_name_lower = project_name.lower()
 
+        # Проверяем валидность типа страницы
+        if page_type not in self.project_locators.PAGE_TYPES:
+            raise ValueError(f"Неизвестный тип страницы: {page_type}")
+
         # Определяем базовый URL в зависимости от проекта
-        if project_name_lower in ["arisha", "cubix", "elire"]:
+        if project_name_lower in self.project_locators.QUBE_PROJECTS:
             # Qube проекты
             base_url = urls["map"].replace("/map", "")
-        elif project_name_lower == "peylaa":
+        elif project_name_lower in self.project_locators.CAPSTONE_PROJECTS:
             # Capstone проект
             base_url = urls["capstone_map"].replace("/map", "")
-        elif project_name_lower == "tranquil":
+        elif project_name_lower in self.project_locators.WELLCUBE_PROJECTS:
             # Wellcube проект
             base_url = urls["wellcube_map"].replace("/map", "")
         else:
@@ -125,8 +127,6 @@ class BasePage:
             return f"{base_url}/project/{project_name_lower}/area"
         elif page_type == "map":
             return urls.get(f"{project_name_lower}_map", urls["map"])
-        else:
-            raise ValueError(f"Неизвестный тип страницы: {page_type}")
 
     def wait_for_map_and_projects_loaded(self):
         """Ожидать полной загрузки карты и проектов."""
@@ -210,7 +210,7 @@ class BasePage:
         self.click(self.locators.EXPLORE_PROJECT_BUTTON)
 
         # Ждем изменения URL (универсально для всех типов страниц)
-        self.page.wait_for_url("**/project/**", timeout=10000)
+        self.page.wait_for_url(self.project_locators.PROJECT_URL_PATTERN, timeout=10000)
 
     def check_map_loaded(self):
         """Проверить загрузку карты."""
@@ -235,29 +235,36 @@ class BasePage:
         """Получить селектор для проекта по названию."""
         project_name_lower = project_name.lower()
 
-        # Проверяем окружение для Peylaa
-        import os
-
-        environment = os.getenv("TEST_ENVIRONMENT", "dev")
-
-        # Маппинг проектов на их селекторы
-        project_selectors = {
-            "elire": 'div[aria-label*="Elire"], div[aria-label*="ELIRE"]',
-            "arisha": 'div[aria-label*="ARISHA TERACCES"], div[aria-label*="Arisha"], div[aria-label*="ARISHA"]',
-            "cubix": 'div[aria-label*="CUBIX RESIDENCE"], div[aria-label*="Cubix"], div[aria-label*="CUBIX"]',
-            "peylaa": (
-                'img[src*="map_pin_peylaa.png"]'
-                if environment == "dev"
-                else 'div[aria-label*="Peylaa"]'
-            ),
-            "tranquil": '[aria-label="Tranquil Wellness Tower"]',
-        }
-
-        if project_name_lower in project_selectors:
-            return project_selectors[project_name_lower]
-        else:
+        # Получаем проект из локаторов
+        project_class = self._get_project_class(project_name_lower)
+        if not project_class:
             # Fallback на старый способ
             return f'div[aria-label*="{project_name}"], div[aria-label*="{project_name.upper()}"]'
+
+        # Для Peylaa учитываем окружение
+        if project_name_lower == "peylaa":
+            import os
+
+            environment = os.getenv("TEST_ENVIRONMENT", "dev")
+            if environment == "dev":
+                return project_class.MAP_LOCATOR_DEV
+            else:
+                return project_class.MAP_LOCATOR_PROD
+
+        # Для остальных проектов используем MAP_LOCATOR
+        return project_class.MAP_LOCATOR
+
+    def _get_project_class(self, project_name: str):
+        """Получить класс проекта из локаторов."""
+        # Проверяем все проекты в локаторах
+        if hasattr(self.project_locators, "ALL_PROJECTS"):
+            for project_class in self.project_locators.ALL_PROJECTS:
+                if (
+                    hasattr(project_class, "PROJECT_NAME")
+                    and project_class.PROJECT_NAME == project_name
+                ):
+                    return project_class
+        return None
 
     def check_project_info_visible(self, project_name: str):
         """Проверить видимость информации о проекте."""
@@ -372,22 +379,19 @@ class BasePage:
 
     def click_on_sales_offer_button(self):
         """Кликнуть на кнопку Sales Offer."""
-        self.expect_visible(self.project_locators.AgentPage.SALES_OFFER_BUTTON)
-        self.click(self.project_locators.AgentPage.SALES_OFFER_BUTTON)
+        self.expect_visible(self.project_locators.SALES_OFFER_BUTTON)
+        self.click(self.project_locators.SALES_OFFER_BUTTON)
 
     # Методы для работы с 360 Area Tour (для всех проектов)
 
     def click_360_area_tour_button(self):
         """Кликнуть на кнопку 360 Area Tour."""
-        # Используем универсальный локатор для всех проектов
-        button_selector = '[data-test-id="nav-rotation-view-controls-button"]'
-        self.expect_visible(button_selector)
-        self.click(button_selector)
+        self.expect_visible(self.project_locators.AREA_TOUR_360_BUTTON)
+        self.click(self.project_locators.AREA_TOUR_360_BUTTON)
 
     def verify_360_area_tour_modal_displayed(self):
         """Проверить отображение модального окна 360 Area Tour."""
-        modal_selector = "//div[contains(@class, 'modal')]"
-        self.expect_visible(modal_selector)
+        self.expect_visible(self.project_locators.AREA_TOUR_360_MODAL)
 
     def verify_360_area_tour_content(self):
         """Проверить наличие контента в модальном окне 360 Area Tour."""
@@ -395,8 +399,7 @@ class BasePage:
         self.verify_360_area_tour_modal_displayed()
 
         # Проверяем наличие контента (изображения, видео или другие элементы)
-        content_selector = "//img[contains(@class, '__react-image-turntable-img')] | //video | //canvas"
-        content_element = self.page.locator(content_selector)
+        content_element = self.page.locator(self.project_locators.AREA_TOUR_360_CONTENT)
         assert (
             content_element.count() > 0
         ), "Контент 360 Area Tour не найден в модальном окне"
@@ -405,7 +408,7 @@ class BasePage:
         """Закрыть модальное окно 360 Area Tour."""
         # Ищем кнопку закрытия модального окна
         close_button = self.page.locator(
-            '.ant-modal-close, .modal-close, [aria-label="Close"]'
+            self.project_locators.AREA_TOUR_360_CLOSE_BUTTON
         )
         if close_button.is_visible():
             close_button.click()

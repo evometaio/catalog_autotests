@@ -1,11 +1,11 @@
 from locators.map_locators import MapLocators
 from locators.project_locators import QubePageLocators
 
-from .base_page import BasePage
+from ..base_page import BasePage
 
 
 class ClientPage(BasePage):
-    """Page Object для клиентских страниц."""
+    """Page Object для клиентских страниц Qube проектов."""
 
     def __init__(self, page, url: str):
         """Инициализация ClientPage.
@@ -20,7 +20,7 @@ class ClientPage(BasePage):
     def click_on_residences_button_and_request_viewing_form(self):
         """Кликает на кнопку Residences и открывает форму Request Viewing."""
         # Используем QubePages для работы с кнопками
-        from .qube.qube_pages import QubePages
+        from .qube_pages import QubePages
 
         qube_pages = QubePages(self.page, self.base_url)
         qube_pages.click_on_residences_button_and_request_viewing_form()

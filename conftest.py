@@ -5,9 +5,14 @@ import allure
 import pytest
 from playwright.sync_api import Page
 
-from pages.agent_page import AgentPage
+from locators.project_locators import (
+    CapstonePageLocators,
+    QubePageLocators,
+    WellcubePageLocators,
+)
 from pages.base_page import BasePage
-from pages.client_page import ClientPage
+from pages.qube.agent_page import AgentPage
+from pages.qube.client_page import ClientPage
 
 
 def _create_environment_properties():
@@ -164,12 +169,13 @@ def map_page(page: Page, request):
 
     if project_name == "capstone":
         url = urls["capstone_map"]
+        return BasePage(page, url, CapstonePageLocators)
     elif project_name == "wellcube":
         url = urls["wellcube_map"]
+        return BasePage(page, url, WellcubePageLocators)
     else:  # qube
         url = urls["map"]
-
-    return BasePage(page, url)
+        return BasePage(page, url, QubePageLocators)
 
 
 @pytest.fixture
@@ -191,11 +197,9 @@ def client_page(page: Page):
 @pytest.fixture
 def capstone_project_page(page: Page):
     """Фикстура для страниц проектов Capstone."""
-    urls = _get_urls_by_environment()
-    url = urls[
-        "capstone_map"
-    ]  # Используем capstone_map URL для страниц проектов Capstone
-    return BasePage(page, url)
+    from pages.capstone.capstone_pages import CapstonePages
+
+    return CapstonePages(page)
 
 
 @pytest.fixture

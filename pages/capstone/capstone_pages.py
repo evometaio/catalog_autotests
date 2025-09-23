@@ -51,16 +51,18 @@ class CapstonePages(BasePage):
             raise ValueError(f"Неизвестный тип страницы для Capstone: {page_type}")
 
     def click_project_on_map(self, project_name: str):
-        """Кликнуть на проект на карте Capstone."""
-        if project_name.lower() == "peylaa":
-            import os
+        """Кликнуть на проект и затем на кнопку Explore Project."""
+        # Используем полную логику из BasePage
+        self.wait_for_map_and_projects_loaded()
+        # Сначала кликаем на проект
+        self.click_project(project_name)
 
-            environment = os.getenv("TEST_ENVIRONMENT", "dev")
-            if environment == "dev":
-                self.click('img[src*="map_pin_peylaa.png"]')
-            else:
-                self.click('div[aria-label*="Peylaa"]')
-        else:
-            raise ValueError(f"Неизвестный Capstone проект: {project_name}")
+        # Для остальных случаев ищем кнопку Explore Project
+        self.expect_visible(self.locators.PROJECT_INFO_WINDOW)
+        self.expect_visible(self.locators.EXPLORE_PROJECT_BUTTON)
 
-        self.wait_for_page_load()
+        # Затем кликаем на кнопку Explore Project
+        self.click(self.locators.EXPLORE_PROJECT_BUTTON)
+
+        # Ждем изменения URL (универсально для всех типов страниц)
+        self.page.wait_for_url(self.project_locators.PROJECT_URL_PATTERN, timeout=10000)

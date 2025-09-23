@@ -63,7 +63,7 @@ class QubePages(BasePage):
         project_name_lower = project_name.lower()
 
         project_selectors = {
-            "elire": 'div[aria-label*="Elire"], div[aria-label*="ELIRE"]',
+            "elire": 'div[aria-label="Elire"]',
             "arisha": 'div[aria-label*="ARISHA TERACCES"], div[aria-label*="Arisha"], div[aria-label*="ARISHA"]',
             "cubix": 'div[aria-label*="CUBIX RESIDENCE"], div[aria-label*="Cubix"], div[aria-label*="CUBIX"]',
         }
