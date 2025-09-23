@@ -5,10 +5,14 @@ import allure
 import pytest
 from playwright.sync_api import Page
 
-from pages.agent_page import AgentPage
+from locators.project_locators import (
+    CapstonePageLocators,
+    QubeLocators,
+    WellcubePageLocators,
+)
 from pages.base_page import BasePage
-from pages.client_page import ClientPage
-from pages.project_page import ProjectPage
+from pages.qube.agent_page import AgentPage
+from pages.qube.client_page import ClientPage
 
 
 def _create_environment_properties():
@@ -149,8 +153,8 @@ def fake():
 
 # Фикстуры по типам страниц
 @pytest.fixture
-def main_page(page: Page, request):
-    """Фикстура для главных страниц (карт) всех проектов."""
+def map_page(page: Page, request):
+    """Фикстура для карт всех проектов."""
     # Определяем проект из имени теста
     project_name = "qube"  # по умолчанию
     if hasattr(request, "fixturename"):
@@ -165,12 +169,13 @@ def main_page(page: Page, request):
 
     if project_name == "capstone":
         url = urls["capstone_map"]
+        return BasePage(page, url, CapstonePageLocators)
     elif project_name == "wellcube":
         url = urls["wellcube_map"]
+        return BasePage(page, url, WellcubePageLocators)
     else:  # qube
         url = urls["map"]
-
-    return BasePage(page, url)
+        return BasePage(page, url, QubeLocators)
 
 
 @pytest.fixture
@@ -190,21 +195,11 @@ def client_page(page: Page):
 
 
 @pytest.fixture
-def project_page(page: Page):
-    """Фикстура для страниц проектов Qube."""
-    urls = _get_urls_by_environment()
-    url = urls["agent"]  # Используем agent URL для страниц проектов Qube
-    return ProjectPage(page, url)
-
-
-@pytest.fixture
 def capstone_project_page(page: Page):
     """Фикстура для страниц проектов Capstone."""
-    urls = _get_urls_by_environment()
-    url = urls[
-        "capstone_map"
-    ]  # Используем capstone_map URL для страниц проектов Capstone
-    return ProjectPage(page, url)
+    from pages.capstone.capstone_pages import CapstonePages
+
+    return CapstonePages(page)
 
 
 @pytest.fixture
@@ -212,7 +207,15 @@ def capstone_direct_project_page(page: Page):
     """Фикстура для прямых URL проектов Capstone (например, /project/peylaa/area)."""
     urls = _get_urls_by_environment()
     base_url = urls["capstone_map"].replace("/map", "")  # Убираем /map из базового URL
-    return ProjectPage(page, base_url)
+    return BasePage(page, base_url)
+
+
+@pytest.fixture
+def wellcube_page(page: Page):
+    """Фикстура для страниц Wellcube проектов."""
+    from pages.wellcube.wellcube_pages import WellcubePages
+
+    return WellcubePages(page)
 
 
 # Хук для обработки результатов тестов

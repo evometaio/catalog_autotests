@@ -1,13 +1,14 @@
 import os
+import time
 
 from locators.map_locators import MapLocators
-from locators.project_locators import QubePageLocators
+from locators.project_locators import QubeLocators
 
-from .base_page import BasePage
+from ..base_page import BasePage
 
 
 class AgentPage(BasePage):
-    """Page Object для агентских страниц."""
+    """Page Object для агентских страниц Qube проектов."""
 
     def __init__(self, page, url: str):
         """Инициализация AgentPage.
@@ -16,13 +17,11 @@ class AgentPage(BasePage):
             page: Playwright page объект
             url: URL агентской страницы
         """
-        super().__init__(page, url)
-        self.project_locators = QubePageLocators()
-        self.map_locators = MapLocators()
+        super().__init__(page, url, QubeLocators)
 
     def click_on_download_pdf_button(self):
         """Кликает на кнопку скачивания PDF."""
-        self.click(self.locators.DOWNLOAD_PDF_BUTTON)
+        self.click(self.project_locators.DOWNLOAD_PDF_BUTTON)
 
     def download_pdf_and_verify(self) -> tuple[bool, str]:
         """
@@ -36,11 +35,14 @@ class AgentPage(BasePage):
             download_dir = "temp/downloads"
             os.makedirs(download_dir, exist_ok=True)
 
-            # Начинаем скачивание
-            with self.page.expect_download() as download_info:
+            # Засекаем время начала скачивания
+            start_time = time.time()
+
+            # Начинаем скачивание с таймаутом 20 секунд
+            with self.page.expect_download(timeout=20000) as download_info:
                 # Кликаем по кнопке Download PDF
-                self.expect_visible(self.project_locators.AgentPage.DOWNLOAD_PDF_BUTTON)
-                self.click(self.project_locators.AgentPage.DOWNLOAD_PDF_BUTTON)
+                self.expect_visible(self.project_locators.DOWNLOAD_PDF_BUTTON)
+                self.click(self.project_locators.DOWNLOAD_PDF_BUTTON)
 
             # Получаем объект скачивания
             download = download_info.value
@@ -57,13 +59,20 @@ class AgentPage(BasePage):
             file_path = os.path.join(download_dir, download.suggested_filename)
             download.save_as(file_path)
 
+            # Засекаем время окончания скачивания
+            end_time = time.time()
+            download_time = round(end_time - start_time, 2)
+
             # Проверяем размер файла (больше 1KB)
             file_size = os.path.getsize(file_path)
 
-            print(f"PDF скачан: {file_path}, размер: {file_size} байт")
+            print(
+                f"PDF скачан: {file_path}, размер: {file_size} байт, время скачивания: {download_time} сек"
+            )
             return file_size > 1024, file_path
 
         except Exception as e:
+            print(f"Ошибка при скачивании PDF: {e}")
             return False, ""
 
     def cleanup_pdf_after_test(self):
@@ -122,5 +131,5 @@ class AgentPage(BasePage):
 
     def click_on_sales_offer_button(self):
         """Кликнуть на кнопку Sales Offer."""
-        self.expect_visible(self.project_locators.AgentPage.SALES_OFFER_BUTTON)
-        self.click(self.project_locators.AgentPage.SALES_OFFER_BUTTON)
+        self.expect_visible(self.project_locators.SALES_OFFER_BUTTON)
+        self.click(self.project_locators.SALES_OFFER_BUTTON)

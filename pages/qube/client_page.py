@@ -1,11 +1,11 @@
 from locators.map_locators import MapLocators
-from locators.project_locators import QubePageLocators
+from locators.project_locators import QubeLocators
 
-from .base_page import BasePage
+from ..base_page import BasePage
 
 
 class ClientPage(BasePage):
-    """Page Object для клиентских страниц."""
+    """Page Object для клиентских страниц Qube проектов."""
 
     def __init__(self, page, url: str):
         """Инициализация ClientPage.
@@ -14,25 +14,13 @@ class ClientPage(BasePage):
             page: Playwright page объект
             url: URL клиентской страницы
         """
-        super().__init__(page, url)
+        super().__init__(page, url, QubeLocators)
         self.map_locators = MapLocators()
-        self.project_locators = QubePageLocators()
 
     def click_on_residences_button_and_request_viewing_form(self):
         """Кликает на кнопку Residences и открывает форму Request Viewing."""
-        # Ждем появления кнопки Residences и кликаем
-        residences_button = self.page.locator(
-            self.project_locators.Elire.RESIDENCES_BUTTON
-        ).first
-        residences_button.wait_for(state="visible", timeout=10000)
-        residences_button.click()
-
-        # Ждем появления кнопки REQUEST VIEWING и кликаем
-        request_viewing_button = self.page.locator(
-            self.project_locators.Elire.REQUEST_VIEWING_BUTTON
-        )
-        request_viewing_button.wait_for(state="visible", timeout=10000)
-        request_viewing_button.click()
+        # Используем методы из внутреннего класса Elire
+        self.elire.click_on_residences_button_and_request_viewing_form()
 
     def fill_and_submit_request_viewing_form(self, fake):
         """Заполняет форму Request Viewing.
@@ -55,7 +43,7 @@ class ClientPage(BasePage):
             bool: True если сообщение об успехе отображается
         """
         # Нужны локаторы для модального окна
-        project_locators = QubePageLocators()
+        project_locators = QubeLocators()
 
         # Проверяем модальное окно
         modal = self.page.locator(project_locators.Elire.SUCCESS_MODAL)

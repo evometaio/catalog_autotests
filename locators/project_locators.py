@@ -1,5 +1,9 @@
-class ProjectLocators:
-    """Базовый класс для локаторов страниц проектов."""
+class BaseProjectLocators:
+    """Базовый класс для всех локаторов проектов."""
+
+    # Общие константы
+    PROJECT_URL_PATTERN = "**/project/**"
+    PAGE_TYPES = ["catalog2d", "area", "map"]
 
     # Общие локаторы для всех проектов
     ALL_UNITS_BUTTON = '[data-test-id="nav-desktop-catalog2d-standalone"]'
@@ -9,36 +13,65 @@ class ProjectLocators:
     DUBAI_BUTTON = '(//span[text()="Dubai"])[1]'
     DUBAI_BUTTON_CUB = '(//span[text()="Dubai"])'
 
+    # Базовые локаторы для Explore Amenities (могут быть переопределены в подклассах)
+    EXPLORE_AMENITIES_BUTTON = (
+        '(//button[@data-test-id="project-info-window-explore-amenities"])[2]'
+    )
+    AMENITIES_MODAL = ".ant-modal-content"
+    AMENITIES_MODAL_TITLE = ".ant-modal-content h3"
+    AMENITIES_MODAL_CLOSE_BUTTON = ".ant-modal-close"
 
-class QubePageLocators(ProjectLocators):
-    """Локаторы для страниц проектов Qube (arisha, elire, cubix)."""
+    # Локаторы для слайдера в модалке amenities
+    AMENITIES_SLIDER = ".slick-slider"
+    AMENITIES_SLIDER_IMAGES = ".slick-slider img"
+    AMENITIES_SLIDER_INDICATORS = ".slick-dots li"
+    AMENITIES_SLIDER_PREV_BUTTON = ".slick-prev"
+    AMENITIES_SLIDER_NEXT_BUTTON = ".slick-next"
 
-    # Агентская страница - для Qube
-    class AgentPage:
-        """Локаторы для агентских страниц проектов Qube."""
+    # 360 Area Tour - доступен на всех страницах проектов
+    AREA_TOUR_360_BUTTON = '[data-test-id="nav-rotation-view-controls-button"]'
+    AREA_TOUR_360_MODAL = "//div[contains(@class, 'modal')]"
+    AREA_TOUR_360_OVERLAY = "//div[contains(@class, 'overlay')]"
+    AREA_TOUR_360_CLOSE_BUTTON = (
+        "//button[contains(@class, 'close') and @aria-label='close']"
+    )
+    AREA_TOUR_360_CONTENT = (
+        "//img[contains(@class, '__react-image-turntable-img')] | //video | //canvas"
+    )
 
-        SALES_OFFER_BUTTON = "//span[text()='Sales Offer']"
-        DOWNLOAD_PDF_BUTTON = "//button[.//span[text() = 'Download PDF']]"
-        AREA_TOUR_360_BUTTON = '[data-test-id="nav-rotation-view-controls-button"]'
-        # Временный локатор для продакшена (до добавления data-test-id)
-        AREA_TOUR_360_BUTTON_PROD = '[data-test-id="nav-rotation-view-controls-button"]'
+    # Агентские функции - доступны на агентских страницах
+    SALES_OFFER_BUTTON = "//span[text()='Sales Offer']"
+    DOWNLOAD_PDF_BUTTON = "//button[.//span[text() = 'Download PDF']]"
 
-        # Локаторы для модального окна 360 Area Tour
-        AREA_TOUR_360_MODAL = "//div[contains(@class, 'modal')]"
-        AREA_TOUR_360_OVERLAY = "//div[contains(@class, 'overlay')]"
-        AREA_TOUR_360_CLOSE_BUTTON = (
-            "//button[contains(@class, 'close') or @aria-label='close']"
-        )
-        AREA_TOUR_360_CONTENT = "//img[contains(@class, '__react-image-turntable-img')] | //video | //canvas"
+    # Навигация по зданиям и этажам - доступны на всех страницах проектов
+    BUILDING_NAV_BUTTON = '[data-test-id="nav-desktop-building"]'
+    FLOOR_NAV_BUTTON = '[data-test-id="nav-desktop-floor"]'
+    APARTMENT_NAV_BUTTON = '[data-test-id="nav-desktop-apartment"]'
 
-    # Клиентская страница -  для Qube
-    class ClientPage:
-        """Локаторы для клиентских страниц проектов Qube."""
+    # Селекторы для конкретных зданий и этажей
+    BUILDING_1_BUTTON = '[data-test-id="nav-desktop-building-1"]'
+    BUILDING_2_BUTTON = '[data-test-id="nav-desktop-building-2"]'
+    BUILDING_3_BUTTON = '[data-test-id="nav-desktop-building-3"]'
 
-        CALLBACK_FORM_BUTTON = "//button[.//*[@aria-label='phone']]"
-        CALLBACK_FORM_MODAL = "//div[@class='ant-modal-content']"
+    FLOOR_1_BUTTON = '[data-test-id="nav-desktop-floor-1"]'
+    FLOOR_2_BUTTON = '[data-test-id="nav-desktop-floor-2"]'
+    FLOOR_3_BUTTON = '[data-test-id="nav-desktop-floor-3"]'
+    FLOOR_4_BUTTON = '[data-test-id="nav-desktop-floor-4"]'
+    FLOOR_5_BUTTON = '[data-test-id="nav-desktop-floor-5"]'
+    FLOOR_6_BUTTON = '[data-test-id="nav-desktop-floor-6"]'
+    FLOOR_7_BUTTON = '[data-test-id="nav-desktop-floor-7"]'
 
-    # Проекты Qube
+    # Селектор для апартаментов на плане этажа
+    FLOOR_PLAN_APARTMENTS = 'svg [class*="apartment"]'
+
+
+class QubeLocators(BaseProjectLocators):
+    """Локаторы для проектов Qube (Arisha, Elire, Cubix)."""
+
+    # Названия проектов Qube
+    QUBE_PROJECTS = ["arisha", "cubix", "elire"]
+    ALL_PROJECTS = []
+
     class Arisha:
         """Локаторы для проекта Arisha."""
 
@@ -49,11 +82,12 @@ class QubePageLocators(ProjectLocators):
     class Elire:
         """Локаторы для проекта Elire."""
 
-        MAP_LOCATOR = 'div[aria-label*="Elire"], div[aria-label*="ELIRE"]'
+        MAP_LOCATOR = 'div[aria-label="Elire"]'
         PROJECT_NAME = "elire"
         PROJECT_DISPLAY_NAME = "Elire"
         RESIDENCES_BUTTON = '[data-test-id="nav-desktop-catalog2d"]'
         REQUEST_VIEWING_BUTTON = "(//button[@data-test-id='property-info-secondary-button-1 BEDROOM RESIDENCE'])[2]"
+        START_3D_EXPANSION_BUTTON = "//button[contains(text(), 'Start 3D Experience')]"
         SUBMIT_BUTTON_FOR_REQUEST_VIEWING = "(//button[.//span[text()='SUBMIT']])[2]"
 
         # Локаторы для полей формы Request Viewing
@@ -70,6 +104,17 @@ class QubePageLocators(ProjectLocators):
             'xpath=.//div[contains(text(), "Our specialist will contact you shortly.")]'
         )
 
+        # Специфичные локаторы для Explore Amenities в Elire
+        EXPLORE_AMENITIES_BUTTON = (
+            '(//button[@data-test-id="project-info-window-explore-amenities"])[2]'
+        )
+        AMENITIES_MODAL = ".ant-modal-content"
+        AMENITIES_MODAL_TITLE = ".ant-modal-content h3._title_6w0b9_41"
+        AMENITIES_MODAL_CLOSE_BUTTON = ".ant-modal-close"
+
+        # Локатор для Start 3D Experience 1 Bedroom Residence
+        START3DEXPREINCE_1BEDROOM_RESIDENCE = '(//button[@data-test-id="property-info-primary-button-1 BEDROOM RESIDENCE"])[2]'
+
     class Cubix:
         """Локаторы для проекта Cubix."""
 
@@ -77,51 +122,49 @@ class QubePageLocators(ProjectLocators):
         PROJECT_NAME = "cubix"
         PROJECT_DISPLAY_NAME = "Cubix"
 
-    # Список всех проектов Qube
-    ALL_PROJECTS = [Arisha, Elire, Cubix]
+    # Локаторы для клиентских страниц Qube проектов
+    CALLBACK_FORM_BUTTON = "//button[.//*[@aria-label='phone']]"
+    CALLBACK_FORM_MODAL = "//div[@class='ant-modal-content']"
+
+    def __init__(self):
+        """Инициализация списка всех проектов Qube."""
+        self.ALL_PROJECTS = [self.Arisha, self.Elire, self.Cubix]
 
 
-class CapstonePageLocators(ProjectLocators):
-    """Локаторы для страниц проектов Capstone."""
+class WellcubePageLocators(BaseProjectLocators):
+    """Локаторы для проектов Wellcube."""
 
-    # Агентская страница - для Capstone
-    class AgentPage:
-        """Локаторы для агентских страниц проектов Capstone."""
+    # Названия проектов Wellcube
+    WELLCUBE_PROJECTS = ["tranquil"]
+    ALL_PROJECTS = []
 
-        AREA_TOUR_360_BUTTON = '[data-test-id="nav-rotation-view-controls-button"]'
-        # Временный локатор для продакшена (до добавления data-test-id)
-        AREA_TOUR_360_BUTTON_PROD = '[data-test-id="nav-rotation-view-controls-button"]'
-
-        # Локаторы для модального окна 360 Area Tour
-        AREA_TOUR_360_MODAL = "//div[contains(@class, 'modal')]"
-        AREA_TOUR_360_OVERLAY = "//div[contains(@class, 'overlay')]"
-        AREA_TOUR_360_CLOSE_BUTTON = (
-            "//button[contains(@class, 'close') or @aria-label='close']"
-        )
-        AREA_TOUR_360_CONTENT = "//img[contains(@class, '__react-image-turntable-img')] | //video | //canvas"
-
-    # Проекты Capstone
-    class Peylaa:
-        """Локаторы для проекта Peylaa."""
-
-        MAP_LOCATOR = 'img[src*="map_pin_peylaa.png"]'
-        PROJECT_NAME = "peylaa"
-        PROJECT_DISPLAY_NAME = "Peylaa"
-
-    # Список всех проектов Capstone
-    ALL_PROJECTS = [Peylaa]
-
-
-class WellcubePageLocators(ProjectLocators):
-    """Локаторы для страниц проектов Wellcube."""
-
-    # Проекты Wellcube
     class Tranquil:
         """Локаторы для проекта Tranquil."""
 
-        MAP_LOCATOR = 'li:has-text("tranquil"), span:has-text("Tranquil"), div[aria-label*="Tranquil"], div[aria-label*="TRANQUIL"]'
+        MAP_LOCATOR = 'div[aria-label*="Tranquil"], div[aria-label*="TRANQUIL"]'
         PROJECT_NAME = "tranquil"
         PROJECT_DISPLAY_NAME = "Tranquil"
 
-    # Список всех проектов Wellcube
-    ALL_PROJECTS = [Tranquil]
+    def __init__(self):
+        """Инициализация списка всех проектов Wellcube."""
+        self.ALL_PROJECTS = [self.Tranquil]
+
+
+class CapstonePageLocators(BaseProjectLocators):
+    """Локаторы для проектов Capstone."""
+
+    # Названия проектов Capstone
+    CAPSTONE_PROJECTS = ["peylaa"]
+    ALL_PROJECTS = []
+
+    class Peylaa:
+        """Локаторы для проекта Peylaa."""
+
+        MAP_LOCATOR_DEV = 'img[src*="map_pin_peylaa.png"]'
+        MAP_LOCATOR_PROD = 'div[aria-label*="Peylaa"]'
+        PROJECT_NAME = "peylaa"
+        PROJECT_DISPLAY_NAME = "Peylaa"
+
+    def __init__(self):
+        """Инициализация списка всех проектов Capstone."""
+        self.ALL_PROJECTS = [self.Peylaa]
