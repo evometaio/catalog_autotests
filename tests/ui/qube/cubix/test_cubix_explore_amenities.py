@@ -1,3 +1,5 @@
+import os
+
 import allure
 import pytest
 
@@ -7,6 +9,10 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
+@pytest.mark.skipif(
+    os.getenv("TEST_ENVIRONMENT", "dev") == "prod",
+    reason="тест временно отключен на PROD",
+)
 def test_cubix_explore_amenities(map_page):
     """Тест Explore Amenities для проекта Cubix."""
     with allure.step("Открываем карту"):
