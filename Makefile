@@ -31,7 +31,7 @@ test-dev: ## Запустить все тесты на DEV
 
 test-head-dev: ## Запустить все UI тесты в head режиме на DEV
 	@echo "$(GREEN)👁️ Запуск UI тестов в head режиме на DEV...$(NC)"
-	HEADLESS=false TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --alluredir=reports/allure-results || true
+	TEST_ENVIRONMENT=dev HEADLESS=false $(PYTEST) tests/ui/ -sv --alluredir=reports/allure-results || true
 
 test-prod: ## Запустить все тесты на PROD
 	@echo "$(GREEN)🧪 Запуск всех тестов на PROD...$(NC)"
@@ -39,7 +39,7 @@ test-prod: ## Запустить все тесты на PROD
 
 test-head-prod: ## Запустить все UI тесты в head режиме
 	@echo "$(GREEN)👁️ Запуск UI тестов в head режиме на PROD...$(NC)"
-	HEADLESS=false $(PYTEST) tests/ui/ -sv --alluredir=reports/allure-results || true
+	TEST_ENVIRONMENT=prod HEADLESS=false $(PYTEST) tests/ui/ -sv --alluredir=reports/allure-results || true
 
 test-ui: ## Запустить все UI тесты
 	@echo "$(GREEN)🖥️ Запуск UI тестов...$(NC)"

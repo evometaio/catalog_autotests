@@ -45,6 +45,8 @@ class BasePage:
         self.amenities = self.Amenities(self)
         self.area_tour_360 = self.AreaTour360(self)
         self.elire = self.Elire(self)
+        self.apartment_widget = self.ApartmentWidget(self)
+        self.apartment_info = self.ApartmentInfo(self)
 
     def open(self, path: str = "", route_type: str = None):
         """Открыть страницу.
@@ -672,3 +674,337 @@ class BasePage:
             self.parent.click(
                 self.parent.project_locators.Elire.START_3D_EXPANSION_BUTTON
             )
+
+    class ApartmentWidget:
+        """Класс для работы с виджетом апартамента."""
+
+        def __init__(self, parent):
+            self.parent = parent
+
+        def open_apartment_page(self, project_name: str, apartment_id: str = "104"):
+            """Открыть страницу апартамента.
+
+            Args:
+                project_name: Название проекта (arisha, elire, cubix)
+                apartment_id: ID апартамента (по умолчанию 104)
+            """
+            # Получаем базовый URL из окружения
+            from conftest import _get_urls_by_environment
+
+            urls = _get_urls_by_environment()
+            base_url = urls["map"].replace("/map", "")  # Убираем /map из базового URL
+
+            apartment_url = (
+                f"{base_url}/project/{project_name}/apartment/1/1/{apartment_id}"
+            )
+            self.parent.page.goto(apartment_url)
+            self.parent.page.wait_for_load_state("domcontentloaded")
+
+            # Ждем загрузки iframe с виджетом
+            self.parent.page.wait_for_selector(
+                "iframe[class*='_iframe_']", timeout=10000
+            )
+            # Ждем загрузки содержимого iframe
+            iframe = self.parent.page.frame_locator("iframe[class*='_iframe_']")
+            iframe.locator("body").wait_for(state="visible", timeout=10000)
+
+        def get_widget_frame(self):
+            """Получить frame_locator для виджета апартамента."""
+            return self.parent.page.frame_locator("iframe[class*='_iframe_']")
+
+        def switch_to_2d_mode(self, project_name: str):
+            """Переключиться в режим 2D."""
+            frame_locator = self.get_widget_frame()
+            widget_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentWidget()
+
+            view_2d_button = frame_locator.locator(widget_locators.VIEW_2D_BUTTON)
+            view_2d_button.wait_for(state="visible", timeout=10000)
+
+            # Проверяем, что кнопка 2D не активна (если уже активна, то переключение не нужно)
+            button_class = view_2d_button.get_attribute("class")
+            if "active" in button_class:
+                return  # Уже в режиме 2D
+
+            view_2d_button.click()
+
+            # Ждем, что кнопка 2D стала активной
+            import time
+
+            for _ in range(10):  # Ждем до 5 секунд
+                button_class = view_2d_button.get_attribute("class")
+                if "active" in button_class:
+                    break
+                time.sleep(0.5)
+            else:
+                raise Exception("Кнопка 2D не стала активной после клика")
+
+            # Ждем появления стрелочек навигации в режиме 2D
+            next_arrow = frame_locator.locator(widget_locators.NEXT_ARROW).first
+            next_arrow.wait_for(state="visible", timeout=5000)
+
+        def switch_to_3d_mode(self, project_name: str):
+            """Переключиться в режим 3D."""
+            frame_locator = self.get_widget_frame()
+            widget_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentWidget()
+
+            view_3d_button = frame_locator.locator(widget_locators.VIEW_3D_BUTTON)
+            view_3d_button.wait_for(state="visible", timeout=5000)
+
+            # Проверяем, что кнопка 3D не активна (если уже активна, то переключение не нужно)
+            button_class = view_3d_button.get_attribute("class")
+            if "active" in button_class:
+                return  # Уже в режиме 3D
+
+            view_3d_button.click()
+
+            # Ждем, что кнопка 3D стала активной
+            import time
+
+            for _ in range(10):  # Ждем до 5 секунд
+                button_class = view_3d_button.get_attribute("class")
+                if "active" in button_class:
+                    break
+                time.sleep(0.5)
+            else:
+                raise Exception("Кнопка 3D не стала активной после клика")
+
+        def click_speed_button(self, project_name: str):
+            """Кликнуть на кнопку скорости 0.5x."""
+            frame_locator = self.get_widget_frame()
+            widget_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentWidget()
+
+            speed_button = frame_locator.locator(widget_locators.SPEED_BUTTON)
+
+            if speed_button.count() > 0 and speed_button.first.is_visible():
+                speed_button.first.click()
+                # Ждем, что кнопка стала активной после клика
+                speed_button.first.wait_for(state="visible", timeout=2000)
+                return True
+            return False
+
+        def navigate_to_next_slide(self, project_name: str, count: int = 1):
+            """Перейти к следующему слайду.
+
+            Args:
+                project_name: Название проекта
+                count: Количество слайдов для перехода
+            """
+            frame_locator = self.get_widget_frame()
+            widget_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentWidget()
+
+            next_arrows = frame_locator.locator(widget_locators.NEXT_ARROW)
+            scene_indicator = frame_locator.locator(widget_locators.SCENE_INDICATOR)
+
+            scenes = []
+
+            for i in range(count):
+                if next_arrows.count() > 0:
+                    next_arrow = next_arrows.first
+                    if next_arrow.is_visible():
+                        next_arrow.click()
+
+                        # Ждем изменения сцены после клика
+                        if scene_indicator.count() > 0:
+                            scene_indicator.first.wait_for(
+                                state="visible", timeout=2000
+                            )
+
+                        # Получаем текущую сцену
+                        if scene_indicator.count() > 0:
+                            current_scene = scene_indicator.first.text_content()
+                            scenes.append(current_scene)
+
+            return scenes
+
+        def get_current_scene(self, project_name: str):
+            """Получить текущую сцену."""
+            frame_locator = self.get_widget_frame()
+            widget_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentWidget()
+
+            scene_indicator = frame_locator.locator(widget_locators.SCENE_INDICATOR)
+
+            if scene_indicator.count() > 0:
+                return scene_indicator.first.text_content()
+            return None
+
+        def check_navigation_arrows_visible(self, project_name: str):
+            """Проверить видимость стрелочек навигации."""
+            frame_locator = self.get_widget_frame()
+            widget_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentWidget()
+
+            prev_arrows = frame_locator.locator(widget_locators.PREV_ARROW)
+            next_arrows = frame_locator.locator(widget_locators.NEXT_ARROW)
+
+            prev_visible = prev_arrows.count() > 0 and prev_arrows.first.is_visible()
+            next_visible = next_arrows.count() > 0 and next_arrows.first.is_visible()
+
+            return prev_visible and next_visible
+
+        def check_navigation_arrows_hidden(self, project_name: str):
+            """Проверить, что стрелочки навигации скрыты."""
+            frame_locator = self.get_widget_frame()
+            widget_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentWidget()
+
+            prev_arrows = frame_locator.locator(widget_locators.PREV_ARROW)
+            next_arrows = frame_locator.locator(widget_locators.NEXT_ARROW)
+
+            prev_hidden = prev_arrows.count() == 0 or not prev_arrows.first.is_visible()
+            next_hidden = next_arrows.count() == 0 or not next_arrows.first.is_visible()
+
+            return prev_hidden and next_hidden
+
+        def check_mode_button_active(self, project_name: str, mode: str):
+            """Проверить, что кнопка режима активна.
+
+            Args:
+                project_name: Название проекта
+                mode: Режим ('2D' или '3D')
+            """
+            frame_locator = self.get_widget_frame()
+            widget_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentWidget()
+
+            if mode == "2D":
+                button = frame_locator.locator(widget_locators.VIEW_2D_BUTTON)
+            elif mode == "3D":
+                button = frame_locator.locator(widget_locators.VIEW_3D_BUTTON)
+            else:
+                raise ValueError(f"Неизвестный режим: {mode}")
+
+            button_class = button.get_attribute("class")
+            return "active" in button_class if button_class else False
+
+        def take_widget_screenshot(self):
+            """Сделать скриншот виджета."""
+            iframe_element = self.parent.page.locator("iframe")
+            return iframe_element.screenshot()
+
+    class ApartmentInfo:
+        """Класс для работы с информацией об апартаменте."""
+
+        def __init__(self, parent):
+            self.parent = parent
+
+        def wait_for_info_to_appear(self, project_name: str):
+            """Дождаться появления информации об апартаменте."""
+            info_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentInfo()
+            self.parent.page.wait_for_selector(
+                info_locators.INFO_CONTAINER, timeout=10000
+            )
+
+        def check_apartment_number(
+            self, project_name: str, apartment_number: str = "104"
+        ):
+            """Проверить номер апартамента."""
+            info_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentInfo()
+            apartment_element = self.parent.page.locator(
+                info_locators.APARTMENT_NUMBER
+            ).first
+            apartment_text = apartment_element.text_content()
+            return f"APT. {apartment_number}" in apartment_text
+
+        def check_apartment_type(self, project_name: str):
+            """Проверить тип апартамента."""
+            info_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentInfo()
+            type_element = self.parent.page.locator(info_locators.TYPE_VALUE).first
+            return type_element.is_visible()
+
+        def check_floor_info(self, project_name: str):
+            """Проверить информацию о этаже (опционально)."""
+            info_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentInfo()
+            floor_element = self.parent.page.locator(info_locators.FLOOR_VALUE).first
+            return floor_element.is_visible()
+
+        def check_building_info(self, project_name: str):
+            """Проверить информацию о здании."""
+            info_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentInfo()
+            building_element = self.parent.page.locator(
+                info_locators.BUILDING_VALUE
+            ).first
+            return building_element.is_visible()
+
+        def check_area_info(self, project_name: str):
+            """Проверить информацию о площади."""
+            info_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentInfo()
+            area_element = self.parent.page.locator(info_locators.AREA_VALUE).first
+            return area_element.is_visible()
+
+        def check_view_info(self, project_name: str):
+            """Проверить информацию о виде."""
+            info_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentInfo()
+            view_element = self.parent.page.locator(info_locators.VIEW_VALUE).first
+            return view_element.is_visible()
+
+        def check_features(self, project_name: str):
+            """Проверить наличие особенностей апартамента."""
+            info_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentInfo()
+
+            features = {
+                "modern_design": self.parent.page.locator(
+                    info_locators.MODERN_DESIGN
+                ).first.is_visible(),
+                "high_quality": self.parent.page.locator(
+                    info_locators.HIGH_QUALITY
+                ).first.is_visible(),
+                "built_in_appliances": self.parent.page.locator(
+                    info_locators.BUILT_IN_APPLIANCES
+                ).first.is_visible(),
+            }
+            return features
+
+        def check_watching_count(self, project_name: str):
+            """Проверить счетчик просмотров."""
+            info_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentInfo()
+            watching_element = self.parent.page.locator(
+                info_locators.WATCHING_COUNT
+            ).first
+            return watching_element.is_visible()
+
+        def get_info_text(self, project_name: str):
+            """Получить весь текст информации об апартаменте."""
+            info_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentInfo()
+            info_element = self.parent.page.locator(info_locators.INFO_CONTAINER).first
+            return info_element.text_content()
+
+        def take_info_screenshot(self, project_name: str):
+            """Сделать скриншот информации об апартаменте."""
+            info_locators = getattr(
+                self.parent.project_locators, project_name.capitalize()
+            ).ApartmentInfo()
+            info_element = self.parent.page.locator(info_locators.INFO_CONTAINER).first
+            return info_element.screenshot()
