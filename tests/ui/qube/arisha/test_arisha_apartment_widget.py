@@ -21,8 +21,8 @@ def test_arisha_apartment_widget_full_functionality(map_page):
         view_2d_button = frame_locator.locator(widget_locators.VIEW_2D_BUTTON)
         view_3d_button = frame_locator.locator(widget_locators.VIEW_3D_BUTTON)
 
-        view_2d_button.wait_for(state="visible", timeout=10000)
-        view_3d_button.wait_for(state="visible", timeout=10000)
+        view_2d_button.wait_for(state="visible", timeout=15000)
+        view_3d_button.wait_for(state="visible", timeout=15000)
 
         allure.attach(
             "Кнопки режимов 2D/3D найдены",

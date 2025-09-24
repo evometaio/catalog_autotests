@@ -700,13 +700,13 @@ class BasePage:
             self.parent.page.goto(apartment_url)
             self.parent.page.wait_for_load_state("domcontentloaded")
 
-            # Ждем загрузки iframe с виджетом
+            # Ждем загрузки iframe с виджетом (увеличиваем таймаут для Firefox)
             self.parent.page.wait_for_selector(
-                "iframe[class*='_iframe_']", timeout=10000
+                "iframe[class*='_iframe_']", timeout=15000
             )
             # Ждем загрузки содержимого iframe
             iframe = self.parent.page.frame_locator("iframe[class*='_iframe_']")
-            iframe.locator("body").wait_for(state="visible", timeout=10000)
+            iframe.locator("body").wait_for(state="visible", timeout=15000)
 
         def get_widget_frame(self):
             """Получить frame_locator для виджета апартамента."""
@@ -720,7 +720,7 @@ class BasePage:
             ).ApartmentWidget()
 
             view_2d_button = frame_locator.locator(widget_locators.VIEW_2D_BUTTON)
-            view_2d_button.wait_for(state="visible", timeout=10000)
+            view_2d_button.wait_for(state="visible", timeout=15000)
 
             # Проверяем, что кнопка 2D не активна (если уже активна, то переключение не нужно)
             button_class = view_2d_button.get_attribute("class")
@@ -742,7 +742,7 @@ class BasePage:
 
             # Ждем появления стрелочек навигации в режиме 2D
             next_arrow = frame_locator.locator(widget_locators.NEXT_ARROW).first
-            next_arrow.wait_for(state="visible", timeout=5000)
+            next_arrow.wait_for(state="visible", timeout=10000)
 
         def switch_to_3d_mode(self, project_name: str):
             """Переключиться в режим 3D."""
@@ -752,7 +752,7 @@ class BasePage:
             ).ApartmentWidget()
 
             view_3d_button = frame_locator.locator(widget_locators.VIEW_3D_BUTTON)
-            view_3d_button.wait_for(state="visible", timeout=5000)
+            view_3d_button.wait_for(state="visible", timeout=15000)
 
             # Проверяем, что кнопка 3D не активна (если уже активна, то переключение не нужно)
             button_class = view_3d_button.get_attribute("class")
