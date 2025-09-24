@@ -700,7 +700,7 @@ class BasePage:
             self.parent.page.goto(apartment_url)
             self.parent.page.wait_for_load_state("domcontentloaded")
 
-            # Ждем загрузки iframe с виджетом (увеличиваем таймаут для Firefox)
+            # Ждем загрузки iframe с виджетом
             self.parent.page.wait_for_selector(
                 "iframe[class*='_iframe_']", timeout=15000
             )
