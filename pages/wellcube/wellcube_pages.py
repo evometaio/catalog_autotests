@@ -51,3 +51,10 @@ class WellcubePages(BasePage):
             return urls["wellcube_map"]
         else:
             raise ValueError(f"Неизвестный тип страницы: {page_type}")
+
+    def click_on_fraction_ownership_offer_button(self):
+        """Кликнуть на кнопку "Скачать ownership offer"""
+        self.expect_visible(
+            self.project_locators.Tranquil.FRACTION_OWNERSHIP_OFFER_BUTTON
+        )
+        self.click(self.project_locators.Tranquil.FRACTION_OWNERSHIP_OFFER_BUTTON)

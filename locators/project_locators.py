@@ -144,6 +144,9 @@ class WellcubePageLocators(BaseProjectLocators):
         MAP_LOCATOR = 'div[aria-label*="Tranquil"], div[aria-label*="TRANQUIL"]'
         PROJECT_NAME = "tranquil"
         PROJECT_DISPLAY_NAME = "Tranquil"
+        FRACTION_OWNERSHIP_OFFER_BUTTON = (
+            '(//button[@data-test-id="property-info-primary-button-1102 A"])[2]'
+        )
 
     def __init__(self):
         """Инициализация списка всех проектов Wellcube."""

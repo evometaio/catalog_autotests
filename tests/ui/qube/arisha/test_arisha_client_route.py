@@ -11,4 +11,3 @@ import pytest
 def test_arisha_send_callback_form_on_client_page(client_page):
     """Тест отправки формы обратной связи на клиентской странице проекта Arisha."""
     pass
-

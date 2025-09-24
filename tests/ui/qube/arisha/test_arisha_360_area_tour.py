@@ -1,6 +1,7 @@
+import os
+
 import allure
 import pytest
-import os
 
 
 @allure.feature("Qube - Проект Arisha")
