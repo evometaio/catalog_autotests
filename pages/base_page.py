@@ -783,8 +783,8 @@ class BasePage:
 
             if speed_button.count() > 0 and speed_button.first.is_visible():
                 speed_button.first.click()
-                # Ждем, что кнопка стала активной после клика
-                speed_button.first.wait_for(state="visible", timeout=2000)
+                # Небольшая пауза после клика для стабилизации
+                self.parent.page.wait_for_timeout(500)
                 return True
             return False
 
@@ -810,6 +810,9 @@ class BasePage:
                     next_arrow = next_arrows.first
                     if next_arrow.is_visible():
                         next_arrow.click()
+
+                        # Небольшая пауза для стабилизации после клика
+                        self.parent.page.wait_for_timeout(500)
 
                         # Ждем изменения сцены после клика
                         if scene_indicator.count() > 0:

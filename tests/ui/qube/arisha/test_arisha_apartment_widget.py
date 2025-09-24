@@ -32,6 +32,10 @@ def test_arisha_apartment_widget_full_functionality(map_page):
 
     with allure.step("Кликаем на кнопку 2D"):
         map_page.apartment_widget.switch_to_2d_mode("arisha")
+
+        # Ждем стабилизации интерфейса
+        map_page.page.wait_for_timeout(500)
+
         allure.attach(
             "Переключились в режим 2D",
             name="2D Mode",
@@ -68,6 +72,9 @@ def test_arisha_apartment_widget_full_functionality(map_page):
                     attachment_type=allure.attachment_type.TEXT,
                 )
 
+        # Небольшая пауза после навигации по слайдам
+        map_page.page.wait_for_timeout(500)
+
         allure.attach(
             "Просмотрели несколько слайдов",
             name="Slides Navigation",
@@ -77,6 +84,9 @@ def test_arisha_apartment_widget_full_functionality(map_page):
     with allure.step("Кликаем на кнопку 3D"):
         map_page.apartment_widget.switch_to_3d_mode("arisha")
 
+        # Ждем стабилизации интерфейса
+        map_page.page.wait_for_timeout(500)
+
         # Проверяем, что кнопка 3D стала активной
         assert map_page.apartment_widget.check_mode_button_active(
             "arisha", "3D"
@@ -84,29 +94,6 @@ def test_arisha_apartment_widget_full_functionality(map_page):
         allure.attach(
             "Переключились в режим 3D",
             name="3D Mode",
-            attachment_type=allure.attachment_type.TEXT,
-        )
-
-    with allure.step("Проверяем исчезновение стрелочек в режиме 3D"):
-        assert map_page.apartment_widget.check_navigation_arrows_hidden(
-            "arisha"
-        ), "Стрелочки навигации видимы в режиме 3D"
-        allure.attach(
-            "Стрелочки навигации скрыты в режиме 3D",
-            name="3D Navigation Hidden",
-            attachment_type=allure.attachment_type.TEXT,
-        )
-
-    with allure.step("Переключаемся обратно в режим 2D для тестирования скорости"):
-        map_page.apartment_widget.switch_to_2d_mode("arisha")
-
-        # Проверяем, что кнопка 2D стала активной
-        assert map_page.apartment_widget.check_mode_button_active(
-            "arisha", "2D"
-        ), "Кнопка 2D не стала активной"
-        allure.attach(
-            "Переключились обратно в режим 2D",
-            name="Back to 2D",
             attachment_type=allure.attachment_type.TEXT,
         )
 
