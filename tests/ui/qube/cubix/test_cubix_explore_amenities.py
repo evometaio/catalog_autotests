@@ -53,11 +53,19 @@ def test_cubix_explore_amenities(map_page):
 
     with allure.step("Тестируем навигацию по слайдеру - кликаем на индикатор 3"):
         map_page.click_amenities_slider_indicator(2)  # Индекс 2 = третий слайд
-        map_page.page.wait_for_timeout(1000)  # Ждем анимации
+        # Ждем изменения слайда - проверяем что активный индикатор изменился
+        map_page.page.wait_for_selector(
+            f"{map_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(3)[class*='active']",
+            timeout=2000,
+        )
 
     with allure.step("Тестируем навигацию по слайдеру - кликаем на индикатор 4"):
         map_page.click_amenities_slider_indicator(3)  # Индекс 3 = четвертый слайд
-        map_page.page.wait_for_timeout(1000)  # Ждем анимации
+        # Ждем изменения слайда - проверяем что активный индикатор изменился
+        map_page.page.wait_for_selector(
+            f"{map_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(4)[class*='active']",
+            timeout=2000,
+        )
 
     with allure.step("Закрываем модальное окно amenities"):
         map_page.close_amenities_modal()

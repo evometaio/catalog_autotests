@@ -55,11 +55,19 @@ def test_tranquil_explore_amenities(wellcube_page):
 
     with allure.step("Тестируем навигацию по слайдеру - кликаем на индикатор 2"):
         wellcube_page.click_amenities_slider_indicator(1)  # Индекс 1 = второй слайд
-        wellcube_page.page.wait_for_timeout(1000)  # Ждем анимации
+        # Ждем изменения слайда - проверяем что активный индикатор изменился
+        wellcube_page.page.wait_for_selector(
+            f"{wellcube_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(2)[class*='active']",
+            timeout=2000,
+        )
 
     with allure.step("Тестируем навигацию по слайдеру - кликаем на индикатор 3"):
         wellcube_page.click_amenities_slider_indicator(2)  # Индекс 2 = третий слайд
-        wellcube_page.page.wait_for_timeout(1000)  # Ждем анимации
+        # Ждем изменения слайда - проверяем что активный индикатор изменился
+        wellcube_page.page.wait_for_selector(
+            f"{wellcube_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(3)[class*='active']",
+            timeout=2000,
+        )
 
     with allure.step("Закрываем модальное окно amenities"):
         wellcube_page.close_amenities_modal()
