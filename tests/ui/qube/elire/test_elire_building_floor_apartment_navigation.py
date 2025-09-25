@@ -9,10 +9,6 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.skipif(
-    os.getenv("TEST_ENVIRONMENT", "dev") == "prod",
-    reason="тест временно отключен на PROD",
-)
 def test_elire_building_floor_apartment_navigation(map_page):
     """Тест навигации по зданиям, этажам и апартаментам проекта Elire."""
 

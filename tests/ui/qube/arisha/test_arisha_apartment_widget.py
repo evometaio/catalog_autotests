@@ -1,6 +1,7 @@
+import os
+
 import allure
 import pytest
-import os
 
 
 @allure.feature("Qube - Проект Arisha")
@@ -8,10 +9,6 @@ import os
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.skipif(
-    os.getenv("OS_PLATFORM") == "ubuntu-latest",
-    reason="Тест нестабилен на Firefox в CI"
-)
 def test_arisha_apartment_widget_full_functionality(map_page):
     """Тест полного функционала виджета апартамента Arisha."""
 

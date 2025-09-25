@@ -9,10 +9,6 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.skipif(
-    os.getenv("TEST_ENVIRONMENT", "dev") == "prod",
-    reason="тест временно отключен на PROD",
-)
 def test_arisha_360_area_tour(map_page):
     """Тест 360 Area Tour для проекта Arisha."""
     with allure.step("Открываем главную страницу"):

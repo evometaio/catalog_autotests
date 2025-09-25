@@ -9,10 +9,6 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.skipif(
-    os.getenv("TEST_ENVIRONMENT", "dev") == "prod",
-    reason="тест временно отключен на PROD",
-)
 def test_tranquil_download_ownership_offer(wellcube_page, agent_page):
     """Тест скачивания PDF на проектк Tranquil."""
 

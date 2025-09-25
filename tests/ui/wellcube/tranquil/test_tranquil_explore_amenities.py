@@ -9,10 +9,6 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.skipif(
-    os.getenv("TEST_ENVIRONMENT", "dev") == "prod",
-    reason="тест временно отключен на PROD",
-)
 def test_tranquil_explore_amenities(wellcube_page):
     """Тест Explore Amenities для проекта Tranquil."""
     with allure.step("Открываем карту Wellcube"):
