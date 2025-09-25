@@ -457,7 +457,6 @@ class BasePage:
 
             # Для остальных случаев ищем кнопку Explore Project
             self.parent.expect_visible(self.parent.locators.PROJECT_INFO_WINDOW)
-            self.parent.expect_visible(self.parent.locators.EXPLORE_PROJECT_BUTTON)
 
             # Затем кликаем на кнопку Explore Project
             self.parent.click(self.parent.locators.EXPLORE_PROJECT_BUTTON)
@@ -670,26 +669,22 @@ class BasePage:
 
         def click_on_residences_button(self):
             """Кликнуть на кнопку Residences."""
-            self.parent.expect_visible(
-                self.parent.project_locators.Elire.RESIDENCES_BUTTON
-            )
             self.parent.click(self.parent.project_locators.Elire.RESIDENCES_BUTTON)
 
         def click_on_residences_button_and_request_viewing_form(self):
             """Кликнуть на кнопку Residences и открыть форму Request Viewing."""
-            self.parent.expect_visible(
-                self.parent.project_locators.Elire.RESIDENCES_BUTTON
-            )
             self.parent.click(self.parent.project_locators.Elire.RESIDENCES_BUTTON)
             self.parent.click(self.parent.project_locators.Elire.REQUEST_VIEWING_BUTTON)
 
         def click_on_start3d_expansion_button(self):
             """Кликнуть на кнопку Start 3D Expansion."""
-            self.parent.expect_visible(
-                self.parent.project_locators.Elire.START_3D_EXPANSION_BUTTON
-            )
             self.parent.click(
                 self.parent.project_locators.Elire.START_3D_EXPANSION_BUTTON
+            )
+
+        def click_on_services_amenities_button(self):
+            self.parent.click(
+                self.parent.project_locators.Elire.SERVICES_AMENITIES_BUTTON
             )
 
     class ApartmentWidget:

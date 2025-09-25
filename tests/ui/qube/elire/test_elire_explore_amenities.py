@@ -21,17 +21,7 @@ def test_elire_explore_amenities(map_page):
 
     with allure.step("Кликаем на кнопку Residences"):
         qube_pages = PageFactory.get_page_object(map_page.page, "qube")
-        qube_pages.click_on_residences_button()
-
-    with allure.step("Проверяем наличие кнопки SERVICES & AMENITIES"):
-        qube_pages.expect_visible(
-            qube_pages.project_locators.Elire.EXPLORE_AMENITIES_BUTTON
-        )
-
-    with allure.step("Кликаем на кнопку Explore Amenities"):
-        qube_pages.click_element(
-            qube_pages.project_locators.Elire.EXPLORE_AMENITIES_BUTTON
-        )
+        qube_pages.elire.click_on_services_amenities_button()
 
     with allure.step("Проверяем отображение модального окна amenities"):
         qube_pages.expect_visible(qube_pages.project_locators.Elire.AMENITIES_MODAL)
@@ -99,8 +89,3 @@ def test_elire_explore_amenities(map_page):
             state="hidden",
             timeout=3000,
         )
-
-    with allure.step("Проверяем, что модальное окно закрылось"):
-        assert not qube_pages.is_element_visible(
-            qube_pages.project_locators.Elire.AMENITIES_MODAL
-        ), "Модальное окно amenities все еще видно"

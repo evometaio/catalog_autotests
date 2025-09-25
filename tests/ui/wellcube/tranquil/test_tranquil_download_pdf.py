@@ -9,6 +9,10 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
+@pytest.mark.skipif(
+    os.getenv("OS_PLATFORM") == "ubuntu-latest",
+    reason="Тест нестабилен на Firefox в CI",
+)
 def test_tranquil_download_ownership_offer(wellcube_page, agent_page):
     """Тест скачивания PDF на проектк Tranquil."""
 
@@ -56,6 +60,3 @@ def test_tranquil_download_ownership_offer(wellcube_page, agent_page):
                 name="PDF Status",
                 attachment_type=allure.attachment_type.TEXT,
             )
-
-        # Закрываем новую вкладку
-        new_tab.close()

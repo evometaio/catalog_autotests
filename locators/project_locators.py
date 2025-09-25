@@ -177,6 +177,7 @@ class QubeLocators(BaseProjectLocators):
         AMENITIES_MODAL = ".ant-modal-content"
         AMENITIES_MODAL_TITLE = ".ant-modal-content h3._title_6w0b9_41"
         AMENITIES_MODAL_CLOSE_BUTTON = ".ant-modal-close"
+        SERVICES_AMENITIES_BUTTON = "//*[@id='PubliczonesPolygon']"
 
         # Локатор для Start 3D Experience 1 Bedroom Residence
         START3DEXPREINCE_1BEDROOM_RESIDENCE = '(//button[@data-test-id="property-info-primary-button-1 BEDROOM RESIDENCE"])[2]'

@@ -301,14 +301,12 @@ jobs:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            🚀 <b>Итоговый отчет по тестам</b>
+            ${{ (needs.ubuntu-firefox.result == 'success' && needs.windows-chromium.result == 'success' && needs.macos-webkit.result == 'success') && '✅Done' || '❌Failed' }} <b>Итоговый отчет по тестам</b> 
 
             Проект: ${{ github.repository }}
             Ветка: ${{ github.ref_name }}
             Окружение: ${{ github.event.inputs.environment || 'prod' }}
             Тип запуска: ${{ github.event.inputs.run_type || (github.event_name == 'schedule' && 'scheduled') || 'regression' }}
-
-            Статус: ${{ (needs.ubuntu-firefox.result == 'success' && needs.windows-chromium.result == 'success' && needs.macos-webkit.result == 'success') && '✅ Все тесты прошли' || '❌ Есть ошибки' }}
 
             📊 Отчет: <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/allure-report/">Allure</a>
             🔗 Actions: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GH Actions</a>

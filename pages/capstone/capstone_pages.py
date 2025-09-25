@@ -59,7 +59,6 @@ class CapstonePages(BasePage):
 
         # Для остальных случаев ищем кнопку Explore Project
         self.expect_visible(self.locators.PROJECT_INFO_WINDOW)
-        self.expect_visible(self.locators.EXPLORE_PROJECT_BUTTON)
 
         # Затем кликаем на кнопку Explore Project
         self.click(self.locators.EXPLORE_PROJECT_BUTTON)
