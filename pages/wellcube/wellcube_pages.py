@@ -54,7 +54,4 @@ class WellcubePages(BasePage):
 
     def click_on_fraction_ownership_offer_button(self):
         """Кликнуть на кнопку "Скачать ownership offer"""
-        self.expect_visible(
-            self.project_locators.Tranquil.FRACTION_OWNERSHIP_OFFER_BUTTON
-        )
         self.click(self.project_locators.Tranquil.FRACTION_OWNERSHIP_OFFER_BUTTON)

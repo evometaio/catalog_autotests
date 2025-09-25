@@ -76,20 +76,33 @@ def test_elire_explore_amenities(map_page):
             qube_pages.click_element(
                 f"{qube_pages.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(4)"
             )
-            qube_pages.wait_for_timeout(1000)
+            # Ждем изменения слайда - проверяем что активный индикатор изменился
+            qube_pages.page.wait_for_selector(
+                f"{qube_pages.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(4)[class*='active']",
+                timeout=2000,
+            )
 
     with allure.step("Тестируем навигацию по слайдеру - кликаем на индикатор 8"):
         if indicator_count > 7:
             qube_pages.click_element(
                 f"{qube_pages.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(8)"
             )
-            qube_pages.wait_for_timeout(1000)
+            # Ждем изменения слайда - проверяем что активный индикатор изменился
+            qube_pages.page.wait_for_selector(
+                f"{qube_pages.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(8)[class*='active']",
+                timeout=2000,
+            )
 
     with allure.step("Закрываем модальное окно amenities"):
         qube_pages.click_element(
             qube_pages.project_locators.Elire.AMENITIES_MODAL_CLOSE_BUTTON
         )
-        qube_pages.wait_for_timeout(2000)  # Ждем закрытия модального окна
+        # Ждем закрытия модального окна
+        qube_pages.page.wait_for_selector(
+            qube_pages.project_locators.Elire.AMENITIES_MODAL,
+            state="hidden",
+            timeout=3000,
+        )
 
     with allure.step("Проверяем, что модальное окно закрылось"):
         assert not qube_pages.is_element_visible(

@@ -56,11 +56,19 @@ def test_arisha_explore_amenities(map_page):
 
     with allure.step("Тестируем навигацию по слайдеру - кликаем на индикатор 2"):
         map_page.click_amenities_slider_indicator(1)  # Индекс 1 = второй слайд
-        map_page.wait_for_timeout(1000)  # Ждем анимации
+        # Ждем изменения слайда - проверяем что активный индикатор изменился
+        map_page.page.wait_for_selector(
+            f"{map_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(2)[class*='active']",
+            timeout=2000,
+        )
 
     with allure.step("Тестируем навигацию по слайдеру - кликаем на индикатор 5"):
         map_page.click_amenities_slider_indicator(4)  # Индекс 4 = пятый слайд
-        map_page.wait_for_timeout(1000)  # Ждем анимации
+        # Ждем изменения слайда - проверяем что активный индикатор изменился
+        map_page.page.wait_for_selector(
+            f"{map_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(5)[class*='active']",
+            timeout=2000,
+        )
 
     with allure.step("Закрываем модальное окно amenities"):
         map_page.close_amenities_modal()

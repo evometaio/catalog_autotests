@@ -225,43 +225,60 @@ class BasePage:
 
     def click_on_all_units_button(self):
         """Кликнуть на кнопку All units."""
-        self.expect_visible(self.project_locators.ALL_UNITS_BUTTON)
         self.click(self.project_locators.ALL_UNITS_BUTTON)
 
     def click_on_sales_offer_button(self):
         """Кликнуть на кнопку Sales Offer."""
-        self.expect_visible(self.project_locators.SALES_OFFER_BUTTON)
         self.click(self.project_locators.SALES_OFFER_BUTTON)
 
     # Методы для работы с 360 Area Tour (перенесены в AreaTour360 класс)
 
     # Методы для инкапсуляции работы с page
-    def click_element(self, selector: str):
+    def click_element(self, selector: str, timeout: int = None):
         """Кликнуть по элементу по селектору."""
-        self.page.click(selector)
+        if timeout is None:
+            timeout = self.DEFAULT_TIMEOUT
+        element = self.page.locator(selector)
+        element.wait_for(state="visible", timeout=timeout)
+        element.click()
 
-    def query_selector_all(self, selector: str):
+    def query_selector_all(self, selector: str, timeout: int = None):
         """Найти все элементы по селектору."""
+        if timeout is None:
+            timeout = self.DEFAULT_TIMEOUT
+        # Ждем появления хотя бы одного элемента
+        self.page.wait_for_selector(selector, timeout=timeout)
         return self.page.query_selector_all(selector)
 
     def wait_for_timeout(self, timeout: int):
         """Ждать указанное количество миллисекунд."""
         self.page.wait_for_timeout(timeout)
 
-    def is_element_visible(self, selector: str, timeout: int = 5000) -> bool:
+    def is_element_visible(self, selector: str, timeout: int = None) -> bool:
         """Проверить, виден ли элемент."""
+        if timeout is None:
+            timeout = self.DEFAULT_TIMEOUT
         try:
             element = self.page.locator(selector)
-            return element.is_visible(timeout=timeout)
+            element.wait_for(state="visible", timeout=timeout)
+            return True
         except:
             return False
 
-    def get_element_text(self, selector: str) -> str:
+    def get_element_text(self, selector: str, timeout: int = None) -> str:
         """Получить текст элемента."""
-        return self.page.locator(selector).text_content()
+        if timeout is None:
+            timeout = self.DEFAULT_TIMEOUT
+        element = self.page.locator(selector)
+        element.wait_for(state="visible", timeout=timeout)
+        return element.text_content()
 
-    def get_element_count(self, selector: str) -> int:
+    def get_element_count(self, selector: str, timeout: int = None) -> int:
         """Получить количество элементов по селектору."""
+        if timeout is None:
+            timeout = self.DEFAULT_TIMEOUT
+        # Ждем появления хотя бы одного элемента
+        self.page.wait_for_selector(selector, timeout=timeout)
         return self.page.locator(selector).count()
 
     # ==================== МЕТОДЫ-ОБЕРТКИ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ ====================
@@ -730,15 +747,17 @@ class BasePage:
             view_2d_button.click()
 
             # Ждем, что кнопка 2D стала активной
-            import time
-
-            for _ in range(10):  # Ждем до 5 секунд
+            try:
+                # Используем умный вейтер - ждем изменения атрибута class
+                view_2d_button.wait_for(
+                    lambda: "active" in view_2d_button.get_attribute("class") or "",
+                    timeout=5000,
+                )
+            except Exception:
+                # Fallback: проверяем класс кнопки напрямую
                 button_class = view_2d_button.get_attribute("class")
-                if "active" in button_class:
-                    break
-                time.sleep(0.5)
-            else:
-                raise Exception("Кнопка 2D не стала активной после клика")
+                if "active" not in button_class:
+                    raise Exception("Кнопка 2D не стала активной после клика")
 
             # Ждем появления стрелочек навигации в режиме 2D
             next_arrow = frame_locator.locator(widget_locators.NEXT_ARROW).first
@@ -762,15 +781,17 @@ class BasePage:
             view_3d_button.click()
 
             # Ждем, что кнопка 3D стала активной
-            import time
-
-            for _ in range(10):  # Ждем до 5 секунд
+            try:
+                # Используем умный вейтер - ждем изменения атрибута class
+                view_3d_button.wait_for(
+                    lambda: "active" in view_3d_button.get_attribute("class") or "",
+                    timeout=5000,
+                )
+            except Exception:
+                # Fallback: проверяем класс кнопки напрямую
                 button_class = view_3d_button.get_attribute("class")
-                if "active" in button_class:
-                    break
-                time.sleep(0.5)
-            else:
-                raise Exception("Кнопка 3D не стала активной после клика")
+                if "active" not in button_class:
+                    raise Exception("Кнопка 3D не стала активной после клика")
 
         def click_speed_button(self, project_name: str):
             """Кликнуть на кнопку скорости 0.5x."""

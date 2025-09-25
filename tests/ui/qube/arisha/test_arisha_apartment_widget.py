@@ -33,8 +33,10 @@ def test_arisha_apartment_widget_full_functionality(map_page):
     with allure.step("Кликаем на кнопку 2D"):
         map_page.apartment_widget.switch_to_2d_mode("arisha")
 
-        # Ждем стабилизации интерфейса
-        map_page.page.wait_for_timeout(500)
+        # Ждем появления навигационных стрелок в режиме 2D
+        map_page.apartment_widget.get_widget_frame().locator(
+            map_page.project_locators.Arisha.ApartmentWidget().NEXT_ARROW
+        ).first.wait_for(state="visible", timeout=2000)
 
         allure.attach(
             "Переключились в режим 2D",
@@ -72,8 +74,10 @@ def test_arisha_apartment_widget_full_functionality(map_page):
                     attachment_type=allure.attachment_type.TEXT,
                 )
 
-        # Небольшая пауза после навигации по слайдам
-        map_page.page.wait_for_timeout(500)
+        # Ждем стабилизации после навигации по слайдам
+        map_page.apartment_widget.get_widget_frame().locator(
+            map_page.project_locators.Arisha.ApartmentWidget().SCENE_INDICATOR
+        ).first.wait_for(state="visible", timeout=2000)
 
         allure.attach(
             "Просмотрели несколько слайдов",
@@ -84,8 +88,11 @@ def test_arisha_apartment_widget_full_functionality(map_page):
     with allure.step("Кликаем на кнопку 3D"):
         map_page.apartment_widget.switch_to_3d_mode("arisha")
 
-        # Ждем стабилизации интерфейса
-        map_page.page.wait_for_timeout(500)
+        # Ждем стабилизации интерфейса - ждем появления кнопки 3D
+        view_3d_button = map_page.apartment_widget.get_widget_frame().locator(
+            map_page.project_locators.Arisha.ApartmentWidget().VIEW_3D_BUTTON
+        )
+        view_3d_button.wait_for(state="visible", timeout=2000)
 
         # Проверяем, что кнопка 3D стала активной
         assert map_page.apartment_widget.check_mode_button_active(

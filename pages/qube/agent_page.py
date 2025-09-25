@@ -41,7 +41,6 @@ class AgentPage(BasePage):
             # Начинаем скачивание с таймаутом 20 секунд
             with self.page.expect_download(timeout=20000) as download_info:
                 # Кликаем по кнопке Download PDF
-                self.expect_visible(self.project_locators.DOWNLOAD_PDF_BUTTON)
                 self.click(self.project_locators.DOWNLOAD_PDF_BUTTON)
 
             # Получаем объект скачивания
@@ -81,7 +80,6 @@ class AgentPage(BasePage):
 
     def click_on_all_units_button(self):
         """Кликнуть на кнопку All units."""
-        self.expect_visible(self.project_locators.ALL_UNITS_BUTTON)
         self.click(self.project_locators.ALL_UNITS_BUTTON)
 
         # Ждем изменения URL на catalog_2d
@@ -131,5 +129,4 @@ class AgentPage(BasePage):
 
     def click_on_sales_offer_button(self):
         """Кликнуть на кнопку Sales Offer."""
-        self.expect_visible(self.project_locators.SALES_OFFER_BUTTON)
         self.click(self.project_locators.SALES_OFFER_BUTTON)
