@@ -1,4 +1,0 @@
-Ошибка при скачивании PDF: Locator.wait_for: Timeout 10000ms exceeded.
-Call log:
-  - waiting for locator("//button[.//span[text() = 'Download PDF']]") to be visible
-
