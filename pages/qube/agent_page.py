@@ -21,7 +21,7 @@ class AgentPage(BasePage):
 
     def click_on_download_pdf_button(self):
         """Кликает на кнопку скачивания PDF."""
-        self.click(self.project_locators.DOWNLOAD_PDF_BUTTON)
+        self.click(self.project_locators.DOWNLOAD_PDF_BUTTON, timeout=20000)
 
     def download_pdf_and_verify(self) -> tuple[bool, str]:
         """
@@ -40,8 +40,8 @@ class AgentPage(BasePage):
 
             # Начинаем скачивание с таймаутом 20 секунд
             with self.page.expect_download(timeout=20000) as download_info:
-                # Кликаем по кнопке Download PDF
-                self.click(self.project_locators.DOWNLOAD_PDF_BUTTON)
+                # Кликаем по кнопке Download PDF с увеличенным таймаутом
+                self.click(self.project_locators.DOWNLOAD_PDF_BUTTON, timeout=20000)
 
             # Получаем объект скачивания
             download = download_info.value
@@ -105,8 +105,10 @@ class AgentPage(BasePage):
         apartment_titles = self.page.locator(self.project_locators.ALL_APARTMENT_TITLES)
         apartment_count = apartment_titles.count()
 
-        if apartment_count == 0:
-            raise Exception("Апартаменты не найдены на странице")
+        # Проверяем, что апартаменты найдены на странице
+        assert (
+            apartment_count > 0
+        ), f"Апартаменты не найдены на странице - баг в UI для проекта {project_name or 'неизвестный'}"
 
         # Ищем первый доступный апартамент (без замка)
         for i in range(apartment_count):
@@ -119,13 +121,23 @@ class AgentPage(BasePage):
             )
             has_lock = lock_icon.count() > 0
 
-            # Если замка нет, кликаем по этому апартаменту
+            # Если замка нет, ждем готовности элемента и кликаем
             if not has_lock:
-                apartment_title.evaluate("element => element.click()")
-                return apartment_text
+                # Ждем, что элемент станет видимым и активным
+                try:
+                    apartment_title.wait_for(state="visible", timeout=2000)
+                except:
+                    continue  # Если не стал видимым, пробуем следующий апартамент
+
+                # Проверяем готовность к клику
+                if apartment_title.is_visible() and apartment_title.is_enabled():
+                    apartment_title.click()
+                    return apartment_text
 
         # Если все апартаменты заблокированы
-        raise Exception("Все апартаменты заблокированы (имеют замок)")
+        assert (
+            False
+        ), f"Все апартаменты заблокированы (имеют замок) - баг в UI для проекта {project_name or 'неизвестный'}"
 
     def click_on_sales_offer_button(self):
         """Кликнуть на кнопку Sales Offer."""
