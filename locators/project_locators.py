@@ -3,7 +3,7 @@ class BaseProjectLocators:
 
     # Общие константы
     PROJECT_URL_PATTERN = "**/project/**"
-    PAGE_TYPES = ["catalog2d", "area", "map"]
+    PAGE_TYPES = ["catalog_2d", "area", "map"]
 
     # Общие локаторы для всех проектов
     ALL_UNITS_BUTTON = '[data-test-id="nav-desktop-catalog2d-standalone"]'
@@ -230,7 +230,7 @@ class CapstonePageLocators(BaseProjectLocators):
     class Peylaa:
         """Локаторы для проекта Peylaa."""
 
-        MAP_LOCATOR_DEV = 'img[src*="map_pin_peylaa.png"]'
+        MAP_LOCATOR_DEV = 'div[title="Peylaa"][aria-label="Peylaa"]'
         MAP_LOCATOR_PROD = 'div[aria-label*="Peylaa"]'
         PROJECT_NAME = "peylaa"
         PROJECT_DISPLAY_NAME = "Peylaa"

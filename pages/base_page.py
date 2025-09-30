@@ -14,11 +14,11 @@ from locators.project_locators import (
 class BasePage:
     """Базовый класс для всех страниц."""
 
-    # Константы для таймаутов (оптимизированы)
-    DEFAULT_TIMEOUT = 10000  # Оптимизировано с 20000
-    LONG_TIMEOUT = 15000  # Оптимизировано с 30000
+    # Константы для таймаутов
+    DEFAULT_TIMEOUT = 10000
+    LONG_TIMEOUT = 15000
     SHORT_TIMEOUT = 5000
-    MAP_LOAD_TIMEOUT = 20000  # Оптимизировано с 30000
+    MAP_LOAD_TIMEOUT = 20000
 
     def __init__(
         self, page: Page, base_url: str = None, project_locators_class: type = None
@@ -90,19 +90,25 @@ class BasePage:
         if timeout is None:
             timeout = self.DEFAULT_TIMEOUT
         element = self.page.locator(selector)
-        element.wait_for(state="visible", timeout=timeout)
-        return element
+
+        try:
+            # Ждем появления элемента
+            element.wait_for(state="visible", timeout=timeout)
+            return element
+        except TimeoutError as e:
+            # Преобразуем TimeoutError в AssertionError для FAILED статуса в Allure
+            raise AssertionError(f"Элемент '{selector}' не найден за {timeout}ms.")
 
     def get_current_url(self) -> str:
         """Получить текущий URL."""
         return self.page.url
 
-    def get_project_url(self, project_name: str, page_type: str = "catalog2d") -> str:
+    def get_project_url(self, project_name: str, page_type: str = "catalog_2d"):
         """Получить URL для конкретного проекта и типа страницы.
 
         Args:
             project_name: Название проекта (arisha, cubix, elire, peylaa, tranquil)
-            page_type: Тип страницы (catalog2d, area, map)
+            page_type: Тип страницы (catalog_2d, area, map)
 
         Returns:
             str: URL для проекта
@@ -116,32 +122,44 @@ class BasePage:
         if page_type not in self.project_locators.PAGE_TYPES:
             raise ValueError(f"Неизвестный тип страницы: {page_type}")
 
-        # Определяем базовый URL в зависимости от проекта
-        if project_name_lower in self.project_locators.QUBE_PROJECTS:
+        # Определяем базовый URL и URL карты в зависимости от проекта
+        # Проверяем тип проекта универсально
+        from locators.project_locators import (
+            CapstonePageLocators,
+            QubeLocators,
+            WellcubePageLocators,
+        )
+
+        if project_name_lower in QubeLocators.QUBE_PROJECTS:
             # Qube проекты
             base_url = urls["map"].replace("/map", "")
-        elif project_name_lower in self.project_locators.CAPSTONE_PROJECTS:
+            map_url = urls["map"]
+        elif project_name_lower in CapstonePageLocators.CAPSTONE_PROJECTS:
             # Capstone проект
             base_url = urls["capstone_map"].replace("/map", "")
-        elif project_name_lower in self.project_locators.WELLCUBE_PROJECTS:
+            map_url = urls["capstone_map"]
+        elif project_name_lower in WellcubePageLocators.WELLCUBE_PROJECTS:
             # Wellcube проект
             base_url = urls["wellcube_map"].replace("/map", "")
+            map_url = urls["wellcube_map"]
         else:
             raise ValueError(f"Неизвестный проект: {project_name}")
 
         # Формируем полный URL
-        if page_type == "catalog2d":
+        if page_type == "catalog_2d":
             return f"{base_url}/project/{project_name_lower}/catalog_2d"
         elif page_type == "area":
             return f"{base_url}/project/{project_name_lower}/area"
         elif page_type == "map":
-            return urls.get(f"{project_name_lower}_map", urls["map"])
+            return map_url
 
     def click(self, selector: str, timeout: int = None):
         """Кликнуть по элементу."""
         element = self.wait_for_element(selector, timeout)
-        expect(element).to_be_enabled()
-        expect(element).to_be_visible()
+
+        # Проверяем, что элемент активен для клика
+        assert element.is_enabled(), f"Элемент {selector} неактивен - баг в UI"
+
         element.click()
 
     def fill(self, selector: str, text: str, timeout: int = None):
@@ -165,7 +183,7 @@ class BasePage:
     def expect_visible(self, selector: str, timeout: int = None):
         """Ожидать видимости элемента."""
         element = self.wait_for_element(selector, timeout)
-        expect(element).to_be_visible()
+        assert element.is_visible(), f"Элемент {selector} не отображается - баг в UI"
 
     def wait_for_page_load(self):
         """Ожидать загрузки страницы."""
@@ -452,14 +470,30 @@ class BasePage:
         def click_project_on_map(self, project_name: str):
             """Кликнуть на проект и затем на кнопку Explore Project."""
             self.wait_for_map_and_projects_loaded()
+
+            # Проверяем, что проект найден на карте перед кликом
+            selector = self.parent._get_project_selector(project_name)
+            project_element = self.parent.page.locator(selector)
+            assert (
+                project_element.count() > 0
+            ), f"Проект '{project_name}' не найден на карте - баг в UI"
+
             # Сначала кликаем на проект
             self.click_project(project_name)
 
-            # Для остальных случаев ищем кнопку Explore Project
+            # Проверяем, что появилось окно с информацией о проекте
             self.parent.expect_visible(self.parent.locators.PROJECT_INFO_WINDOW)
 
+            # Ждем появления кнопки Explore Project и проверяем её готовность
+            explore_button = self.parent.wait_for_element(
+                self.parent.locators.EXPLORE_PROJECT_BUTTON
+            )
+            assert (
+                explore_button.is_enabled()
+            ), f"Кнопка Explore Project заблокирована для проекта '{project_name}' - баг в UI"
+
             # Затем кликаем на кнопку Explore Project
-            self.parent.click(self.parent.locators.EXPLORE_PROJECT_BUTTON)
+            explore_button.click()
 
             # Ждем изменения URL (универсально для всех типов страниц)
             self.parent.page.wait_for_url(
@@ -637,7 +671,9 @@ class BasePage:
 
         def verify_360_area_tour_modal_displayed(self):
             """Проверить отображение модального окна 360 Area Tour."""
-            self.parent.expect_visible(self.parent.project_locators.AREA_TOUR_360_MODAL)
+            elem = self.parent.expect_visible(
+                self.parent.project_locators.AREA_TOUR_360_MODAL
+            )
 
         def verify_360_area_tour_content(self):
             """Проверить наличие контента в модальном окне 360 Area Tour."""
