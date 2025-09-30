@@ -91,16 +91,19 @@ class BasePage:
             timeout = self.DEFAULT_TIMEOUT
         element = self.page.locator(selector)
 
-        # Ждем появления элемента
-        element.wait_for(state="visible", timeout=timeout)
-
-        return element
+        try:
+            # Ждем появления элемента
+            element.wait_for(state="visible", timeout=timeout)
+            return element
+        except TimeoutError as e:
+            # Преобразуем TimeoutError в AssertionError для FAILED статуса в Allure
+            raise AssertionError(f"Элемент '{selector}' не найден за {timeout}ms.")
 
     def get_current_url(self) -> str:
         """Получить текущий URL."""
         return self.page.url
 
-    def get_project_url(self, project_name: str, page_type: str = "catalog_2d") -> str:
+    def get_project_url(self, project_name: str, page_type: str = "catalog_2d"):
         """Получить URL для конкретного проекта и типа страницы.
 
         Args:
