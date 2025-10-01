@@ -271,3 +271,104 @@ def _get_urls_by_environment() -> dict:
                 "WELLCUBE_PROD_BASE_URL", "https://catalog.evometa.io/wellcube/map"
             ),
         }
+
+
+# ================================
+# МОБИЛЬНЫЕ ФИКСТУРЫ
+# ================================
+
+@pytest.fixture
+def mobile_browser_context_args(browser_context_args):
+    """Настройки мобильного контекста браузера."""
+    return {
+        **browser_context_args,
+        "viewport": {"width": 375, "height": 812},  # iPhone 13 Pro
+        "ignore_https_errors": True,
+        "is_mobile": True,
+        "has_touch": True,
+        "device_scale_factor": 3,
+    }
+
+
+@pytest.fixture
+def mobile_page(page: Page, request):
+    """Фикстура для мобильной страницы с эмуляцией устройства."""
+    # Получаем тип устройства из маркера или параметра
+    device_type = "iPhone 13 Pro"  # по умолчанию
+    
+    # Проверяем маркеры теста
+    if hasattr(request.node, 'pytestmark'):
+        for mark in request.node.pytestmark:
+            if mark.name == 'mobile_device':
+                device_type = mark.args[0] if mark.args else "iPhone 13 Pro"
+                break
+    
+    # Применяем базовые мобильные настройки
+    page.set_viewport_size({"width": 375, "height": 812})  # iPhone 13 Pro размеры
+    
+    # Устанавливаем мобильный User-Agent
+    mobile_user_agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"
+    page.context.set_extra_http_headers({"User-Agent": mobile_user_agent})
+    
+    # Устанавливаем параметры для Allure
+    allure.dynamic.parameter("Device", device_type)
+    allure.dynamic.parameter("Viewport", "375x812")
+    allure.dynamic.parameter("Mobile", "True")
+    
+    return page
+
+
+@pytest.fixture
+def mobile_map_page(mobile_page: Page, request):
+    """Фикстура для мобильных карт всех проектов."""
+    # Определяем проект из имени теста
+    project_name = "qube"  # по умолчанию
+    if hasattr(request, "fixturename"):
+        fixture_name = request.fixturename
+        if "capstone" in fixture_name:
+            project_name = "capstone"
+        elif "wellcube" in fixture_name:
+            project_name = "wellcube"
+
+    # Получаем URL для главной страницы
+    urls = _get_urls_by_environment()
+
+    if project_name == "capstone":
+        url = urls["capstone_map"]
+        return BasePage(mobile_page, url, CapstonePageLocators)
+    elif project_name == "wellcube":
+        url = urls["wellcube_map"]
+        return BasePage(mobile_page, url, WellcubePageLocators)
+    else:  # qube
+        url = urls["map"]
+        return BasePage(mobile_page, url, QubeLocators)
+
+
+@pytest.fixture
+def mobile_agent_page(mobile_page: Page):
+    """Фикстура для мобильных агентских страниц всех проектов."""
+    urls = _get_urls_by_environment()
+    url = urls["agent"]
+    return AgentPage(mobile_page, url)
+
+
+@pytest.fixture
+def mobile_client_page(mobile_page: Page):
+    """Фикстура для мобильных клиентских страниц всех проектов."""
+    urls = _get_urls_by_environment()
+    url = urls["client"]
+    return ClientPage(mobile_page, url)
+
+
+@pytest.fixture
+def mobile_capstone_project_page(mobile_page: Page):
+    """Фикстура для мобильных страниц проектов Capstone."""
+    from pages.capstone.capstone_pages import CapstonePages
+    return CapstonePages(mobile_page)
+
+
+@pytest.fixture
+def mobile_wellcube_page(mobile_page: Page):
+    """Фикстура для мобильных страниц Wellcube проектов."""
+    from pages.wellcube.wellcube_pages import WellcubePages
+    return WellcubePages(mobile_page)

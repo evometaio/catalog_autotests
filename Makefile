@@ -49,9 +49,25 @@ test-api: ## Запустить все API тесты
 	@echo "$(GREEN)🔌 Запуск API тестов...$(NC)"
 	$(PYTEST) tests/api/ -sv --alluredir=reports/allure-results || true
 
+test-mobile: ## Запустить все мобильные тесты
+	@echo "$(GREEN)📱 Запуск мобильных тестов...$(NC)"
+	$(PYTEST) tests/ui/mobile/ -sv --alluredir=reports/allure-results || true
+
+test-mobile-iphone: ## Запустить мобильные тесты на iPhone
+	@echo "$(GREEN)📱 Запуск мобильных тестов на iPhone...$(NC)"
+	$(PYTEST) tests/ui/mobile/ -sv -m "mobile_device('iPhone 13 Pro')" --alluredir=reports/allure-results || true
+
+test-mobile-android: ## Запустить мобильные тесты на Android
+	@echo "$(GREEN)📱 Запуск мобильных тестов на Android...$(NC)"
+	$(PYTEST) tests/ui/mobile/ -sv -m "mobile_device('Pixel 5')" --alluredir=reports/allure-results || true
+
+test-responsive: ## Запустить тесты адаптивности (desktop + mobile)
+	@echo "$(GREEN)📱💻 Запуск тестов адаптивности...$(NC)"
+	$(PYTEST) tests/ui/ -sv -m "ui" --alluredir=reports/allure-results || true
+
 
 # Регрессионное тестирование
-regress-dev: ## Полное регрессионное тестирование на dev (все браузеры)
+regress-dev: ## Полное регрессионное тестирование на dev (все браузеры + мобильные)
 	@echo "$(GREEN)🚀 Запуск полного регрессионного тестирования на DEV...$(NC)"
 	@echo "$(YELLOW)🖥️ Тестирование в Chromium...$(NC)"
 	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
@@ -59,12 +75,16 @@ regress-dev: ## Полное регрессионное тестирование
 	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=firefox --alluredir=reports/allure-results || true
 	@echo "$(YELLOW)🖥️ Тестирование в WebKit...$(NC)"
 	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=webkit --alluredir=reports/allure-results || true
+	@echo "$(YELLOW)📱 Мобильное тестирование на iPhone...$(NC)"
+	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/mobile/ -sv -m "mobile_device('iPhone 13 Pro')" --alluredir=reports/allure-results || true
+	@echo "$(YELLOW)📱 Мобильное тестирование на Android...$(NC)"
+	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/mobile/ -sv -m "mobile_device('Pixel 5')" --alluredir=reports/allure-results || true
 	@echo "$(GREEN)✅ Регрессионное тестирование на DEV завершено!$(NC)"
 	@echo "$(YELLOW)📊 Генерация итогового отчета...$(NC)"
 	$(ALLURE) generate reports/allure-results -o reports/allure-report --clean || true
 
 
-regress-prod: ## Полное регрессионное тестирование на prod (все браузеры)
+regress-prod: ## Полное регрессионное тестирование на prod (все браузеры + мобильные)
 	@echo "$(GREEN)🚀 Запуск полного регрессионного тестирования на PROD...$(NC)"
 	@echo "$(YELLOW)🖥️ Тестирование в Chromium...$(NC)"
 	TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
@@ -72,6 +92,10 @@ regress-prod: ## Полное регрессионное тестировани�
 	TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/ -sv --browser=firefox --alluredir=reports/allure-results || true
 	@echo "$(YELLOW)🖥️ Тестирование в WebKit...$(NC)"
 	TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/ -sv --browser=webkit --alluredir=reports/allure-results || true
+	@echo "$(YELLOW)📱 Мобильное тестирование на iPhone...$(NC)"
+	TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/mobile/ -sv -m "mobile_device('iPhone 13 Pro')" --alluredir=reports/allure-results || true
+	@echo "$(YELLOW)📱 Мобильное тестирование на Android...$(NC)"
+	TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/mobile/ -sv -m "mobile_device('Pixel 5')" --alluredir=reports/allure-results || true
 	@echo "$(GREEN)✅ Регрессионное тестирование на PROD завершено!$(NC)"
 	@echo "$(YELLOW)📊 Генерация итогового отчета...$(NC)"
 	$(ALLURE) generate reports/allure-results -o reports/allure-report --clean || true
