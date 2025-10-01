@@ -1,5 +1,3 @@
-import os
-
 import allure
 import pytest
 
@@ -18,7 +16,7 @@ def test_cubix_explore_amenities(map_page):
         map_page.click_project_on_map("cubix")
 
     with allure.step("Проверяем наличие кнопки Explore Amenities"):
-        map_page.expect_visible(map_page.project_locators.EXPLORE_AMENITIES_BUTTON)
+        map_page.expect_visible(locators.get("EXPLORE_AMENITIES_BUTTON"))
 
     with allure.step("Кликаем на кнопку Explore Amenities"):
         map_page.click_explore_amenities_button()
@@ -51,7 +49,7 @@ def test_cubix_explore_amenities(map_page):
         map_page.click_amenities_slider_indicator(2)  # Индекс 2 = третий слайд
         # Ждем изменения слайда - проверяем что активный индикатор изменился
         map_page.page.wait_for_selector(
-            f"{map_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(3)[class*='active']",
+            f"{locators.get("AMENITIES_SLIDER_INDICATORS")}:nth-child(3)[class*='active']",
             timeout=2000,
         )
 
@@ -59,7 +57,7 @@ def test_cubix_explore_amenities(map_page):
         map_page.click_amenities_slider_indicator(3)  # Индекс 3 = четвертый слайд
         # Ждем изменения слайда - проверяем что активный индикатор изменился
         map_page.page.wait_for_selector(
-            f"{map_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(4)[class*='active']",
+            f"{locators.get("AMENITIES_SLIDER_INDICATORS")}:nth-child(4)[class*='active']",
             timeout=2000,
         )
 

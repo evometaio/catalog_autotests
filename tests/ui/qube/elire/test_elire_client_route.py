@@ -38,7 +38,7 @@ def test_elire_request_viewing_form(client_page, fake):
     with allure.step("Проверяем успешную отправку формы"):
         # Ждем появления модального окна с сообщением об успехе
         client_page.page.wait_for_selector(
-            client_page.project_locators.Elire.SUCCESS_MODAL,
+            locators.get("SUCCESS_MODAL"),
             state="visible",
             timeout=5000,
         )

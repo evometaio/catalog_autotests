@@ -1,7 +1,6 @@
-from locators.map_locators import MapLocators
-from locators.project_locators import QubeLocators
-
-from ..base_page import BasePage
+from core.base_page import BasePage
+from locators import locators
+from locators import locators
 
 
 class ClientPage(BasePage):
@@ -28,12 +27,12 @@ class ClientPage(BasePage):
         Args:
             fake: Faker объект для генерации тестовых данных
         """
-        self.fill(self.project_locators.Elire.FIRST_NAME_FIELD, fake.first_name())
-        self.fill(self.project_locators.Elire.LAST_NAME_FIELD, fake.last_name())
-        self.fill(self.project_locators.Elire.PHONE_FIELD, "+79999999999")
-        self.fill(self.project_locators.Elire.EMAIL_FIELD, fake.email())
-        self.fill(self.project_locators.Elire.NOTE_FIELD, fake.text())
-        self.click(self.project_locators.Elire.SUBMIT_BUTTON_FOR_REQUEST_VIEWING)
+        self.fill(locators.get("FIRST_NAME_FIELD"), fake.first_name())
+        self.fill(locators.get("LAST_NAME_FIELD"), fake.last_name())
+        self.fill(locators.get("PHONE_FIELD"), "+79999999999")
+        self.fill(locators.get("EMAIL_FIELD"), fake.email())
+        self.fill(locators.get("NOTE_FIELD"), fake.text())
+        self.click(locators.get("SUBMIT_BUTTON_FOR_REQUEST_VIEWING"))
 
     def is_success_message_displayed(self) -> bool:
         """
@@ -43,7 +42,7 @@ class ClientPage(BasePage):
             bool: True если сообщение об успехе отображается
         """
         # Нужны локаторы для модального окна
-        project_locators = QubeLocators()
+        project_locators = self.project_locators
 
         # Проверяем модальное окно
         modal = self.page.locator(project_locators.Elire.SUCCESS_MODAL)

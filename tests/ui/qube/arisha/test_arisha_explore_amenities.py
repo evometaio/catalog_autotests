@@ -1,5 +1,3 @@
-import os
-
 import allure
 import pytest
 
@@ -21,7 +19,7 @@ def test_arisha_explore_amenities(map_page):
         map_page.click_on_all_units_button()
 
     with allure.step("Проверяем наличие кнопки Explore Amenities"):
-        map_page.expect_visible(map_page.project_locators.EXPLORE_AMENITIES_BUTTON)
+        map_page.expect_visible(locators.get("EXPLORE_AMENITIES_BUTTON"))
 
     with allure.step("Кликаем на кнопку Explore Amenities"):
         map_page.click_explore_amenities_button()
@@ -54,7 +52,7 @@ def test_arisha_explore_amenities(map_page):
         map_page.click_amenities_slider_indicator(1)  # Индекс 1 = второй слайд
         # Ждем изменения слайда - проверяем что активный индикатор изменился
         map_page.page.wait_for_selector(
-            f"{map_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(2)[class*='active']",
+            f"{locators.get("AMENITIES_SLIDER_INDICATORS")}:nth-child(2)[class*='active']",
             timeout=2000,
         )
 
@@ -62,7 +60,7 @@ def test_arisha_explore_amenities(map_page):
         map_page.click_amenities_slider_indicator(4)  # Индекс 4 = пятый слайд
         # Ждем изменения слайда - проверяем что активный индикатор изменился
         map_page.page.wait_for_selector(
-            f"{map_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(5)[class*='active']",
+            f"{locators.get("AMENITIES_SLIDER_INDICATORS")}:nth-child(5)[class*='active']",
             timeout=2000,
         )
 

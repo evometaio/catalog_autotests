@@ -50,7 +50,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install allure-pytest pytest-playwright
+          pip install allure-pytest pytest-playwright python-dotenv
           python -m playwright install firefox
           python -m playwright install-deps
 
@@ -74,25 +74,18 @@ jobs:
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
-      # - name: Run tests (Firefox/Linux)
-      #   run: pytest --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
-      #   env:
-      #     TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
-      #     OS_NAME: ${{ runner.os }}
-      #     OS_PLATFORM: "ubuntu-latest"
-
-      - name: Run mobile tests (iPhone/Firefox/Linux)
-        run: pytest tests/ui/mobile/qube/arisha/test_arisha_mobile_map.py::TestArishaMobileMap::test_arisha_mobile_map_loads -sv --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+      - name: Run tests (Firefox/Linux)
+        run: pytest --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
           OS_NAME: ${{ runner.os }}
           OS_PLATFORM: "ubuntu-latest"
-          DEVICE_TYPE: "iPhone 13 Pro"
+
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: allure-results-ubuntu-firefox-mobile
+          name: allure-results-ubuntu-firefox
           path: ${{ env.ALLURE_RESULTS_DIR }}
 
   windows-chromium:
@@ -108,7 +101,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install allure-pytest pytest-playwright
+          pip install allure-pytest pytest-playwright python-dotenv
           python -m playwright install chromium
           python -m playwright install-deps
 
@@ -133,27 +126,19 @@ jobs:
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
-      # - name: Run tests (Chromium/Windows)
-      #   shell: pwsh
-      #   run: pytest --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
-      #   env:
-      #     TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
-      #     OS_NAME: ${{ runner.os }}
-      #     OS_PLATFORM: "windows-latest"
-
-      - name: Run mobile tests (Android/Chromium/Windows)
+      - name: Run tests (Chromium/Windows)
         shell: pwsh
-        run: pytest tests/ui/mobile/qube/arisha/test_arisha_mobile_map.py::TestArishaMobileMap::test_arisha_mobile_map_loads -sv --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
           OS_NAME: ${{ runner.os }}
           OS_PLATFORM: "windows-latest"
-          DEVICE_TYPE: "Pixel 5"
+
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: allure-results-windows-chromium-mobile
+          name: allure-results-windows-chromium
           path: ${{ env.ALLURE_RESULTS_DIR }}
 
   macos-webkit:
@@ -168,7 +153,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install allure-pytest pytest-playwright
+          pip install allure-pytest pytest-playwright python-dotenv
           python -m playwright install webkit
           python -m playwright install-deps
           brew install allure
@@ -193,20 +178,20 @@ jobs:
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
-      # - name: Run tests (Webkit/macOS)
-      #   run: pytest --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
-      #   env:
-      #     TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
-      #     OS_NAME: ${{ runner.os }}
-      #     OS_PLATFORM: "macos-latest"
-
-      - name: Run mobile tests (iPad/WebKit/macOS)
-        run: pytest tests/ui/mobile/qube/arisha/test_arisha_mobile_map.py::TestArishaMobileMap::test_arisha_mobile_map_loads -sv --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+      - name: Run tests (Webkit/macOS)
+        run: pytest --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
           OS_NAME: ${{ runner.os }}
           OS_PLATFORM: "macos-latest"
-          DEVICE_TYPE: "iPad"
+
+      - name: Run mobile tests (iPhone/WebKit/macOS)
+        run: pytest tests/ui/mobile/ -sv -m "mobile" --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        env:
+          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+          OS_NAME: ${{ runner.os }}
+          OS_PLATFORM: "macos-latest"
+          DEVICE_TYPE: "iPhone"
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -225,7 +210,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: allure-results
-          pattern: allure-results-*-mobile
+          pattern: allure-results-*
           merge-multiple: true
 
 

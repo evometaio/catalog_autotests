@@ -1,10 +1,9 @@
 import os
 import time
 
-from locators.map_locators import MapLocators
-from locators.project_locators import QubeLocators
-
-from ..base_page import BasePage
+from core.base_page import BasePage
+from locators import locators
+from locators import locators
 
 
 class AgentPage(BasePage):
@@ -21,7 +20,7 @@ class AgentPage(BasePage):
 
     def click_on_download_pdf_button(self):
         """Кликает на кнопку скачивания PDF."""
-        self.click(self.project_locators.DOWNLOAD_PDF_BUTTON, timeout=20000)
+        self.click(self.locators.DOWNLOAD_PDF_BUTTON, timeout=20000)
 
     def download_pdf_and_verify(self) -> tuple[bool, str]:
         """
@@ -41,7 +40,7 @@ class AgentPage(BasePage):
             # Начинаем скачивание с таймаутом 20 секунд
             with self.page.expect_download(timeout=20000) as download_info:
                 # Кликаем по кнопке Download PDF с увеличенным таймаутом
-                self.click(self.project_locators.DOWNLOAD_PDF_BUTTON, timeout=20000)
+                self.click(self.locators.DOWNLOAD_PDF_BUTTON, timeout=20000)
 
             # Получаем объект скачивания
             download = download_info.value
@@ -80,7 +79,7 @@ class AgentPage(BasePage):
 
     def click_on_all_units_button(self):
         """Кликнуть на кнопку All units."""
-        self.click(self.project_locators.ALL_UNITS_BUTTON)
+        self.click(self.locators.ALL_UNITS_BUTTON)
 
         # Ждем изменения URL на catalog_2d
         self.page.wait_for_url("**/catalog_2d", timeout=10000)
@@ -95,11 +94,11 @@ class AgentPage(BasePage):
 
         # Ждем появления хотя бы одного апартамента на странице
         self.page.wait_for_selector(
-            self.project_locators.ALL_APARTMENT_TITLES, state="attached", timeout=10000
+            self.locators.ALL_APARTMENT_TITLES, state="attached", timeout=10000
         )
 
         # Используем локатор из project_locators.py
-        apartment_titles = self.page.locator(self.project_locators.ALL_APARTMENT_TITLES)
+        apartment_titles = self.page.locator(self.locators.ALL_APARTMENT_TITLES)
         apartment_count = apartment_titles.count()
 
         # Проверяем, что апартаменты найдены на странице
@@ -129,4 +128,4 @@ class AgentPage(BasePage):
 
     def click_on_sales_offer_button(self):
         """Кликнуть на кнопку Sales Offer."""
-        self.click(self.project_locators.SALES_OFFER_BUTTON)
+        self.click(self.locators.SALES_OFFER_BUTTON)

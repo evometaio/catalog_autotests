@@ -1,5 +1,3 @@
-import os
-
 import allure
 import pytest
 
@@ -17,8 +15,8 @@ def test_arisha_building_floor_apartment_navigation(map_page):
         map_page.click_project_on_map("arisha")
 
     with allure.step("Выбираем здание 1"):
-        map_page.click(map_page.project_locators.BUILDING_NAV_BUTTON)
-        map_page.click(map_page.project_locators.BUILDING_1_BUTTON)
+        map_page.click(locators.get("BUILDING_NAV_BUTTON"))
+        map_page.click(locators.get("BUILDING_1_BUTTON"))
 
         # Проверяем URL здания
         map_page.page.wait_for_url("**/building/1", timeout=10000)
@@ -26,8 +24,8 @@ def test_arisha_building_floor_apartment_navigation(map_page):
         allure.attach(f"URL после выбора здания 1: {current_url}", name="Building URL")
 
     with allure.step("Выбираем этаж 1"):
-        map_page.click(map_page.project_locators.FLOOR_NAV_BUTTON)
-        map_page.click(map_page.project_locators.FLOOR_1_BUTTON)
+        map_page.click(locators.get("FLOOR_NAV_BUTTON"))
+        map_page.click(locators.get("FLOOR_1_BUTTON"))
 
         # Проверяем URL этажа
         map_page.page.wait_for_url("**/floor/1/1", timeout=10000)
@@ -37,11 +35,11 @@ def test_arisha_building_floor_apartment_navigation(map_page):
     with allure.step("Ищем и кликаем на доступный апартамент на этаже 1"):
         # Ждем загрузки плана этажа
         map_page.page.wait_for_selector(
-            map_page.project_locators.FLOOR_PLAN_APARTMENTS, timeout=10000
+            locators.get("FLOOR_PLAN_APARTMENTS"), timeout=10000
         )
 
         apartment_elements = map_page.page.locator(
-            map_page.project_locators.FLOOR_PLAN_APARTMENTS
+            locators.get("FLOOR_PLAN_APARTMENTS")
         )
         apartment_count = apartment_elements.count()
         allure.attach(
@@ -62,8 +60,8 @@ def test_arisha_building_floor_apartment_navigation(map_page):
         map_page.page.wait_for_url("**/floor/1/1", timeout=10000)
 
     with allure.step("Переходим на этаж 2"):
-        map_page.click(map_page.project_locators.FLOOR_NAV_BUTTON)
-        map_page.click(map_page.project_locators.FLOOR_2_BUTTON)
+        map_page.click(locators.get("FLOOR_NAV_BUTTON"))
+        map_page.click(locators.get("FLOOR_2_BUTTON"))
 
         # Проверяем URL этажа 2
         map_page.page.wait_for_url("**/floor/1/2", timeout=10000)
@@ -73,11 +71,11 @@ def test_arisha_building_floor_apartment_navigation(map_page):
     with allure.step("Ищем и кликаем на доступный апартамент на этаже 2"):
         # Ждем загрузки плана этажа 2
         map_page.page.wait_for_selector(
-            map_page.project_locators.FLOOR_PLAN_APARTMENTS, timeout=10000
+            locators.get("FLOOR_PLAN_APARTMENTS"), timeout=10000
         )
 
         apartment_elements_2 = map_page.page.locator(
-            map_page.project_locators.FLOOR_PLAN_APARTMENTS
+            locators.get("FLOOR_PLAN_APARTMENTS")
         )
         apartment_count_2 = apartment_elements_2.count()
         allure.attach(

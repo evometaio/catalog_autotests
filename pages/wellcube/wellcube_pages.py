@@ -1,7 +1,6 @@
-from locators.map_locators import MapLocators
-from locators.project_locators import WellcubePageLocators
-
-from ..base_page import BasePage
+from core.base_page import BasePage
+from locators import locators
+from locators import locators
 
 
 class WellcubePages(BasePage):
@@ -15,10 +14,10 @@ class WellcubePages(BasePage):
             url: URL страницы (если не указан, будет использован Wellcube map URL)
         """
         if url is None:
-            from conftest import _get_urls_by_environment
+            from config.environments import environment_manager
 
-            urls = _get_urls_by_environment()
-            url = urls["wellcube_map"]
+            env_config = environment_manager.get_environment()
+            url = env_config.wellcube_map_url
 
         super().__init__(page, url, WellcubePageLocators)
         self.map_locators = MapLocators()
@@ -33,25 +32,25 @@ class WellcubePages(BasePage):
         Returns:
             str: URL для проекта
         """
-        from conftest import _get_urls_by_environment
+        from config.environments import environment_manager
 
-        urls = _get_urls_by_environment()
+        env_config = environment_manager.get_environment()
         project_name_lower = project_name.lower()
 
         if project_name_lower not in ["tranquil"]:
             raise ValueError(f"Неизвестный Wellcube проект: {project_name}")
 
-        base_url = urls["wellcube_map"].replace("/map", "")
+        base_url = env_config.wellcube_map_url.replace("/map", "")
 
         if page_type == "catalog2d":
             return f"{base_url}/project/{project_name_lower}/catalog_2d"
         elif page_type == "area":
             return f"{base_url}/project/{project_name_lower}/area"
         elif page_type == "map":
-            return urls["wellcube_map"]
+            return env_config.wellcube_map_url
         else:
             raise ValueError(f"Неизвестный тип страницы: {page_type}")
 
     def click_on_fraction_ownership_offer_button(self):
         """Кликнуть на кнопку "Скачать ownership offer"""
-        self.click(self.project_locators.Tranquil.FRACTION_OWNERSHIP_OFFER_BUTTON)
+        self.click(locators.get("FRACTION_OWNERSHIP_OFFER_BUTTON"))

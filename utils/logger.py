@@ -1,6 +1,7 @@
 import logging
 import os
 from datetime import datetime
+from typing import Optional
 
 
 def setup_logger(name: str = "autotests", level: str = "INFO") -> logging.Logger:

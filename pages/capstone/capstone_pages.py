@@ -1,7 +1,6 @@
-from locators.map_locators import MapLocators
-from locators.project_locators import CapstonePageLocators
-
-from ..base_page import BasePage
+from core.base_page import BasePage
+from locators import locators
+from locators import locators
 
 
 class CapstonePages(BasePage):
@@ -15,10 +14,10 @@ class CapstonePages(BasePage):
             url: URL страницы (если не указан, будет использован Capstone map URL)
         """
         if url is None:
-            from conftest import _get_urls_by_environment
+            from config.environments import environment_manager
 
-            urls = _get_urls_by_environment()
-            url = urls["capstone_map"]
+            env_config = environment_manager.get_environment()
+            url = env_config.capstone_map_url
 
         super().__init__(page, url, CapstonePageLocators)
         self.map_locators = MapLocators()
@@ -33,20 +32,20 @@ class CapstonePages(BasePage):
         Returns:
             str: URL для проекта
         """
-        from conftest import _get_urls_by_environment
+        from config.environments import environment_manager
 
-        urls = _get_urls_by_environment()
+        env_config = environment_manager.get_environment()
         project_name_lower = project_name.lower()
 
         if project_name_lower not in ["peylaa"]:
             raise ValueError(f"Неизвестный Capstone проект: {project_name}")
 
-        base_url = urls["capstone_map"].replace("/map", "")
+        base_url = env_config.capstone_map_url.replace("/map", "")
 
         if page_type == "area":
             return f"{base_url}/project/{project_name_lower}/area"
         elif page_type == "map":
-            return urls["capstone_map"]
+            return env_config.capstone_map_url
         else:
             raise ValueError(f"Неизвестный тип страницы для Capstone: {page_type}")
 
@@ -64,4 +63,4 @@ class CapstonePages(BasePage):
         self.click(self.locators.EXPLORE_PROJECT_BUTTON)
 
         # Ждем изменения URL (универсально для всех типов страниц)
-        self.page.wait_for_url(self.project_locators.PROJECT_URL_PATTERN, timeout=10000)
+        self.page.wait_for_url(self.locators.PROJECT_URL_PATTERN, timeout=10000)

@@ -23,9 +23,8 @@ def test_arisha_apartment_widget_full_functionality(map_page):
         frame_locator = map_page.apartment_widget.get_widget_frame()
 
         # Получаем локаторы для проверки видимости кнопок
-        widget_locators = map_page.project_locators.Arisha.ApartmentWidget()
-        view_2d_button = frame_locator.locator(widget_locators.VIEW_2D_BUTTON)
-        view_3d_button = frame_locator.locator(widget_locators.VIEW_3D_BUTTON)
+        view_2d_button = frame_locator.locator('button:has-text("2D")')
+        view_3d_button = frame_locator.locator('button:has-text("3D")')
 
         view_2d_button.wait_for(state="visible", timeout=15000)
         view_3d_button.wait_for(state="visible", timeout=15000)
@@ -41,7 +40,7 @@ def test_arisha_apartment_widget_full_functionality(map_page):
 
         # Ждем появления навигационных стрелок в режиме 2D
         map_page.apartment_widget.get_widget_frame().locator(
-            map_page.project_locators.Arisha.ApartmentWidget().NEXT_ARROW
+            'button[aria-label*="next"], .next-button, [class*="next"]'
         ).first.wait_for(state="visible", timeout=2000)
 
         allure.attach(
@@ -82,7 +81,7 @@ def test_arisha_apartment_widget_full_functionality(map_page):
 
         # Ждем стабилизации после навигации по слайдам
         map_page.apartment_widget.get_widget_frame().locator(
-            map_page.project_locators.Arisha.ApartmentWidget().SCENE_INDICATOR
+            '[class*="indicator"], [class*="dot"], [class*="scene"]'
         ).first.wait_for(state="visible", timeout=2000)
 
         allure.attach(
@@ -96,7 +95,7 @@ def test_arisha_apartment_widget_full_functionality(map_page):
 
         # Ждем стабилизации интерфейса - ждем появления кнопки 3D
         view_3d_button = map_page.apartment_widget.get_widget_frame().locator(
-            map_page.project_locators.Arisha.ApartmentWidget().VIEW_3D_BUTTON
+            'button:has-text("3D")'
         )
         view_3d_button.wait_for(state="visible", timeout=2000)
 

@@ -1,146 +1,167 @@
+"""
+Оптимизированная конфигурация pytest с только используемыми фикстурами.
+"""
+
 import os
 from datetime import datetime
+from typing import Any, Dict
 
 import allure
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, sync_playwright
 
-from locators.project_locators import (
-    CapstonePageLocators,
-    QubeLocators,
-    WellcubePageLocators,
-)
-from pages.base_page import BasePage
-from pages.qube.agent_page import AgentPage
-from pages.qube.client_page import ClientPage
+from config.environments import EnvironmentConfig, environment_manager
+from config.settings import settings
+from core.exceptions import EnvironmentError
+from locators import locators
+from utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
-def _create_environment_properties():
-    """Создает файл environment.properties для Allure отчета"""
-    env = os.getenv("TEST_ENVIRONMENT", "prod")
+def _validate_environment() -> None:
+    """Валидирует настройки окружения."""
+    try:
+        environment_manager.validate_current_environment()
+        logger.info("Окружение валидировано успешно")
+    except EnvironmentError as e:
+        logger.error(f"Ошибка валидации окружения: {e}")
+        raise
+
+
+def _create_environment_properties() -> None:
+    """Создает файл environment.properties для Allure отчета."""
+    env_config = environment_manager.get_environment()
 
     # Создаем директорию для результатов если её нет
-    os.makedirs("reports/allure-results", exist_ok=True)
-
-    # Определяем URL-ы для текущего окружения
-    urls = _get_urls_by_environment()
+    os.makedirs(settings.reporting.allure_results_dir, exist_ok=True)
 
     # Создаем содержимое файла environment.properties
     properties_content = f"""# Test Environment Configuration
-                            environment = {env}
-                            url = {urls['map']}
-                        """
+environment = {env_config.name}
+base_url = {env_config.base_url}
+agent_url = {env_config.agent_url}
+client_url = {env_config.client_url}
+capstone_map_url = {env_config.capstone_map_url}
+wellcube_map_url = {env_config.wellcube_map_url}
+timeout = {env_config.timeout}
+verify_ssl = {env_config.verify_ssl}
+timestamp = {datetime.now().isoformat()}
+"""
 
-    # Записываем файл
-    with open(
-        "reports/allure-results/environment.properties", "w", encoding="utf-8"
-    ) as f:
+    # Записываем в файл
+    properties_file = os.path.join(
+        settings.reporting.allure_results_dir, "environment.properties"
+    )
+    with open(properties_file, "w", encoding="utf-8") as f:
         f.write(properties_content)
 
-    print(f"📝 Environment properties созданы для окружения: {env.upper()}")
+    logger.info(f"Создан файл environment.properties: {properties_file}")
+
+
+# ================================
+# СЕССИОННЫЕ ФИКСТУРЫ
+# ================================
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_environment():
-    """Фикстура для настройки окружения перед запуском тестов"""
+def setup_environment() -> EnvironmentConfig:
+    """Настройка окружения для тестов."""
+    logger.info("Настройка окружения для тестов...")
+
+    # Валидируем окружение
+    _validate_environment()
+
+    # Получаем конфигурацию окружения
+    env_config = environment_manager.get_environment()
+
+    # Создаем файл properties для Allure
     _create_environment_properties()
-    return _get_urls_by_environment()
+
+    logger.info(f"Окружение настроено: {env_config.name}")
+    return env_config
 
 
 @pytest.fixture(autouse=True)
-def setup_test_parameters(page: Page, request):
-    """Устанавливает параметры OS для каждого теста и делает скриншот при падении."""
-    # Устанавливаем параметры OS для Allure
-    os_name = os.getenv("OS_NAME", "Unknown")
-    os_platform = os.getenv("OS_PLATFORM", "Unknown")
+def setup_test_parameters(page: Page, request) -> None:
+    """Настройка параметров теста."""
+    test_name = request.node.name
 
-    allure.dynamic.parameter("Operating System", os_name)
-    allure.dynamic.parameter("Platform", os_platform)
+    # Устанавливаем параметры для Allure
+    allure.dynamic.parameter("Test Name", test_name)
+    allure.dynamic.parameter("Browser", "Chromium")
+    allure.dynamic.parameter(
+        "Viewport",
+        f"{settings.browser.viewport_width}x{settings.browser.viewport_height}",
+    )
 
+    logger.info(f"Настройка параметров для теста: {test_name}")
+
+
+@pytest.fixture(autouse=True)
+def _take_screenshot_on_failure(page: Page, request) -> None:
+    """Автоматически делает скриншот при падении теста."""
     yield
 
     if request.node.rep_call.failed:
-        # Создаем директорию для скриншотов если её нет
-        os.makedirs("reports/screenshots", exist_ok=True)
+        try:
+            # Создаем директорию для скриншотов
+            screenshots_dir = "reports/screenshots"
+            os.makedirs(screenshots_dir, exist_ok=True)
 
-        # Генерируем имя файла
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        test_name = request.node.name.replace("/", "_").replace("\\", "_")
-        screenshot_name = f"{test_name}_{timestamp}.png"
-        screenshot_path = os.path.join("reports/screenshots", screenshot_name)
+            # Генерируем имя файла
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            test_name = request.node.name
+            screenshot_path = os.path.join(
+                screenshots_dir, f"{test_name}_{timestamp}.png"
+            )
 
-        # Делаем скриншот
-        screenshot = page.screenshot()
+            # Делаем скриншот
+            page.screenshot(path=screenshot_path)
 
-        # Сохраняем файл
-        with open(screenshot_path, "wb") as f:
-            f.write(screenshot)
+            # Прикрепляем к Allure отчету
+            allure.attach.file(
+                screenshot_path,
+                name="Screenshot on Failure",
+                attachment_type=allure.attachment_type.PNG,
+            )
 
-        # Прикрепляем к Allure отчету
-        allure.attach(
-            screenshot, name="screenshot", attachment_type=allure.attachment_type.PNG
-        )
+            logger.info(f"Скриншот сохранен: {screenshot_path}")
+
+        except Exception as e:
+            logger.error(f"Ошибка при создании скриншота: {e}")
+
+
+# ================================
+# БРАУЗЕРНЫЕ ФИКСТУРЫ
+# ================================
 
 
 @pytest.fixture(scope="session")
-def browser_context_args(browser_context_args):
+def browser_context_args(browser_context_args) -> Dict[str, Any]:
     """Настройки контекста браузера."""
     return {
         **browser_context_args,
-        "viewport": {"width": 1920, "height": 1080},
-        "ignore_https_errors": True,
+        "viewport": {
+            "width": settings.browser.viewport_width,
+            "height": settings.browser.viewport_height,
+        },
+        "ignore_https_errors": settings.browser.ignore_https_errors,
     }
 
 
 @pytest.fixture(scope="session")
-def browser_type_launch_args(browser_type):
+def browser_type_launch_args(browser_type) -> Dict[str, Any]:
     """Аргументы запуска браузера с учетом типа браузера."""
-    headless = os.getenv("HEADLESS", "true").lower() == "true"
-
-    # Единые аргументы для всех браузеров
-    if browser_type.name == "chromium":
-        args = [
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-        ]
-    elif browser_type.name == "firefox":
-        args = []
-    elif browser_type.name == "webkit":
-        args = []
-    else:
-        args = []
-
-    return {"headless": headless, "args": args}
+    return {
+        "headless": settings.browser.headless,
+        "args": settings.get_browser_args(browser_type.name),
+    }
 
 
-@pytest.fixture(scope="session")
-def base_url():
-    """Base URL в зависимости от окружения"""
-    return _get_urls_by_environment()["map"]
-
-
-@pytest.fixture(scope="session")
-def agent_url():
-    """Base agent URL в зависимости от окружения"""
-    return _get_urls_by_environment()["agent"]
-
-
-@pytest.fixture(scope="session")
-def client_url():
-    """Base client URL в зависимости от окружения"""
-    return _get_urls_by_environment()["client"]
-
-
-@pytest.fixture(scope="session")
-def capstone_map_url():
-    """URL карты проекта Capstone в зависимости от окружения"""
-    return _get_urls_by_environment()["capstone_map"]
-
-
-@pytest.fixture(scope="session")
-def wellcube_map_url():
-    """URL карты проекта Wellcube (Tranquil) в зависимости от окружения"""
-    return _get_urls_by_environment()["wellcube_map"]
+# ================================
+# ДАННЫЕ И УТИЛИТЫ
+# ================================
 
 
 @pytest.fixture
@@ -148,10 +169,15 @@ def fake():
     """Фикстура для генерации тестовых данных с помощью Faker."""
     from faker import Faker
 
-    return Faker(["ru_RU", "en_US"])
+    fake = Faker("en_US")
+    return fake
 
 
-# Фикстуры по типам страниц
+# ================================
+# PAGE OBJECT ФИКСТУРЫ
+# ================================
+
+
 @pytest.fixture
 def map_page(page: Page, request):
     """Фикстура для карт всех проектов."""
@@ -165,33 +191,38 @@ def map_page(page: Page, request):
             project_name = "wellcube"
 
     # Получаем URL для главной страницы
-    urls = _get_urls_by_environment()
+    env_config = environment_manager.get_environment()
 
     if project_name == "capstone":
-        url = urls["capstone_map"]
-        return BasePage(page, url, CapstonePageLocators)
+        from pages.capstone.capstone_pages import CapstonePages
+
+        return CapstonePages(page, env_config.capstone_map_url)
     elif project_name == "wellcube":
-        url = urls["wellcube_map"]
-        return BasePage(page, url, WellcubePageLocators)
+        from pages.wellcube.wellcube_pages import WellcubePages
+
+        return WellcubePages(page, env_config.wellcube_map_url)
     else:  # qube
-        url = urls["map"]
-        return BasePage(page, url, QubeLocators)
+        from pages.qube.qube_map_page import QubeMapPage
+
+        return QubeMapPage(page, env_config.base_url)
 
 
 @pytest.fixture
 def agent_page(page: Page):
     """Фикстура для агентских страниц всех проектов."""
-    urls = _get_urls_by_environment()
-    url = urls["agent"]
-    return AgentPage(page, url)
+    from pages.qube.agent_page import AgentPage
+
+    env_config = environment_manager.get_environment()
+    return AgentPage(page, env_config.agent_url)
 
 
 @pytest.fixture
 def client_page(page: Page):
     """Фикстура для клиентских страниц всех проектов."""
-    urls = _get_urls_by_environment()
-    url = urls["client"]
-    return ClientPage(page, url)
+    from pages.qube.client_page import ClientPage
+
+    env_config = environment_manager.get_environment()
+    return ClientPage(page, env_config.client_url)
 
 
 @pytest.fixture
@@ -203,14 +234,6 @@ def capstone_project_page(page: Page):
 
 
 @pytest.fixture
-def capstone_direct_project_page(page: Page):
-    """Фикстура для прямых URL проектов Capstone (например, /project/peylaa/area)."""
-    urls = _get_urls_by_environment()
-    base_url = urls["capstone_map"].replace("/map", "")  # Убираем /map из базового URL
-    return BasePage(page, base_url)
-
-
-@pytest.fixture
 def wellcube_page(page: Page):
     """Фикстура для страниц Wellcube проектов."""
     from pages.wellcube.wellcube_pages import WellcubePages
@@ -218,109 +241,33 @@ def wellcube_page(page: Page):
     return WellcubePages(page)
 
 
-# Хук для обработки результатов тестов
-def pytest_runtest_makereport(item, call):
-    """Обработчик результатов выполнения тестов."""
-    if call.when == "call":
-        # Сохраняем результат для использования в фикстурах
-        item.rep_call = call
-
-
-def _get_urls_by_environment() -> dict:
-    """Получить все URL-ы для текущего окружения"""
-    env = os.getenv("TEST_ENVIRONMENT", "prod")
-
-    # Добавляем информацию в Allure (только окружение)
-    allure.dynamic.label("environment", env)
-
-    if env == "dev":
-        return {
-            # Qube проекты (Arisha, Elire, Cubix)
-            "map": os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map"),
-            "agent": os.getenv(
-                "DEV_AGENT_BASE_URL", "https://qube-dev-next.evometa.io/agent/map"
-            ),
-            "client": os.getenv(
-                "DEV_CLIENT_BASE_URL", "https://qube-dev-next.evometa.io/client/map"
-            ),
-            # Capstone проект (Peylaa)
-            "capstone_map": os.getenv(
-                "DEV_CAPSTONE_BASE_URL", "https://capstone-dev.evometa.io/map"
-            ),
-            # Wellcube проект (Tranquil)
-            "wellcube_map": os.getenv(
-                "DEV_WELLCUBE_BASE_URL", "https://catalog-dev.evometa.io/wellcube/map"
-            ),
-        }
-    else:
-        return {
-            # Qube проекты (Arisha, Elire, Cubix) - PROD
-            "map": os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map"),
-            "agent": os.getenv(
-                "AGENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/agent/map"
-            ),
-            "client": os.getenv(
-                "CLIENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/client/map"
-            ),
-            # Capstone проект (Peylaa) - PROD
-            "capstone_map": os.getenv(
-                "CAPSTONE_PROD_BASE_URL", "https://3dtours.peylaa-phuket.com/map"
-            ),
-            # Wellcube проект (Tranquil) - PROD
-            "wellcube_map": os.getenv(
-                "WELLCUBE_PROD_BASE_URL", "https://catalog.evometa.io/wellcube/map"
-            ),
-        }
-
-
 # ================================
 # МОБИЛЬНЫЕ ФИКСТУРЫ
 # ================================
 
-@pytest.fixture
-def mobile_browser_context_args(browser_context_args):
-    """Настройки мобильного контекста браузера."""
-    return {
-        **browser_context_args,
-        "viewport": {"width": 375, "height": 812},  # iPhone 13 Pro
-        "ignore_https_errors": True,
-        "is_mobile": True,
-        "has_touch": True,
-        "device_scale_factor": 3,
-    }
-
 
 @pytest.fixture
-def mobile_page(page: Page, request):
-    """Фикстура для мобильной страницы с эмуляцией устройства."""
-    # Получаем тип устройства из маркера или параметра
-    device_type = "iPhone 13 Pro"  # по умолчанию
-    
-    # Проверяем маркеры теста
-    if hasattr(request.node, 'pytestmark'):
-        for mark in request.node.pytestmark:
-            if mark.name == 'mobile_device':
-                device_type = mark.args[0] if mark.args else "iPhone 13 Pro"
-                break
-    
-    # Применяем базовые мобильные настройки
-    page.set_viewport_size({"width": 375, "height": 812})  # iPhone 13 Pro размеры
-    
-    # Устанавливаем мобильный User-Agent
-    mobile_user_agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"
-    page.context.set_extra_http_headers({"User-Agent": mobile_user_agent})
-    
-    # Устанавливаем параметры для Allure
-    allure.dynamic.parameter("Device", device_type)
-    allure.dynamic.parameter("Viewport", "375x812")
-    allure.dynamic.parameter("Mobile", "True")
-    
-    return page
-
-
-@pytest.fixture
-def mobile_map_page(mobile_page: Page, request):
+def mobile_map_page(page: Page, request):
     """Фикстура для мобильных карт всех проектов."""
+    # Применяем мобильные настройки
+    page.set_viewport_size(
+        {
+            "width": settings.mobile.viewport_width,
+            "height": settings.mobile.viewport_height,
+        }
+    )
+
+    # Устанавливаем мобильный User-Agent
+    page.context.set_extra_http_headers({"User-Agent": settings.mobile.user_agent})
+
+    # Устанавливаем параметры для Allure
+    allure.dynamic.parameter("Device", settings.mobile.device_type)
+    allure.dynamic.parameter(
+        "Viewport",
+        f"{settings.mobile.viewport_width}x{settings.mobile.viewport_height}",
+    )
+    allure.dynamic.parameter("Mobile", "True")
+
     # Определяем проект из имени теста
     project_name = "qube"  # по умолчанию
     if hasattr(request, "fixturename"):
@@ -331,44 +278,72 @@ def mobile_map_page(mobile_page: Page, request):
             project_name = "wellcube"
 
     # Получаем URL для главной страницы
-    urls = _get_urls_by_environment()
+    env_config = environment_manager.get_environment()
 
     if project_name == "capstone":
-        url = urls["capstone_map"]
-        return BasePage(mobile_page, url, CapstonePageLocators)
+        from pages.capstone.capstone_pages import CapstonePages
+
+        return CapstonePages(page, env_config.capstone_map_url)
     elif project_name == "wellcube":
-        url = urls["wellcube_map"]
-        return BasePage(mobile_page, url, WellcubePageLocators)
+        from pages.wellcube.wellcube_pages import WellcubePages
+
+        return WellcubePages(page, env_config.wellcube_map_url)
     else:  # qube
-        url = urls["map"]
-        return BasePage(mobile_page, url, QubeLocators)
+        from core.base_page import BasePage
+
+        return BasePage(page, env_config.base_url)
 
 
-@pytest.fixture
-def mobile_agent_page(mobile_page: Page):
-    """Фикстура для мобильных агентских страниц всех проектов."""
-    urls = _get_urls_by_environment()
-    url = urls["agent"]
-    return AgentPage(mobile_page, url)
+# ================================
+# PLAYWRIGHT ФИКСТУРЫ
+# ================================
 
 
-@pytest.fixture
-def mobile_client_page(mobile_page: Page):
-    """Фикстура для мобильных клиентских страниц всех проектов."""
-    urls = _get_urls_by_environment()
-    url = urls["client"]
-    return ClientPage(mobile_page, url)
+@pytest.fixture(scope="session")
+def playwright():
+    """Фикстура для Playwright."""
+    with sync_playwright() as p:
+        yield p
 
 
-@pytest.fixture
-def mobile_capstone_project_page(mobile_page: Page):
-    """Фикстура для мобильных страниц проектов Capstone."""
-    from pages.capstone.capstone_pages import CapstonePages
-    return CapstonePages(mobile_page)
+@pytest.fixture(scope="session")
+def browser(playwright):
+    """Фикстура для браузера."""
+    browser = playwright.chromium.launch(
+        headless=settings.browser.headless,
+        args=settings.get_browser_args("chromium"),
+    )
+    yield browser
+    browser.close()
 
 
-@pytest.fixture
-def mobile_wellcube_page(mobile_page: Page):
-    """Фикстура для мобильных страниц Wellcube проектов."""
-    from pages.wellcube.wellcube_pages import WellcubePages
-    return WellcubePages(mobile_page)
+# ================================
+# PYTEST ХУКИ
+# ================================
+
+
+def pytest_runtest_makereport(item, call):
+    """Создает отчет о выполнении теста для скриншотов."""
+    if "page" in item.fixturenames:
+        item.rep_call = call
+
+
+def pytest_configure(config):
+    """Конфигурация pytest."""
+    config.addinivalue_line("markers", "smoke: smoke tests")
+    config.addinivalue_line("markers", "regression: regression tests")
+    config.addinivalue_line("markers", "ui: ui tests")
+    config.addinivalue_line("markers", "api: api tests")
+    config.addinivalue_line("markers", "mobile: mobile tests")
+
+
+def pytest_collection_modifyitems(config, items):
+    """Модифицирует коллекцию тестов."""
+    # Добавляем маркеры на основе пути к файлу
+    for item in items:
+        if "mobile" in str(item.fspath):
+            item.add_marker(pytest.mark.mobile)
+        if "api" in str(item.fspath):
+            item.add_marker(pytest.mark.api)
+        if "ui" in str(item.fspath):
+            item.add_marker(pytest.mark.ui)

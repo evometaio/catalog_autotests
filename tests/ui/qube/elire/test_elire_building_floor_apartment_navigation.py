@@ -1,5 +1,3 @@
-import os
-
 import allure
 import pytest
 
@@ -19,15 +17,13 @@ def test_elire_building_floor_apartment_navigation(map_page):
     with allure.step("Кликаем на Residences"):
         map_page.elire.click_on_residences_button()
         assert map_page.is_visible(
-            map_page.project_locators.Elire.RESIDENCES_BUTTON
+            locators.get("RESIDENCES_BUTTON")
         ), "Не найдена кнопка Residences"
 
     with allure.step("Кликаем на Start 3D Experience"):
-        map_page.click(
-            map_page.project_locators.Elire.START3DEXPREINCE_1BEDROOM_RESIDENCE
-        )
+        map_page.click(locators.get("START3DEXPREINCE_1BEDROOM_RESIDENCE"))
         assert map_page.is_visible(
-            map_page.project_locators.Elire.START3DEXPREINCE_1BEDROOM_RESIDENCE
+            locators.get("START3DEXPREINCE_1BEDROOM_RESIDENCE")
         ), "Не найдена кнопка Start 3D Experience"
 
     # Проверяем URL здания

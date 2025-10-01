@@ -1,5 +1,3 @@
-import os
-
 import allure
 import pytest
 
@@ -18,9 +16,7 @@ def test_tranquil_explore_amenities(wellcube_page):
         wellcube_page.click_project_on_map("tranquil")
 
     with allure.step("Проверяем наличие кнопки Explore Amenities"):
-        wellcube_page.expect_visible(
-            wellcube_page.project_locators.EXPLORE_AMENITIES_BUTTON
-        )
+        wellcube_page.expect_visible(wellcube_page.locators.EXPLORE_AMENITIES_BUTTON)
 
     with allure.step("Кликаем на кнопку Explore Amenities"):
         wellcube_page.click_explore_amenities_button()
@@ -53,7 +49,7 @@ def test_tranquil_explore_amenities(wellcube_page):
         wellcube_page.click_amenities_slider_indicator(1)  # Индекс 1 = второй слайд
         # Ждем изменения слайда - проверяем что активный индикатор изменился
         wellcube_page.page.wait_for_selector(
-            f"{wellcube_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(2)[class*='active']",
+            f"{locators.get("AMENITIES_SLIDER_INDICATORS")}:nth-child(2)[class*='active']",
             timeout=2000,
         )
 
@@ -61,7 +57,7 @@ def test_tranquil_explore_amenities(wellcube_page):
         wellcube_page.click_amenities_slider_indicator(2)  # Индекс 2 = третий слайд
         # Ждем изменения слайда - проверяем что активный индикатор изменился
         wellcube_page.page.wait_for_selector(
-            f"{wellcube_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(3)[class*='active']",
+            f"{locators.get("AMENITIES_SLIDER_INDICATORS")}:nth-child(3)[class*='active']",
             timeout=2000,
         )
 
