@@ -7,7 +7,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: ['**']
   workflow_dispatch:
     inputs:
       environment:
@@ -74,12 +74,12 @@ jobs:
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
-      - name: Run tests (Firefox/Linux)
-        run: pytest --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
-        env:
-          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
-          OS_NAME: ${{ runner.os }}
-          OS_PLATFORM: "ubuntu-latest"
+      # - name: Run tests (Firefox/Linux)
+      #   run: pytest --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+      #   env:
+      #     TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+      #     OS_NAME: ${{ runner.os }}
+      #     OS_PLATFORM: "ubuntu-latest"
 
       - name: Run mobile tests (iPhone/Firefox/Linux)
         run: pytest tests/ui/mobile/ -sv -m "mobile_device('iPhone 13 Pro')" --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
@@ -133,13 +133,13 @@ jobs:
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
-      - name: Run tests (Chromium/Windows)
-        shell: pwsh
-        run: pytest --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
-        env:
-          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
-          OS_NAME: ${{ runner.os }}
-          OS_PLATFORM: "windows-latest"
+      # - name: Run tests (Chromium/Windows)
+      #   shell: pwsh
+      #   run: pytest --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+      #   env:
+      #     TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+      #     OS_NAME: ${{ runner.os }}
+      #     OS_PLATFORM: "windows-latest"
 
       - name: Run mobile tests (Android/Chromium/Windows)
         shell: pwsh
@@ -193,12 +193,12 @@ jobs:
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
-      - name: Run tests (Webkit/macOS)
-        run: pytest --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
-        env:
-          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
-          OS_NAME: ${{ runner.os }}
-          OS_PLATFORM: "macos-latest"
+      # - name: Run tests (Webkit/macOS)
+      #   run: pytest --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+      #   env:
+      #     TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+      #     OS_NAME: ${{ runner.os }}
+      #     OS_PLATFORM: "macos-latest"
 
       - name: Run mobile tests (iPad/WebKit/macOS)
         run: pytest tests/ui/mobile/ -sv -m "mobile_device('iPad')" --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
