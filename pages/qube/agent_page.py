@@ -88,15 +88,12 @@ class AgentPage(BasePage):
     def find_and_click_available_apartment(self, project_name: str = None):
         """
         Найти и кликнуть на первый доступный апартамент (без замка).
-        Универсальный метод для всех проектов.
 
         Args:
             project_name: Название проекта (используется только для логирования)
-
-        Returns:
-            str: Название выбранного апартамента
         """
-        # Ждем загрузки апартаментов
+
+        # Ждем появления хотя бы одного апартамента на странице
         self.page.wait_for_selector(
             self.project_locators.ALL_APARTMENT_TITLES, state="attached", timeout=10000
         )
@@ -108,12 +105,15 @@ class AgentPage(BasePage):
         # Проверяем, что апартаменты найдены на странице
         assert (
             apartment_count > 0
-        ), f"Апартаменты не найдены на странице - баг в UI для проекта {project_name or 'неизвестный'}"
+        ), f"Апартаменты не найдены на странице - {project_name or 'неизвестный'}"
 
         # Ищем первый доступный апартамент (без замка)
         for i in range(apartment_count):
             apartment_title = apartment_titles.nth(i)
-            apartment_text = apartment_title.text_content()
+
+            # Сразу проверяем видимость без ожидания
+            if not apartment_title.is_visible():
+                continue
 
             # Проверяем, есть ли замок у этого апартамента
             lock_icon = apartment_title.locator(
@@ -121,23 +121,11 @@ class AgentPage(BasePage):
             )
             has_lock = lock_icon.count() > 0
 
-            # Если замка нет, ждем готовности элемента и кликаем
+            # Если замка нет, кликаем
             if not has_lock:
-                # Ждем, что элемент станет видимым и активным
-                try:
-                    apartment_title.wait_for(state="visible", timeout=2000)
-                except:
-                    continue  # Если не стал видимым, пробуем следующий апартамент
-
-                # Проверяем готовность к клику
-                if apartment_title.is_visible() and apartment_title.is_enabled():
-                    apartment_title.click()
-                    return apartment_text
-
-        # Если все апартаменты заблокированы
-        assert (
-            False
-        ), f"Все апартаменты заблокированы (имеют замок) - баг в UI для проекта {project_name or 'неизвестный'}"
+                apartment_text = apartment_title.text_content()
+                apartment_title.click()
+                return apartment_text
 
     def click_on_sales_offer_button(self):
         """Кликнуть на кнопку Sales Offer."""
