@@ -81,10 +81,18 @@ jobs:
           OS_NAME: ${{ runner.os }}
           OS_PLATFORM: "ubuntu-latest"
 
+      - name: Run mobile tests (iPhone/Firefox/Linux)
+        run: pytest tests/ui/mobile/ -sv -m "mobile_device('iPhone 13 Pro')" --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        env:
+          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+          OS_NAME: ${{ runner.os }}
+          OS_PLATFORM: "ubuntu-latest"
+          DEVICE_TYPE: "iPhone 13 Pro"
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: allure-results-ubuntu-firefox
+          name: allure-results-ubuntu-firefox-mobile
           path: ${{ env.ALLURE_RESULTS_DIR }}
 
   windows-chromium:
@@ -133,10 +141,19 @@ jobs:
           OS_NAME: ${{ runner.os }}
           OS_PLATFORM: "windows-latest"
 
+      - name: Run mobile tests (Android/Chromium/Windows)
+        shell: pwsh
+        run: pytest tests/ui/mobile/ -sv -m "mobile_device('Pixel 5')" --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        env:
+          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+          OS_NAME: ${{ runner.os }}
+          OS_PLATFORM: "windows-latest"
+          DEVICE_TYPE: "Pixel 5"
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: allure-results-windows-chromium
+          name: allure-results-windows-chromium-mobile
           path: ${{ env.ALLURE_RESULTS_DIR }}
 
   macos-webkit:
@@ -183,10 +200,18 @@ jobs:
           OS_NAME: ${{ runner.os }}
           OS_PLATFORM: "macos-latest"
 
+      - name: Run mobile tests (iPad/WebKit/macOS)
+        run: pytest tests/ui/mobile/ -sv -m "mobile_device('iPad')" --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        env:
+          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+          OS_NAME: ${{ runner.os }}
+          OS_PLATFORM: "macos-latest"
+          DEVICE_TYPE: "iPad"
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: allure-results-macos-webkit
+          name: allure-results-macos-webkit-mobile
           path: ${{ env.ALLURE_RESULTS_DIR }}
 
   deploy-allure:
@@ -200,7 +225,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: allure-results
-          pattern: allure-results-*
+          pattern: allure-results-*-mobile
           merge-multiple: true
 
 
