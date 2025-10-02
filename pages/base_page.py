@@ -711,7 +711,7 @@ class BasePage:
                 project_name: Название проекта (используется только для логирования)
             """
 
-            self.parent.page.wait_for_timeout(2000)
+            self.parent.page.wait_for_timeout(3500)
 
             # Ищем все апартаменты
             apartment_titles = self.parent.page.locator(
