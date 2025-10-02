@@ -7,7 +7,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.flaky(reruns=4, reruns_delay=4)
+@pytest.mark.flaky(reruns=2, reruns_delay=3)
 def test_cubix_download_pdf_on_agent_page(agent_page):
     """Тест скачивания PDF на агентской странице проекта Cubix."""
     downloaded_file_path = ""
@@ -21,7 +21,6 @@ def test_cubix_download_pdf_on_agent_page(agent_page):
 
         with allure.step("Ищем и кликаем на первый доступный апартамент"):
             agent_page.project.find_and_click_available_apartment("cubix")
-            agent_page.wait_for_timeout(1000)
 
         with allure.step("Кликаем на кнопку Sales Offer"):
             agent_page.project.click_on_sales_offer_button()

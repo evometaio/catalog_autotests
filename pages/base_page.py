@@ -711,14 +711,9 @@ class BasePage:
                 project_name: Название проекта (используется только для логирования)
             """
 
-            # Ждем появления хотя бы одного апартамента на странице
-            self.parent.page.wait_for_selector(
-                self.parent.project_locators.ALL_APARTMENT_TITLES,
-                state="attached",
-                timeout=10000,
-            )
+            self.parent.page.wait_for_timeout(2000)
 
-            # Используем локатор из project_locators.py
+            # Ищем все апартаменты
             apartment_titles = self.parent.page.locator(
                 self.parent.project_locators.ALL_APARTMENT_TITLES
             )
@@ -743,11 +738,16 @@ class BasePage:
                 )
                 has_lock = lock_icon.count() > 0
 
-                # Если замка нет, кликаем
+                apartment_text = apartment_title.text_content()
+
                 if not has_lock:
-                    apartment_text = apartment_title.text_content()
-                    apartment_title.click()
+                    apartment_title.click(force=True)
                     return apartment_text
+
+            # Если не найден ни один доступный апартамент
+            raise AssertionError(
+                f"Не найден ни один доступный апартамент для проекта {project_name}"
+            )
 
         def click_on_sales_offer_button(self):
             """Кликнуть на кнопку Sales Offer."""
