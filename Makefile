@@ -27,7 +27,7 @@ setup: ## Настройка проекта
 # Основные команды тестирования
 test-dev: ## Запустить все тесты на DEV
 	@echo "$(GREEN)🧪 Запуск всех тестов на DEV...$(NC)"
-	TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
+	TEST_ENVIRONMENT=dev HEADLESS=true $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
 
 test-head-dev: ## Запустить все UI тесты в head режиме на DEV
 	@echo "$(GREEN)👁️ Запуск UI тестов в head режиме на DEV...$(NC)"
@@ -35,7 +35,7 @@ test-head-dev: ## Запустить все UI тесты в head режиме �
 
 test-prod: ## Запустить все тесты на PROD
 	@echo "$(GREEN)🧪 Запуск всех тестов на PROD...$(NC)"
-	TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/ -sv --alluredir=reports/allure-results || true
+	TEST_ENVIRONMENT=prod HEADLESS=true $(PYTEST) tests/ui/ -sv --alluredir=reports/allure-results || true
 
 test-head-prod: ## Запустить все UI тесты в head режиме
 	@echo "$(GREEN)👁️ Запуск UI тестов в head режиме на PROD...$(NC)"
@@ -43,7 +43,7 @@ test-head-prod: ## Запустить все UI тесты в head режиме
 
 test-ui: ## Запустить все UI тесты
 	@echo "$(GREEN)🖥️ Запуск UI тестов...$(NC)"
-	$(PYTEST) tests/ui/ -sv --alluredir=reports/allure-results || true
+	HEADLESS=true $(PYTEST) tests/ui/ -sv --alluredir=reports/allure-results || true
 
 test-api: ## Запустить все API тесты
 	@echo "$(GREEN)🔌 Запуск API тестов...$(NC)"

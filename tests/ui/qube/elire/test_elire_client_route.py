@@ -29,11 +29,11 @@ def test_elire_request_viewing_form(client_page, fake):
         client_page.click_project_on_map("elire")
 
     with allure.step("Кликаем на Request Viewing"):
-        client_page.click_on_residences_button_and_request_viewing_form()
+        client_page.project.click_on_residences_button_and_request_viewing_form()
 
     with allure.step("Заполняем и отправляем форму Request Viewing"):
         # Заполняем и отправляем форму
-        client_page.fill_and_submit_request_viewing_form(fake)
+        client_page.project.fill_and_submit_request_viewing_form(fake)
 
     with allure.step("Проверяем успешную отправку формы"):
         # Ждем появления модального окна с сообщением об успехе
@@ -43,5 +43,5 @@ def test_elire_request_viewing_form(client_page, fake):
             timeout=5000,
         )
 
-        success_displayed = client_page.is_success_message_displayed()
+        success_displayed = client_page.project.is_success_message_displayed()
         assert success_displayed, "Сообщение об успешной отправке не отображается"

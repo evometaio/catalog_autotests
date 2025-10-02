@@ -36,6 +36,8 @@ env:
   CAPSTONE_PROD_BASE_URL: "https://3dtours.peylaa-phuket.com/map"
   DEV_WELLCUBE_BASE_URL: "https://catalog-dev.evometa.io/wellcube/map"
   WELLCUBE_PROD_BASE_URL: "https://catalog.evometa.io/wellcube/map"
+  USERNAME_ELIRE: ${{ secrets.USERNAME_ELIRE }}
+  PASSWORD_ELIRE: ${{ secrets.PASSWORD_ELIRE }}
 
 jobs:
   ubuntu-firefox:

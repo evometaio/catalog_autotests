@@ -1,5 +1,3 @@
-import time
-
 from playwright.sync_api import Locator, Page, expect
 
 from locators.map_locators import MapLocators
@@ -418,6 +416,50 @@ class BasePage:
         """Найти и кликнуть на первый доступный апартамент на плане этажа."""
         return self.project.click_available_apartment(apartment_selector, max_attempts)
 
+    def handle_auth_modal_if_present(self):
+        """Обработать модальное окно авторизации, если оно появилось."""
+        import os
+
+        # Проверяем, появилось ли модальное окно авторизации
+        if self.is_visible(".ant-modal-content", timeout=5000):
+            # Получаем логин и пароль из переменных окружения
+            username = os.getenv("USERNAME_ELIRE")
+            password = os.getenv("PASSWORD_ELIRE")
+
+            if username and password:
+                # Заполняем поле логина
+                self.fill("#username", username)
+
+                # Заполняем поле пароля
+                self.fill("#password", password)
+
+                # Кликаем на кнопку входа
+                self.click("button[data-test-id='modal-form-primary-button']")
+
+                # Ждем исчезновения модального окна или появления сообщения об ошибке
+                try:
+                    self.page.wait_for_selector(
+                        ".ant-modal-content", state="hidden", timeout=15000
+                    )
+                except:
+                    # Если модальное окно не закрылось, проверяем есть ли ошибка
+                    error_elements = self.page.locator(
+                        ".ant-message-error, .ant-form-item-explain-error"
+                    )
+                    if error_elements.count() > 0:
+                        error_message = error_elements.text_content()
+                        raise AssertionError(f"Ошибка авторизации: {error_message}")
+                    else:
+                        # Если нет ошибки, но модальное окно не закрылось, закрываем его вручную
+                        self.click(".ant-modal-close")
+                        self.page.wait_for_selector(
+                            ".ant-modal-content", state="hidden", timeout=5000
+                        )
+            else:
+                raise AssertionError(
+                    "Не заданы переменные окружения USERNAME_ELIRE и PASSWORD_ELIRE"
+                )
+
     # ==================== ВНУТРЕННИЕ КЛАССЫ ДЛЯ ОРГАНИЗАЦИИ МЕТОДОВ ====================
 
     class MapNavigation:
@@ -582,6 +624,189 @@ class BasePage:
                 except Exception:
                     continue
 
+            return False
+
+        # ==================== МЕТОДЫ ИЗ AGENT_PAGE ====================
+
+        def click_on_download_pdf_button(self):
+            """Кликает на кнопку скачивания PDF."""
+            self.parent.click(
+                self.parent.project_locators.DOWNLOAD_PDF_BUTTON, timeout=20000
+            )
+
+        def download_pdf_and_verify(self) -> tuple[bool, str]:
+            """
+            Скачать PDF в директорию и проверить что файл не пустой.
+
+            Returns:
+                tuple: (успех, путь к файлу)
+            """
+            import os
+            import time
+
+            try:
+                # Создаем директорию для скачиваний
+                download_dir = "temp/downloads"
+                os.makedirs(download_dir, exist_ok=True)
+
+                # Засекаем время начала скачивания
+                start_time = time.time()
+
+                # Начинаем скачивание с таймаутом 20 секунд
+                with self.parent.page.expect_download(timeout=20000) as download_info:
+                    # Кликаем по кнопке Download PDF с увеличенным таймаутом
+                    self.parent.click(
+                        self.parent.project_locators.DOWNLOAD_PDF_BUTTON, timeout=20000
+                    )
+
+                # Получаем объект скачивания
+                download = download_info.value
+
+                # Проверяем что файл скачался
+                if not download or not download.suggested_filename:
+                    return False, ""
+
+                # Проверяем что это PDF
+                if not download.suggested_filename.lower().endswith(".pdf"):
+                    return False, ""
+
+                # Сохраняем файл в нашу директорию
+                file_path = os.path.join(download_dir, download.suggested_filename)
+                download.save_as(file_path)
+
+                # Засекаем время окончания скачивания
+                end_time = time.time()
+                download_time = round(end_time - start_time, 2)
+
+                # Проверяем размер файла (больше 1KB)
+                file_size = os.path.getsize(file_path)
+
+                print(
+                    f"PDF скачан: {file_path}, размер: {file_size} байт, время скачивания: {download_time} сек"
+                )
+                return file_size > 1024, file_path
+
+            except Exception as e:
+                print(f"Ошибка при скачивании PDF: {e}")
+                return False, ""
+
+        def cleanup_pdf_after_test(self):
+            """Очистка через системную команду."""
+            import os
+
+            os.system("rm -rf temp")
+
+        def click_on_all_units_button(self):
+            """Кликнуть на кнопку All units."""
+            self.parent.click(self.parent.project_locators.ALL_UNITS_BUTTON)
+
+            # Ждем изменения URL на catalog_2d
+            self.parent.page.wait_for_url("**/catalog_2d", timeout=10000)
+
+        def find_and_click_available_apartment(self, project_name: str = None):
+            """
+            Найти и кликнуть на первый доступный апартамент (без замка).
+
+            Args:
+                project_name: Название проекта (используется только для логирования)
+            """
+
+            self.parent.page.wait_for_timeout(3500)
+
+            # Ищем все апартаменты
+            apartment_titles = self.parent.page.locator(
+                self.parent.project_locators.ALL_APARTMENT_TITLES
+            )
+            apartment_count = apartment_titles.count()
+
+            # Проверяем, что апартаменты найдены на странице
+            assert (
+                apartment_count > 0
+            ), f"Апартаменты не найдены на странице - {project_name or 'неизвестный'}"
+
+            # Ищем первый доступный апартамент (без замка)
+            for i in range(apartment_count):
+                apartment_title = apartment_titles.nth(i)
+
+                # Сразу проверяем видимость без ожидания
+                if not apartment_title.is_visible():
+                    continue
+
+                # Проверяем, есть ли замок у этого апартамента
+                lock_icon = apartment_title.locator(
+                    "xpath=.//span[@role='img' and @aria-label='lock']"
+                )
+                has_lock = lock_icon.count() > 0
+
+                apartment_text = apartment_title.text_content()
+
+                if not has_lock:
+                    apartment_title.click(force=True)
+                    return apartment_text
+
+            # Если не найден ни один доступный апартамент
+            raise AssertionError(
+                f"Не найден ни один доступный апартамент для проекта {project_name}"
+            )
+
+        def click_on_sales_offer_button(self):
+            """Кликнуть на кнопку Sales Offer."""
+            self.parent.click(self.parent.project_locators.SALES_OFFER_BUTTON)
+
+        # ==================== МЕТОДЫ ИЗ CLIENT_PAGE ====================
+
+        def click_on_residences_button_and_request_viewing_form(self):
+            """Кликает на кнопку Residences и открывает форму Request Viewing."""
+            # Используем методы из внутреннего класса Elire
+            self.parent.elire.click_on_residences_button_and_request_viewing_form()
+
+        def fill_and_submit_request_viewing_form(self, fake):
+            """Заполняет форму Request Viewing.
+
+            Args:
+                fake: Faker объект для генерации тестовых данных
+            """
+            self.parent.fill(
+                self.parent.project_locators.Elire.FIRST_NAME_FIELD, fake.first_name()
+            )
+            self.parent.fill(
+                self.parent.project_locators.Elire.LAST_NAME_FIELD, fake.last_name()
+            )
+            self.parent.fill(
+                self.parent.project_locators.Elire.PHONE_FIELD, "+79999999999"
+            )
+            self.parent.fill(
+                self.parent.project_locators.Elire.EMAIL_FIELD, fake.email()
+            )
+            self.parent.fill(self.parent.project_locators.Elire.NOTE_FIELD, fake.text())
+            self.parent.click(
+                self.parent.project_locators.Elire.SUBMIT_BUTTON_FOR_REQUEST_VIEWING
+            )
+
+        def is_success_message_displayed(self) -> bool:
+            """
+            Проверяет, отображается ли сообщение об успешной отправке.
+
+            Returns:
+                bool: True если сообщение об успехе отображается
+            """
+            # Проверяем модальное окно
+            modal = self.parent.page.locator(
+                self.parent.project_locators.Elire.SUCCESS_MODAL
+            )
+
+            if modal.is_visible():
+                # Получаем весь текст модального окна
+                modal_text = modal.text_content()
+
+                # Проверяем наличие нужных текстов
+                has_thank_you = "Thank you!" in modal_text
+                has_contact_text = (
+                    "Our specialist will contact you shortly." in modal_text
+                )
+
+                if has_thank_you and has_contact_text:
+                    return True
             return False
 
     class Amenities:

@@ -27,7 +27,7 @@ def test_tranquil_download_ownership_offer(wellcube_page, agent_page):
 
         # Ожидаем открытия новой вкладки с PDF (как вы сказали, PDF открывается в новой вкладке)
         with wellcube_page.page.expect_popup(timeout=10000) as popup_info:
-            agent_page.click_on_download_pdf_button()
+            agent_page.project.click_on_download_pdf_button()
 
         new_tab = popup_info.value
         # Небольшая задержка для стабилизации в headless режиме
