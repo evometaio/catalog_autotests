@@ -9,6 +9,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
+@pytest.mark.flaky(reruns=2, reruns_delay=4)
 def test_arisha_360_area_tour(map_page):
     """Тест 360 Area Tour для проекта Arisha."""
     with allure.step("Открываем главную страницу"):

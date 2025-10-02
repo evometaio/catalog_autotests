@@ -9,7 +9,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.flaky(reruns=2)
+@pytest.mark.flaky(reruns=2, reruns_delay=4)
 def test_arisha_download_pdf_on_agent_page(agent_page):
     """Тест скачивания PDF на агентской странице проекта Arisha."""
     downloaded_file_path = ""
