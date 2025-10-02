@@ -19,13 +19,13 @@ def test_cubix_download_pdf_on_agent_page(agent_page):
             agent_page.click_project_on_map("cubix")
 
         with allure.step("Ищем и кликаем на первый доступный апартамент"):
-            agent_page.find_and_click_available_apartment("cubix")
+            agent_page.project.find_and_click_available_apartment("cubix")
 
         with allure.step("Кликаем на кнопку Sales Offer"):
-            agent_page.click_on_sales_offer_button()
+            agent_page.project.click_on_sales_offer_button()
 
         with allure.step("Скачиваем PDF"):
-            success, file_path = agent_page.download_pdf_and_verify()
+            success, file_path = agent_page.project.download_pdf_and_verify()
             assert success, "PDF не был скачан"
             downloaded_file_path = file_path
 
@@ -40,4 +40,4 @@ def test_cubix_download_pdf_on_agent_page(agent_page):
         # Очищаем скачанный файл в любом случае (успех или ошибка)
         if downloaded_file_path:
             with allure.step("Удаляем скачанный PDF файл"):
-                agent_page.cleanup_pdf_after_test()
+                agent_page.project.cleanup_pdf_after_test()

@@ -3,7 +3,11 @@ from datetime import datetime
 
 import allure
 import pytest
+from dotenv import load_dotenv
 from playwright.sync_api import Page
+
+# Загружаем переменные из .env файла
+load_dotenv()
 
 from locators.project_locators import (
     CapstonePageLocators,
@@ -11,8 +15,6 @@ from locators.project_locators import (
     WellcubePageLocators,
 )
 from pages.base_page import BasePage
-from pages.qube.agent_page import AgentPage
-from pages.qube.client_page import ClientPage
 
 
 def _create_environment_properties():
@@ -183,7 +185,7 @@ def agent_page(page: Page):
     """Фикстура для агентских страниц всех проектов."""
     urls = _get_urls_by_environment()
     url = urls["agent"]
-    return AgentPage(page, url)
+    return BasePage(page, url, QubeLocators)
 
 
 @pytest.fixture
@@ -191,7 +193,7 @@ def client_page(page: Page):
     """Фикстура для клиентских страниц всех проектов."""
     urls = _get_urls_by_environment()
     url = urls["client"]
-    return ClientPage(page, url)
+    return BasePage(page, url, QubeLocators)
 
 
 @pytest.fixture

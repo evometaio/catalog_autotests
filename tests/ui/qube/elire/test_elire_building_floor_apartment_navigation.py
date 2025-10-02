@@ -12,22 +12,39 @@ import pytest
 def test_elire_building_floor_apartment_navigation(map_page):
     """Тест навигации по зданиям, этажам и апартаментам проекта Elire."""
 
+    # Получаем окружение для условной логики
+    env = os.getenv("TEST_ENVIRONMENT", "prod")
+
     with allure.step("Открываем карту и переходим к проекту Elire"):
         map_page.open(route_type="map")
         map_page.click_project_on_map("elire")
 
     with allure.step("Кликаем на Residences"):
         map_page.elire.click_on_residences_button()
+
         assert map_page.is_visible(
             map_page.project_locators.Elire.RESIDENCES_BUTTON
         ), "Не найдена кнопка Residences"
 
+        # Обрабатываем модальное окно авторизации только на PROD (на DEV авторизации нет)
+        if env == "prod":
+            map_page.handle_auth_modal_if_present()
+
     with allure.step("Кликаем на Start 3D Experience"):
-        map_page.click(
+        start_3d_button = (
             map_page.project_locators.Elire.START3DEXPREINCE_1BEDROOM_RESIDENCE
         )
+
+        # Умное ожидание появления кнопки (на PROD может потребоваться больше времени из-за авторизации)
+        timeout = 20000 if env == "prod" else 10000
+        map_page.page.wait_for_selector(
+            start_3d_button, state="visible", timeout=timeout
+        )
+        map_page.click(start_3d_button)
+
+        # Проверяем, что кнопка была найдена и кликнута
         assert map_page.is_visible(
-            map_page.project_locators.Elire.START3DEXPREINCE_1BEDROOM_RESIDENCE
+            start_3d_button
         ), "Не найдена кнопка Start 3D Experience"
 
     # Проверяем URL здания
