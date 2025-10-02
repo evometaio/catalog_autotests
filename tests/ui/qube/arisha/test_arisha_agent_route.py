@@ -27,6 +27,7 @@ def test_arisha_download_pdf_on_agent_page(agent_page):
 
         with allure.step("Ищем и кликаем на первый доступный апартамент"):
             agent_page.project.find_and_click_available_apartment("arisha")
+            agent_page.wait_for_timeout(1000)
 
         with allure.step("Кликаем на кнопку Sales Offer"):
             agent_page.project.click_on_sales_offer_button()
