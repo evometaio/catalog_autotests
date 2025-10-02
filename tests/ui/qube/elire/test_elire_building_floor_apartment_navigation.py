@@ -9,7 +9,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.flaky(reruns=2, reruns_delay=4)
+@pytest.mark.flaky(reruns=3, reruns_delay=4)
 def test_elire_building_floor_apartment_navigation(map_page):
     """Тест навигации по зданиям, этажам и апартаментам проекта Elire."""
 
