@@ -216,7 +216,8 @@ class BasePage:
             elif project_name_lower == "elire":
                 return 'div[aria-label="ELIRE"]'
             elif project_name_lower == "cubix":
-                return 'div[aria-label="CUBIX RESIDENCE"]'
+                # На DEV: "CUBIX RESIDENCE", на PROD: "CUBIX RESIDENCES"
+                return 'div[aria-label="CUBIX RESIDENCE"], div[aria-label="CUBIX RESIDENCES"]'
             elif project_name_lower == "tranquil":
                 return 'div[aria-label="Tranquil Wellness Tower"]'
             elif project_name_lower == "peylaa":
@@ -232,7 +233,8 @@ class BasePage:
             elif project_name_lower == "elire":
                 return 'div[aria-label="Elire"]'
             elif project_name_lower == "cubix":
-                return 'div[aria-label="CUBIX RESIDENCE"]'
+                # На DEV: "CUBIX RESIDENCE", на PROD: "CUBIX RESIDENCES"
+                return 'div[aria-label="CUBIX RESIDENCE"], div[aria-label="CUBIX RESIDENCES"]'
             elif project_name_lower == "tranquil":
                 return 'div[aria-label="Tranquil Wellness Tower"]'
             elif project_name_lower == "peylaa":
