@@ -77,7 +77,7 @@ jobs:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
       - name: Run tests (Firefox/Linux)
-        run: pytest --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
           OS_NAME: ${{ runner.os }}
@@ -129,11 +129,27 @@ jobs:
 
       - name: Run tests (Chromium/Windows)
         shell: pwsh
-        run: pytest --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
           OS_NAME: ${{ runner.os }}
           OS_PLATFORM: "windows-latest"
+
+      - name: Run mobile tests (iPhone 13)
+        run: pytest tests/ui/mobile/ --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        env:
+          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+          MOBILE_DEVICE: iphone_13
+          OS_NAME: ${{ runner.os }}
+          OS_PLATFORM: "iphone 13"
+
+      - name: Run mobile tests (Pixel 5)
+        run: pytest tests/ui/mobile/ --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        env:
+          TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+          MOBILE_DEVICE: pixel_5
+          OS_NAME: ${{ runner.os }}
+          OS_PLATFORM: "pixel 5"
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -179,11 +195,13 @@ jobs:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
       - name: Run tests (Webkit/macOS)
-        run: pytest --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
           OS_NAME: ${{ runner.os }}
           OS_PLATFORM: "macos-latest"
+
+
 
       - uses: actions/upload-artifact@v4
         if: always()

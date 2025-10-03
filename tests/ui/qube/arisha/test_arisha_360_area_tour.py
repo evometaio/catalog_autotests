@@ -1,11 +1,9 @@
-import os
-
 import allure
 import pytest
 
 
 @allure.feature("Qube - Проект Arisha")
-@allure.story("360 Area Tour")
+@allure.story("360-градусный тур по территории")
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
@@ -13,7 +11,7 @@ import pytest
 def test_arisha_360_area_tour(map_page):
     """Тест 360 Area Tour для проекта Arisha."""
     with allure.step("Открываем главную страницу"):
-        map_page.open()
+        map_page.open(route_type="map")
 
     with allure.step("Кликаем на проект Arisha"):
         map_page.click_project_on_map("arisha")
