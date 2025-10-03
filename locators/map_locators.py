@@ -30,4 +30,6 @@ class MapLocators:
     PROJECT_PAGE_TITLE = "h1, h2, h3"
     PROJECT_NAVIGATION = '[class*="CompactNavigation"]'
     EXPLORE_PROJECT_BUTTON = '[data-test-id="map-project-point-button-desktop-arisha"]'
-    EXPLORE_PROJECT_BUTTON_MOBILE = '[data-test-id="map-project-point-button-mobile-arisha"]'
+    EXPLORE_PROJECT_BUTTON_MOBILE = (
+        '[data-test-id="map-project-point-button-mobile-arisha"]'
+    )

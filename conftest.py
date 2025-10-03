@@ -16,7 +16,6 @@ from locators.project_locators import (
 )
 from pages.base_page import BasePage
 
-
 # ==================== МОБИЛЬНЫЕ УСТРОЙСТВА ====================
 
 MOBILE_DEVICES = {
@@ -25,15 +24,15 @@ MOBILE_DEVICES = {
         "device_scale_factor": 3,
         "is_mobile": True,
         "has_touch": True,
-        "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"
+        "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1",
     },
     "pixel_5": {
         "viewport": {"width": 393, "height": 851},
         "device_scale_factor": 2.75,
         "is_mobile": True,
         "has_touch": True,
-        "user_agent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
-    }
+        "user_agent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36",
+    },
 }
 
 
@@ -61,7 +60,9 @@ def _create_environment_properties():
     ) as f:
         f.write(properties_content)
 
-    print(f"📝 Environment properties созданы для окружения: {env.upper()}, устройство: {device}")
+    print(
+        f"📝 Environment properties созданы для окружения: {env.upper()}, устройство: {device}"
+    )
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -88,7 +89,10 @@ def setup_test_parameters(page: Page, request):
         allure.dynamic.label("device", device)
         if device in MOBILE_DEVICES:
             mobile_config = MOBILE_DEVICES[device]
-            allure.dynamic.parameter("Viewport", f"{mobile_config['viewport']['width']}x{mobile_config['viewport']['height']}")
+            allure.dynamic.parameter(
+                "Viewport",
+                f"{mobile_config['viewport']['width']}x{mobile_config['viewport']['height']}",
+            )
 
     yield
 
@@ -119,7 +123,7 @@ def setup_test_parameters(page: Page, request):
 def browser_context_args(browser_context_args):
     """Настройки контекста браузера с поддержкой мобильных устройств."""
     device = os.getenv("MOBILE_DEVICE", "desktop")
-    
+
     # Если указано мобильное устройство, используем его настройки
     if device != "desktop" and device in MOBILE_DEVICES:
         mobile_config = MOBILE_DEVICES[device]
@@ -326,6 +330,7 @@ def _get_urls_by_environment() -> dict:
 
 # ==================== УТИЛИТЫ ДЛЯ МОБИЛЬНОГО ТЕСТИРОВАНИЯ ====================
 
+
 def get_mobile_device_config(device_name: str) -> dict:
     """Получить конфигурацию мобильного устройства."""
     return MOBILE_DEVICES.get(device_name, MOBILE_DEVICES["iphone_13"])
@@ -341,57 +346,73 @@ def mobile_device_info():
     """Фикстура для получения информации о текущем мобильном устройстве."""
     device = os.getenv("MOBILE_DEVICE", "iphone_13")
     config = get_mobile_device_config(device)
-    
+
     return {
         "name": device,
         "viewport": config["viewport"],
         "user_agent": config["user_agent"],
         "is_mobile": config["is_mobile"],
-        "has_touch": config["has_touch"]
+        "has_touch": config["has_touch"],
     }
 
 
 @pytest.fixture
 def mobile_page(page):
     """Фикстура для MobilePage с картой."""
-    from pages.mobile_page import MobilePage
     import os
+
+    from pages.mobile_page import MobilePage
+
     environment = os.getenv("TEST_ENVIRONMENT", "dev")
     if environment == "dev":
         base_url = os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map")
     else:
         base_url = os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
-    
+
     mobile_page = MobilePage(page)
     mobile_page.base_url = base_url
     return mobile_page
+
 
 @pytest.fixture
 def mobile_agent_page(page):
     """Фикстура для MobilePage с агентским роутом."""
-    from pages.mobile_page import MobilePage
     import os
+
+    from pages.mobile_page import MobilePage
+
     environment = os.getenv("TEST_ENVIRONMENT", "dev")
     if environment == "dev":
-        base_url = os.getenv("DEV_AGENT_BASE_URL", "https://qube-dev-next.evometa.io/agent/map")
+        base_url = os.getenv(
+            "DEV_AGENT_BASE_URL", "https://qube-dev-next.evometa.io/agent/map"
+        )
     else:
-        base_url = os.getenv("AGENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/agent/map")
-    
+        base_url = os.getenv(
+            "AGENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/agent/map"
+        )
+
     mobile_page = MobilePage(page)
     mobile_page.base_url = base_url
     return mobile_page
 
+
 @pytest.fixture
 def mobile_client_page(page):
     """Фикстура для MobilePage с клиентским роутом."""
-    from pages.mobile_page import MobilePage
     import os
+
+    from pages.mobile_page import MobilePage
+
     environment = os.getenv("TEST_ENVIRONMENT", "dev")
     if environment == "dev":
-        base_url = os.getenv("DEV_CLIENT_BASE_URL", "https://qube-dev-next.evometa.io/client/map")
+        base_url = os.getenv(
+            "DEV_CLIENT_BASE_URL", "https://qube-dev-next.evometa.io/client/map"
+        )
     else:
-        base_url = os.getenv("CLIENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/client/map")
-    
+        base_url = os.getenv(
+            "CLIENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/client/map"
+        )
+
     mobile_page = MobilePage(page)
     mobile_page.base_url = base_url
     return mobile_page

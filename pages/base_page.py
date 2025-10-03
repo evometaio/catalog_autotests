@@ -203,10 +203,10 @@ class BasePage:
     def _get_project_selector(self, project_name: str) -> str:
         """Получить селектор для проекта по названию."""
         import os
-        
+
         project_name_lower = project_name.lower()
         device = os.getenv("MOBILE_DEVICE", "desktop")
-        
+
         # Проверяем, запущен ли тест на мобильном устройстве
         if device != "desktop":
             # Для мобильных устройств используем aria-label локаторы
