@@ -217,9 +217,46 @@ class BasePage:
                 return 'div[aria-label="ELIRE"]'
             elif project_name_lower == "cubix":
                 return 'div[aria-label="CUBIX RESIDENCE"]'
+            elif project_name_lower == "tranquil":
+                return 'div[aria-label="Tranquil Wellness Tower"]'
+            elif project_name_lower == "peylaa":
+                return 'div[aria-label="Peylaa"]'
             else:
                 # Fallback для других проектов
                 return f'div[aria-label*="{project_name.upper()}"]'
+        else:
+            # Для десктопных устройств тоже используем aria-label локаторы
+            # На основе отладки: все проекты на карте имеют aria-label
+            if project_name_lower == "arisha":
+                return 'div[aria-label="ARISHA TERRACES"]'
+            elif project_name_lower == "elire":
+                return 'div[aria-label="Elire"]'
+            elif project_name_lower == "cubix":
+                return 'div[aria-label="CUBIX RESIDENCE"]'
+            elif project_name_lower == "tranquil":
+                return 'div[aria-label="Tranquil Wellness Tower"]'
+            elif project_name_lower == "peylaa":
+                return 'div[aria-label="Peylaa"]'
+            else:
+                # Fallback для других проектов
+                return f'div[aria-label*="{project_name.upper()}"]'
+
+    def _get_explore_button_selector(self, project_name: str) -> str:
+        """Получить селектор для кнопки Explore Project по названию проекта."""
+        import os
+
+        project_name_lower = project_name.lower()
+        device = os.getenv("MOBILE_DEVICE", "desktop")
+
+        # Проверяем, запущен ли тест на мобильном устройстве
+        if device != "desktop":
+            # Для мобильных устройств используем мобильный локатор
+            return (
+                f'[data-test-id="map-project-point-button-mobile-{project_name_lower}"]'
+            )
+        else:
+            # Для десктопных устройств используем десктопный локатор
+            return f'[data-test-id="map-project-point-button-desktop-{project_name_lower}"]'
 
         # Получаем проект из локаторов
         project_class = self._get_project_class(project_name_lower)
@@ -542,9 +579,10 @@ class BasePage:
             self.parent.expect_visible(self.parent.locators.PROJECT_INFO_WINDOW)
 
             # Ждем появления кнопки Explore Project и проверяем её готовность
-            explore_button = self.parent.wait_for_element(
-                self.parent.locators.EXPLORE_PROJECT_BUTTON
+            explore_button_selector = self.parent._get_explore_button_selector(
+                project_name
             )
+            explore_button = self.parent.wait_for_element(explore_button_selector)
             assert (
                 explore_button.is_enabled()
             ), f"Кнопка Explore Project заблокирована для проекта '{project_name}' - баг в UI"

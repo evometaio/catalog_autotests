@@ -60,8 +60,9 @@ class CapstonePages(BasePage):
         # Для остальных случаев ищем кнопку Explore Project
         self.expect_visible(self.locators.PROJECT_INFO_WINDOW)
 
-        # Затем кликаем на кнопку Explore Project
-        self.click(self.locators.EXPLORE_PROJECT_BUTTON)
+        # Затем кликаем на кнопку Explore Project (используем адаптивный селектор)
+        explore_button_selector = self._get_explore_button_selector(project_name)
+        self.click(explore_button_selector)
 
         # Ждем изменения URL (универсально для всех типов страниц)
         self.page.wait_for_url(self.project_locators.PROJECT_URL_PATTERN, timeout=10000)

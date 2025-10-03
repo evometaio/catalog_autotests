@@ -32,66 +32,38 @@ setup: ## Настройка проекта
 
 # ==================== МОБИЛЬНОЕ ТЕСТИРОВАНИЕ ====================
 
-mobile-devices: ## Показать доступные мобильные устройства
-	@echo "$(GREEN)📱 Доступные мобильные устройства:$(NC)"
-	@echo "$(YELLOW)  iPhone 13$(NC) - 390x844"
-	@echo "$(YELLOW)  Pixel 5$(NC) - 393x851"
 
 # Мобильные тесты на DEV
-mobile-test-dev-iphone: ## Запустить мобильные тесты на iPhone 13 (DEV)
+mobile-test-dev-iphone: ## Запустить мобильные тесты на iPhone 13 на DEV
 	@echo "$(GREEN)📱 Запуск мобильных тестов на iPhone 13 (DEV)...$(NC)"
 	MOBILE_DEVICE="iphone_13" TEST_ENVIRONMENT=dev HEADLESS=true $(PYTEST) tests/ui/mobile/ -sv --browser=chromium --alluredir=reports/allure-results || true
 
-mobile-test-dev-iphone-head: ## Запустить мобильные тесты на iPhone 13 в head режиме (DEV)
+mobile-test-dev-iphone-head: ## Запустить мобильные тесты на iPhone 13 в head режиме на DEV
 	@echo "$(GREEN)📱 Запуск мобильных тестов на iPhone 13 в head режиме (DEV)...$(NC)"
 	MOBILE_DEVICE="iphone_13" TEST_ENVIRONMENT=dev HEADLESS=false $(PYTEST) tests/ui/mobile/ -sv --browser=chromium --alluredir=reports/allure-results || true
 
-mobile-test-dev-pixel: ## Запустить мобильные тесты на Pixel 5 (DEV)
+mobile-prod-dev-pixel: ## Запустить мобильные тесты на Pixel 5 на DEV
 	@echo "$(GREEN)📱 Запуск мобильных тестов на Pixel 5 (DEV)...$(NC)"
-	MOBILE_DEVICE="pixel_5" TEST_ENVIRONMENT=dev HEADLESS=true $(PYTEST) tests/ui/mobile/ -sv --browser=chromium --alluredir=reports/allure-results || true
+	MOBILE_DEVICE="pixel_5" TEST_ENVIRONMENT=prod HEADLESS=true $(PYTEST) tests/ui/mobile/ -sv --browser=chromium --alluredir=reports/allure-results || true
 
-# Мобильные тесты на PROD
-mobile-test-prod-iphone: ## Запустить все тесты на iPhone 13 (PROD)
-	@echo "$(GREEN)📱 Запуск всех тестов на iPhone 13 (PROD)...$(NC)"
-	MOBILE_DEVICE="iphone_13" TEST_ENVIRONMENT=prod HEADLESS=true $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
-
-mobile-test-prod-pixel: ## Запустить все тесты на Pixel 5 (PROD)
-	@echo "$(GREEN)📱 Запуск всех тестов на Pixel 5 (PROD)...$(NC)"
-	MOBILE_DEVICE="pixel_5" TEST_ENVIRONMENT=prod HEADLESS=true $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
 
 # Мобильная регрессия
 mobile-regress-dev: ## Полное мобильное регрессионное тестирование на DEV
 	@echo "$(GREEN)📱 Запуск полного мобильного регрессионного тестирования на DEV...$(NC)"
 	@echo "$(YELLOW)📱 Тестирование на iPhone 13...$(NC)"
-	MOBILE_DEVICE="iphone_13" TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
+	MOBILE_DEVICE="iphone_13" TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/mobile/ -sv --browser=chromium --alluredir=reports/allure-results || true
 	@echo "$(YELLOW)📱 Тестирование на Pixel 5...$(NC)"
-	MOBILE_DEVICE="pixel_5" TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
+	MOBILE_DEVICE="pixel_5" TEST_ENVIRONMENT=dev $(PYTEST) tests/ui/mobile/ -sv --browser=chromium --alluredir=reports/allure-results || true
 	@echo "$(GREEN)✅ Мобильное регрессионное тестирование на DEV завершено!$(NC)"
 
 mobile-regress-prod: ## Полное мобильное регрессионное тестирование на PROD
 	@echo "$(GREEN)📱 Запуск полного мобильного регрессионного тестирования на PROD...$(NC)"
 	@echo "$(YELLOW)📱 Тестирование на iPhone 13...$(NC)"
-	MOBILE_DEVICE="iphone_13" TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
+	MOBILE_DEVICE="iphone_13" TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/mobile/ -sv --browser=chromium --alluredir=reports/allure-results || true
 	@echo "$(YELLOW)📱 Тестирование на Pixel 5...$(NC)"
-	MOBILE_DEVICE="pixel_5" TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/ -sv --browser=chromium --alluredir=reports/allure-results || true
+	MOBILE_DEVICE="pixel_5" TEST_ENVIRONMENT=prod $(PYTEST) tests/ui/mobile/ -sv --browser=chromium --alluredir=reports/allure-results || true
 	@echo "$(GREEN)✅ Мобильное регрессионное тестирование на PROD завершено!$(NC)"
 
-# Комбинированное тестирование (мобильное + десктопное)
-test-all-devices-dev: ## Запустить все тесты на всех устройствах (DEV)
-	@echo "$(GREEN)🚀 Запуск всех тестов на всех устройствах (DEV)...$(NC)"
-	@echo "$(BLUE)🖥️ Десктопное тестирование...$(NC)"
-	$(MAKE) test-dev
-	@echo "$(BLUE)📱 Мобильное тестирование...$(NC)"
-	$(MAKE) mobile-regress-dev
-	@echo "$(GREEN)✅ Все тесты завершены!$(NC)"
-
-test-all-devices-prod: ## Запустить все тесты на всех устройствах (PROD)
-	@echo "$(GREEN)🚀 Запуск всех тестов на всех устройствах (PROD)...$(NC)"
-	@echo "$(BLUE)🖥️ Десктопное тестирование...$(NC)"
-	$(MAKE) test-prod
-	@echo "$(BLUE)📱 Мобильное тестирование...$(NC)"
-	$(MAKE) mobile-regress-prod
-	@echo "$(GREEN)✅ Все тесты завершены!$(NC)"
 
 # ==================== ДЕСКТОПНОЕ ТЕСТИРОВАНИЕ ====================
 

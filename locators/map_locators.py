@@ -20,7 +20,6 @@ class MapLocators:
 
     # Информационные окна проектов
     PROJECT_INFO_WINDOW = 'div.ant-card[class*="_projectInfo"]'
-    PROJECT_INFO_WINDOW_MOBILE = 'div.ant-modal[class*="_popup"]'
     PROJECT_CARD = "div.ant-card"
 
     # Универсальные селекторы для всех проектов

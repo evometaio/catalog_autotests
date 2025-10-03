@@ -141,13 +141,23 @@ def get_mobile_icon_selector(icon_aria_label: str) -> str:
 
 def get_mobile_building_selector(building_number: str) -> str:
     """Получить селектор для здания по номеру."""
-    return f'{MOBILE_HORIZONTAL_MENU_ITEM}:has-text("{building_number}")'
+    # Используем SVG path с ID building-{number} - найдено в отладке
+    return f'path[class*="_building_1lxa9_1"][id="building-{building_number}"]'
 
 
 def get_mobile_floor_selector(floor_number: str) -> str:
     """Получить селектор для этажа по номеру."""
-    return f'{MOBILE_HORIZONTAL_MENU_ITEM}:has-text("{floor_number}")'
+    # Используем родительские элементы этажей, как в отладочном скрипте
+    return f'.react-horizontal-scrolling-menu--item:has-text("{floor_number}")'
 
+
+# ==================== ЛОКАТОРЫ ДЛЯ FLOOR PLAN ====================
+
+# Кнопки после клика по квартире в floor plan
+MOBILE_VIEW_APARTMENT_BUTTON = 'button:has-text("View apartment")'
+MOBILE_VIEW_3D_BUTTON = 'button:has-text("View in 3D")'
+MOBILE_GET_BROCHURE_BUTTON = 'button:has-text("Get brochure")'
+MOBILE_GET_OFFER_BUTTON = 'button:has-text("Get Offer")'
 
 # ==================== КОНСТАНТЫ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ ====================
 

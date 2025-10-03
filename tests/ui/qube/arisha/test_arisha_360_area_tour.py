@@ -1,11 +1,9 @@
-import os
-
 import allure
 import pytest
 
 
 @allure.feature("Qube - Проект Arisha")
-@allure.story("360 Area Tour")
+@allure.story("360-градусный тур по территории")
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui

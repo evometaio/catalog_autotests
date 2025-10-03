@@ -46,6 +46,8 @@ from locators.mobile_locators import (
     MOBILE_TIMEOUTS,
     MOBILE_TOAST_MESSAGE,
     MOBILE_TOUCH_ELEMENTS,
+    MOBILE_VIEW_3D_BUTTON,
+    MOBILE_VIEW_APARTMENT_BUTTON,
     MOBILE_VIEW_BUTTON,
     MOBILE_VIEWPORT_CONTAINER,
     get_mobile_apartment_selector,
@@ -435,16 +437,30 @@ class MobilePage(BasePage):
         """Закрывает модальное окно 'Zoom and drag screen'."""
         try:
             ok_button = self.page.locator(MOBILE_MODAL_OK_BUTTON)
-            if ok_button.is_visible():
+
+            # Ждем появления модального окна с умным ожиданием
+            try:
+                ok_button.wait_for(state="visible", timeout=5000)
                 ok_button.click()
-                self.page.wait_for_timeout(MOBILE_TIMEOUTS["short"])
+
+                # Ждем исчезновения модального окна
+                ok_button.wait_for(state="hidden", timeout=5000)
+
                 allure.attach(
                     "Модальное окно 'Zoom and drag screen' закрыто",
                     name="Zoom Modal Closed",
                     attachment_type=allure.attachment_type.TEXT,
                 )
                 return True
-            return False
+            except:
+                # Модальное окно не появилось - это нормально
+                allure.attach(
+                    "Модальное окно 'Zoom and drag screen' не найдено (возможно, уже закрыто)",
+                    name="Zoom Modal Not Found",
+                    attachment_type=allure.attachment_type.TEXT,
+                )
+                return True
+
         except Exception as e:
             allure.attach(
                 f"Ошибка при закрытии модального окна: {str(e)}",
@@ -454,27 +470,29 @@ class MobilePage(BasePage):
             return False
 
     def click_building(self, building_number: str) -> bool:
-        """Кликает на здание по номеру."""
+        """Кликает на здание по номеру (SVG path)."""
         try:
+            # Используем новый селектор для SVG path зданий
             building_selector = get_mobile_building_selector(building_number)
             building_element = self.page.locator(building_selector)
 
-            if building_element.is_visible():
-                building_element.click()
-                self.page.wait_for_timeout(MOBILE_TIMEOUTS["short"])
-                allure.attach(
-                    f"Клик по зданию '{building_number}' выполнен",
-                    name="Building Click",
-                    attachment_type=allure.attachment_type.TEXT,
-                )
-                return True
-            else:
-                allure.attach(
-                    f"Здание '{building_number}' не найдено",
-                    name="Building Not Found",
-                    attachment_type=allure.attachment_type.TEXT,
-                )
-                return False
+            # Ждем появления здания с умным ожиданием
+            building_element.wait_for(state="visible", timeout=10000)
+
+            building_element.click(force=True)
+
+            # Ждем появления кнопки "View" после клика
+            self.page.locator(MOBILE_VIEW_BUTTON).wait_for(
+                state="visible", timeout=5000
+            )
+
+            allure.attach(
+                f"Клик по зданию '{building_number}' (SVG path) выполнен",
+                name="Building Click",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+            return True
+
         except Exception as e:
             allure.attach(
                 f"Ошибка при клике на здание: {str(e)}",
@@ -487,9 +505,17 @@ class MobilePage(BasePage):
         """Кликает на кнопку 'View' для здания."""
         try:
             view_button = self.page.locator(MOBILE_VIEW_BUTTON)
+
+            # Добавляем отладочную информацию
+            allure.attach(
+                f"Ищем кнопку с селектором: {MOBILE_VIEW_BUTTON}",
+                name="View Button Debug",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+
+            # Проверяем, видима ли кнопка
             if view_button.is_visible():
                 view_button.click(force=True)
-                self.page.wait_for_timeout(MOBILE_TIMEOUTS["medium"])
                 allure.attach(
                     "Клик по кнопке 'View Building' выполнен",
                     name="View Building Click",
@@ -498,11 +524,12 @@ class MobilePage(BasePage):
                 return True
             else:
                 allure.attach(
-                    "Кнопка 'View Building' не найдена",
-                    name="View Building Not Found",
+                    f"Кнопка 'View Building' не видима (селектор: {MOBILE_VIEW_BUTTON})",
+                    name="View Building Not Visible",
                     attachment_type=allure.attachment_type.TEXT,
                 )
                 return False
+
         except Exception as e:
             allure.attach(
                 f"Ошибка при клике на кнопку 'View Building': {str(e)}",
@@ -512,27 +539,74 @@ class MobilePage(BasePage):
             return False
 
     def click_floor(self, floor_number: str) -> bool:
-        """Кликает на этаж по номеру."""
+        """Кликает на этаж по номеру (точная копия логики из отладочного скрипта)."""
         try:
-            floor_selector = get_mobile_floor_selector(floor_number)
-            floor_element = self.page.locator(floor_selector)
+            # Используем точную логику из отладочного скрипта
+            floor_containers = self.page.locator(
+                ".react-horizontal-scrolling-menu--item"
+            )
+            floor_container_count = floor_containers.count()
 
-            if floor_element.is_visible():
-                floor_element.click()
-                self.page.wait_for_timeout(MOBILE_TIMEOUTS["short"])
-                allure.attach(
-                    f"Клик по этажу '{floor_number}' выполнен",
-                    name="Floor Click",
-                    attachment_type=allure.attachment_type.TEXT,
-                )
-                return True
-            else:
-                allure.attach(
-                    f"Этаж '{floor_number}' не найден",
-                    name="Floor Not Found",
-                    attachment_type=allure.attachment_type.TEXT,
-                )
-                return False
+            allure.attach(
+                f"Найдено элементов этажей: {floor_container_count}",
+                name="Floor Containers Count",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+
+            floor_clicked = False
+
+            # Ищем и кликаем по конкретному этажу
+            for i in range(floor_container_count):
+                try:
+                    floor_element = floor_containers.nth(i)
+                    floor_text = floor_element.text_content()
+
+                    allure.attach(
+                        f"Проверяем этаж {i}: '{floor_text}'",
+                        name=f"Floor Element {i}",
+                        attachment_type=allure.attachment_type.TEXT,
+                    )
+
+                    # Кликаем только по нужному этажу
+                    if floor_text.strip() == floor_number:
+                        allure.attach(
+                            f"Найден нужный этаж {floor_number}, кликаем",
+                            name=f"Floor {floor_number} Found",
+                            attachment_type=allure.attachment_type.TEXT,
+                        )
+
+                        floor_element.click(force=True)
+                        self.page.wait_for_timeout(500)
+
+                        # Проверяем, появилась ли кнопка "View floor"
+                        view_floor_button = self.page.locator(
+                            'button:has-text("View floor")'
+                        )
+                        if view_floor_button.is_visible():
+                            allure.attach(
+                                f"Кнопка 'View floor' найдена после клика по этажу {floor_number}",
+                                name="View Floor Found",
+                                attachment_type=allure.attachment_type.TEXT,
+                            )
+                            floor_clicked = True
+                            break
+                        else:
+                            allure.attach(
+                                f"Кнопка 'View floor' не найдена после клика по этажу {floor_number}",
+                                name="View Floor Not Found",
+                                attachment_type=allure.attachment_type.TEXT,
+                            )
+
+                except Exception as e:
+                    allure.attach(
+                        f"Ошибка при проверке этажа {i}: {str(e)}",
+                        name=f"Floor Element {i} Error",
+                        attachment_type=allure.attachment_type.TEXT,
+                    )
+                    continue
+
+            return floor_clicked
+
         except Exception as e:
             allure.attach(
                 f"Ошибка при клике на этаж: {str(e)}",
@@ -544,10 +618,41 @@ class MobilePage(BasePage):
     def click_view_floor_button(self) -> bool:
         """Кликает на кнопку 'View Floor'."""
         try:
-            view_button = self.page.locator(MOBILE_VIEW_BUTTON)
-            if view_button.is_visible():
-                view_button.click(force=True)
-                self.page.wait_for_timeout(MOBILE_TIMEOUTS["medium"])
+            # Ищем кнопку с текстом "View floor" (с маленькой буквы, как в отладочном скрипте)
+            view_floor_button = self.page.locator('button:has-text("View floor")')
+
+            # Добавляем отладочную информацию
+            button_count = view_floor_button.count()
+            allure.attach(
+                f"Найдено кнопок 'View floor': {button_count}",
+                name="View Floor Debug",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+
+            # Показываем все кнопки на странице
+            all_buttons = self.page.locator("button")
+            total_buttons = all_buttons.count()
+            allure.attach(
+                f"Всего кнопок на странице: {total_buttons}",
+                name="All Buttons Count",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+
+            # Показываем первые 5 кнопок
+            for i in range(min(total_buttons, 5)):
+                button = all_buttons.nth(i)
+                if button.is_visible():
+                    button_text = button.text_content()
+                    button_class = button.get_attribute("class")
+                    allure.attach(
+                        f"Кнопка {i}: '{button_text}' (class: {button_class})",
+                        name=f"Button {i}",
+                        attachment_type=allure.attachment_type.TEXT,
+                    )
+
+            # Проверяем, видима ли кнопка
+            if view_floor_button.is_visible():
+                view_floor_button.click(force=True)
                 allure.attach(
                     "Клик по кнопке 'View Floor' выполнен",
                     name="View Floor Click",
@@ -556,11 +661,12 @@ class MobilePage(BasePage):
                 return True
             else:
                 allure.attach(
-                    "Кнопка 'View Floor' не найдена",
-                    name="View Floor Not Found",
+                    "Кнопка 'View Floor' не видима",
+                    name="View Floor Not Visible",
                     attachment_type=allure.attachment_type.TEXT,
                 )
                 return False
+
         except Exception as e:
             allure.attach(
                 f"Ошибка при клике на кнопку 'View Floor': {str(e)}",
@@ -573,7 +679,14 @@ class MobilePage(BasePage):
         """Кликает на квартиру на плане этажа."""
         try:
             apartment_paths = self.page.locator(MOBILE_APARTMENT_PATH)
+
+            # Добавляем отладочную информацию
             apartment_count = apartment_paths.count()
+            allure.attach(
+                f"Найдено квартир: {apartment_count}",
+                name="Apartment Count",
+                attachment_type=allure.attachment_type.TEXT,
+            )
 
             if apartment_count > 0:
                 # Ищем первую видимую квартиру
@@ -581,7 +694,7 @@ class MobilePage(BasePage):
                     apartment = apartment_paths.nth(i)
                     if apartment.is_visible():
                         apartment.click()
-                        self.page.wait_for_timeout(MOBILE_TIMEOUTS["apartment_load"])
+
                         allure.attach(
                             f"Клик по квартире выполнен (найдено {apartment_count} квартир)",
                             name="Apartment Click",
@@ -606,6 +719,77 @@ class MobilePage(BasePage):
             allure.attach(
                 f"Ошибка при клике на квартиру: {str(e)}",
                 name="Apartment Click Error",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+            return False
+
+    def click_view_apartment_button(self) -> bool:
+        """Кликает на кнопку 'View Apartment' после выбора квартиры."""
+        try:
+            view_apartment_button = self.page.locator(MOBILE_VIEW_APARTMENT_BUTTON)
+
+            if view_apartment_button.is_visible():
+                view_apartment_button.click(force=True)
+                allure.attach(
+                    "Клик по кнопке 'View Apartment' выполнен",
+                    name="View Apartment Click",
+                    attachment_type=allure.attachment_type.TEXT,
+                )
+                return True
+            else:
+                allure.attach(
+                    "Кнопка 'View Apartment' не видима",
+                    name="View Apartment Not Visible",
+                    attachment_type=allure.attachment_type.TEXT,
+                )
+                return False
+        except Exception as e:
+            allure.attach(
+                f"Ошибка при клике на кнопку 'View Apartment': {str(e)}",
+                name="View Apartment Error",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+            return False
+
+    def click_view_3d_button(self) -> bool:
+        """Кликает на кнопку 'View in 3D' и ждет загрузки 3D."""
+        try:
+            view_3d_button = self.page.locator(
+                '[data-test-id="info-content-primary-button"]'
+            )
+
+            if view_3d_button.count() > 1:
+                # Используем второй элемент (nth(1)), как в отладочном скрипте
+                view_3d_button.nth(1).click(force=True)
+
+                # Ждем загрузки 3D
+                self.page.wait_for_timeout(3000)
+
+                # Проверяем, что мы попали в 3D (URL должен содержать /apartment/)
+                current_url = self.page.url
+                if "/apartment/" in current_url:
+                    allure.attach(
+                        name="3D Opened Successfully",
+                        attachment_type=allure.attachment_type.TEXT,
+                    )
+                    return True
+                else:
+                    allure.attach(
+                        name="3D Not Opened",
+                        attachment_type=allure.attachment_type.TEXT,
+                    )
+                    return False
+            else:
+                allure.attach(
+                    "Кнопка 'View in 3D' не найдена (нужно 2 элемента)",
+                    name="View 3D Not Found",
+                    attachment_type=allure.attachment_type.TEXT,
+                )
+                return False
+        except Exception as e:
+            allure.attach(
+                f"Ошибка при клике на кнопку 'View in 3D': {str(e)}",
+                name="View 3D Error",
                 attachment_type=allure.attachment_type.TEXT,
             )
             return False
