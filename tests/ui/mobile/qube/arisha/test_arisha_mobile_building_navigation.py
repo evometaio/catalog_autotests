@@ -5,8 +5,6 @@
 
 import pytest
 import allure
-from playwright.sync_api import Page
-from pages.mobile_page import MobilePage
 
 
 @allure.feature("Mobile Navigation")
@@ -20,17 +18,19 @@ class TestArishaMobileBuildingNavigation:
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.mobile
     @pytest.mark.regression
-    def test_arisha_mobile_building_floor_apartment_navigation(self, page: Page):
+    def test_arisha_mobile_building_floor_apartment_navigation(self, mobile_page):
         """Тест полной навигации по зданию, этажу и квартире на мобильном устройстве."""
-        mobile_page = MobilePage(page)
         
-        with allure.step("Переход на карту Arisha"):
-            mobile_page.open("/map")
+        with allure.step("Переход на страницу /area Arisha"):
+            # Открываем карту
+            mobile_page.open()
+            
+            # Кликаем на проект Arisha
             mobile_page.click_mobile_project_on_map("arisha")
             mobile_page.wait_for_mobile_project_modal()
             mobile_page.click_mobile_explore_project_button("arisha")
             
-        with allure.step("Проверка перехода на страницу /area"):
+            # Проверяем что попали на страницу area
             current_url = mobile_page.page.url
             assert "/area" in current_url, f"Ожидался URL с /area, получен: {current_url}"
             
@@ -45,10 +45,6 @@ class TestArishaMobileBuildingNavigation:
             assert navigation_success, "Навигация не выполнена успешно"
             
         with allure.step("Проверка финального URL"):
-            navigation_success = mobile_page.check_building_navigation_success()
-            assert navigation_success, "Навигация не завершена успешно"
-            
-        with allure.step("Проверка URL после навигации"):
             final_url = mobile_page.page.url
             assert "/building/" in final_url, f"Ожидался URL с /building/, получен: {final_url}"
             

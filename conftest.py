@@ -353,6 +353,45 @@ def mobile_device_info():
 
 @pytest.fixture
 def mobile_page(page):
-    """Фикстура для MobilePage."""
+    """Фикстура для MobilePage с картой."""
     from pages.mobile_page import MobilePage
-    return MobilePage(page)
+    import os
+    environment = os.getenv("TEST_ENVIRONMENT", "dev")
+    if environment == "dev":
+        base_url = os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map")
+    else:
+        base_url = os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
+    
+    mobile_page = MobilePage(page)
+    mobile_page.base_url = base_url
+    return mobile_page
+
+@pytest.fixture
+def mobile_agent_page(page):
+    """Фикстура для MobilePage с агентским роутом."""
+    from pages.mobile_page import MobilePage
+    import os
+    environment = os.getenv("TEST_ENVIRONMENT", "dev")
+    if environment == "dev":
+        base_url = os.getenv("DEV_AGENT_BASE_URL", "https://qube-dev-next.evometa.io/agent/map")
+    else:
+        base_url = os.getenv("AGENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/agent/map")
+    
+    mobile_page = MobilePage(page)
+    mobile_page.base_url = base_url
+    return mobile_page
+
+@pytest.fixture
+def mobile_client_page(page):
+    """Фикстура для MobilePage с клиентским роутом."""
+    from pages.mobile_page import MobilePage
+    import os
+    environment = os.getenv("TEST_ENVIRONMENT", "dev")
+    if environment == "dev":
+        base_url = os.getenv("DEV_CLIENT_BASE_URL", "https://qube-dev-next.evometa.io/client/map")
+    else:
+        base_url = os.getenv("CLIENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/client/map")
+    
+    mobile_page = MobilePage(page)
+    mobile_page.base_url = base_url
+    return mobile_page

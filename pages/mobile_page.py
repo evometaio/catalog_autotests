@@ -61,19 +61,21 @@ class MobilePage(BasePage):
     """Мобильная версия BasePage с адаптивными методами."""
 
     def __init__(self, page: Page):
-        super().__init__(page)
-        self.device_type = "mobile"
         # Устанавливаем базовые URL-ы для разных окружений
         import os
         environment = os.getenv("TEST_ENVIRONMENT", "dev")
         if environment == "dev":
-            self.base_url = "https://qube-dev-next.evometa.io"
+            base_url = os.getenv("DEV_AGENT_BASE_URL", "https://qube-dev-next.evometa.io/agent/map")
             self.agent_base_url = os.getenv("DEV_AGENT_BASE_URL", "https://qube-dev-next.evometa.io/agent/map")
             self.client_base_url = os.getenv("DEV_CLIENT_BASE_URL", "https://qube-dev-next.evometa.io/client/map")
         else:
-            self.base_url = "https://virtualtours.qbd.ae"
+            base_url = os.getenv("AGENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/agent/map")
             self.agent_base_url = os.getenv("AGENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/agent/map")
             self.client_base_url = os.getenv("CLIENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/client/map")
+        
+        # Инициализируем BasePage с правильным URL
+        super().__init__(page, base_url)
+        self.device_type = "mobile"
 
     # ==================== МОБИЛЬНЫЕ ЛОКАТОРЫ ====================
     # Все локаторы теперь импортируются из locators/mobile_locators.py
