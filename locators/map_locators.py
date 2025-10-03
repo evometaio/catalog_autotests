@@ -20,6 +20,7 @@ class MapLocators:
 
     # Информационные окна проектов
     PROJECT_INFO_WINDOW = 'div.ant-card[class*="_projectInfo"]'
+    PROJECT_INFO_WINDOW_MOBILE = 'div.ant-modal[class*="_popup"]'
     PROJECT_CARD = "div.ant-card"
 
     # Универсальные селекторы для всех проектов
@@ -28,4 +29,5 @@ class MapLocators:
     # Навигация на странице проекта
     PROJECT_PAGE_TITLE = "h1, h2, h3"
     PROJECT_NAVIGATION = '[class*="CompactNavigation"]'
-    EXPLORE_PROJECT_BUTTON = "//span[text()='Explore Project']"
+    EXPLORE_PROJECT_BUTTON = '[data-test-id="map-project-point-button-desktop-arisha"]'
+    EXPLORE_PROJECT_BUTTON_MOBILE = '[data-test-id="map-project-point-button-mobile-arisha"]'

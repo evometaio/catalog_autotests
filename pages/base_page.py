@@ -202,7 +202,24 @@ class BasePage:
 
     def _get_project_selector(self, project_name: str) -> str:
         """Получить селектор для проекта по названию."""
+        import os
+        
         project_name_lower = project_name.lower()
+        device = os.getenv("MOBILE_DEVICE", "desktop")
+        
+        # Проверяем, запущен ли тест на мобильном устройстве
+        if device != "desktop":
+            # Для мобильных устройств используем aria-label локаторы
+            # На основе отладки: aria-label="ARISHA TERACCES"
+            if project_name_lower == "arisha":
+                return 'div[aria-label="ARISHA TERACCES"]'
+            elif project_name_lower == "elire":
+                return 'div[aria-label="ELIRE"]'
+            elif project_name_lower == "cubix":
+                return 'div[aria-label="CUBIX RESIDENCE"]'
+            else:
+                # Fallback для других проектов
+                return f'div[aria-label*="{project_name.upper()}"]'
 
         # Получаем проект из локаторов
         project_class = self._get_project_class(project_name_lower)
@@ -212,8 +229,6 @@ class BasePage:
 
         # Для Peylaa учитываем окружение
         if project_name_lower == "peylaa":
-            import os
-
             environment = os.getenv("TEST_ENVIRONMENT", "dev")
             if environment == "dev":
                 return project_class.MAP_LOCATOR_DEV
