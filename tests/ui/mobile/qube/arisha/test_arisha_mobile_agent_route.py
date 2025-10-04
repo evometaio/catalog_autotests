@@ -5,7 +5,8 @@ import pytest
 class TestArishaMobileAgentRoute:
     """Мобильные тесты для агентского роута Arisha."""
 
-    @allure.story("Агентский роут Arisha - Мобильная")
+    @allure.feature("Qube - Проект Arisha (Мобильная)")
+    @allure.story("Агентский роут - Загрузка PDF")
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.mobile
     @pytest.mark.regression

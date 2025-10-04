@@ -2,14 +2,13 @@ import allure
 import pytest
 
 
-@allure.feature("Мобильная навигация")
+@allure.feature("Qube - Проект Arisha (Мобильная)")
 @allure.story("Навигация по зданиям Arisha")
 @pytest.mark.mobile
 @pytest.mark.iphone
 class TestArishaMobileBuildingNavigation:
     """Тесты навигации по зданиям, этажам и квартирам для мобильных устройств."""
 
-    @allure.story("Навигация по зданиям Arisha - Мобильная")
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.mobile
     @pytest.mark.regression
