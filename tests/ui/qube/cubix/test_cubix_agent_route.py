@@ -27,15 +27,16 @@ def test_cubix_download_pdf_on_agent_page(agent_page):
 
         with allure.step("Скачиваем PDF"):
             success, file_path = agent_page.project.download_pdf_and_verify()
-            assert success, "PDF не был скачан"
+            agent_page.assert_that(success, "PDF не был скачан")
             downloaded_file_path = file_path
 
         with allure.step("Проверяем что файл является валидным PDF"):
             with open(file_path, "rb") as f:
                 content = f.read(10)
-                assert content.startswith(
-                    b"%PDF"
-                ), f"Файл не является валидным PDF: {content[:10]}"
+                agent_page.assert_that(
+                    content.startswith(b"%PDF"),
+                    f"Файл не является валидным PDF, заголовок: {content[:10]}"
+                )
 
     finally:
         # Очищаем скачанный файл в любом случае (успех или ошибка)

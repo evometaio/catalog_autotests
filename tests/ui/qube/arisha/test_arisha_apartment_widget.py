@@ -9,57 +9,43 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.flaky(reruns=2, reruns_delay=4)
-@pytest.mark.skipif(
-    os.getenv("OS_PLATFORM") == "ubuntu-latest",
-    reason="Тест нестабилен на Firefox в CI",
-)
 def test_arisha_apartment_widget_full_functionality(map_page):
     """Тест полного функционала виджета апартамента Arisha."""
 
-    with allure.step("Открываем страницу апартамента Arisha"):
-        map_page.apartment_widget.open_apartment_page("arisha", "104")
+    with allure.step("Открываем карту и переходим к проекту Arisha"):
+        map_page.open(route_type="map")
+        map_page.click_project_on_map("arisha")
 
-        # Проверяем наличие кнопок режимов
+    with allure.step("Кликаем на кнопку All units"):
+        map_page.project.click_on_all_units_button()
+        map_page.assert_url_contains("catalog_2d", "Не перешли на страницу каталога")
+
+    with allure.step("Ищем и кликаем на первый доступный апартамент"):
+        map_page.project.find_and_click_available_apartment("arisha")
+
+    with allure.step("Ожидаем полной загрузки виджета апартамента"):
+        # Ждем появления iframe
+        map_page.page.wait_for_selector("iframe[class*='_iframe_']", timeout=15000)
+        
+        # Ждем загрузки содержимого внутри iframe
         frame_locator = map_page.apartment_widget.get_widget_frame()
-
-        # Получаем локаторы для проверки видимости кнопок
+        frame_locator.locator("body").wait_for(state="visible", timeout=15000)
+        
+        # Ждем появления кнопок режимов внутри виджета
         widget_locators = map_page.project_locators.Arisha.ApartmentWidget()
         view_2d_button = frame_locator.locator(widget_locators.VIEW_2D_BUTTON)
         view_3d_button = frame_locator.locator(widget_locators.VIEW_3D_BUTTON)
-
+        
         view_2d_button.wait_for(state="visible", timeout=15000)
         view_3d_button.wait_for(state="visible", timeout=15000)
 
-        allure.attach(
-            "Кнопки режимов 2D/3D найдены",
-            name="Initial State",
-            attachment_type=allure.attachment_type.TEXT,
-        )
-
     with allure.step("Кликаем на кнопку 2D"):
         map_page.apartment_widget.switch_to_2d_mode("arisha")
-
-        # Ждем появления навигационных стрелок в режиме 2D
-        map_page.apartment_widget.get_widget_frame().locator(
-            map_page.project_locators.Arisha.ApartmentWidget().NEXT_ARROW
-        ).first.wait_for(state="visible", timeout=2000)
-
-        allure.attach(
-            "Переключились в режим 2D",
-            name="2D Mode",
-            attachment_type=allure.attachment_type.TEXT,
-        )
+        map_page.page.wait_for_timeout(500)
 
     with allure.step("Проверяем появление навигации в режиме 2D"):
-        assert map_page.apartment_widget.check_navigation_arrows_visible(
-            "arisha"
-        ), "Стрелочки навигации не появились в режиме 2D"
-        allure.attach(
-            "Навигация по сценам доступна в режиме 2D",
-            name="2D Navigation",
-            attachment_type=allure.attachment_type.TEXT,
-        )
+        arrows_visible = map_page.apartment_widget.check_navigation_arrows_visible("arisha")
+        map_page.assert_that(arrows_visible, "Стрелочки навигации не появились в режиме 2D")
 
     with allure.step("Кликаем на стрелочки для просмотра слайдов"):
         initial_scene = map_page.apartment_widget.get_current_scene("arisha")
@@ -81,35 +67,15 @@ def test_arisha_apartment_widget_full_functionality(map_page):
                     attachment_type=allure.attachment_type.TEXT,
                 )
 
-        # Ждем стабилизации после навигации по слайдам
-        map_page.apartment_widget.get_widget_frame().locator(
-            map_page.project_locators.Arisha.ApartmentWidget().SCENE_INDICATOR
-        ).first.wait_for(state="visible", timeout=2000)
-
-        allure.attach(
-            "Просмотрели несколько слайдов",
-            name="Slides Navigation",
-            attachment_type=allure.attachment_type.TEXT,
-        )
+        map_page.page.wait_for_timeout(500)
 
     with allure.step("Кликаем на кнопку 3D"):
         map_page.apartment_widget.switch_to_3d_mode("arisha")
-
-        # Ждем стабилизации интерфейса - ждем появления кнопки 3D
-        view_3d_button = map_page.apartment_widget.get_widget_frame().locator(
-            map_page.project_locators.Arisha.ApartmentWidget().VIEW_3D_BUTTON
-        )
-        view_3d_button.wait_for(state="visible", timeout=2000)
+        map_page.page.wait_for_timeout(500)
 
         # Проверяем, что кнопка 3D стала активной
-        assert map_page.apartment_widget.check_mode_button_active(
-            "arisha", "3D"
-        ), "Кнопка 3D не стала активной"
-        allure.attach(
-            "Переключились в режим 3D",
-            name="3D Mode",
-            attachment_type=allure.attachment_type.TEXT,
-        )
+        button_active = map_page.apartment_widget.check_mode_button_active("arisha", "3D")
+        map_page.assert_that(button_active, "Кнопка 3D не стала активной")
 
     with allure.step("Кликаем на кнопку 0.5x"):
         speed_clicked = map_page.apartment_widget.click_speed_button("arisha")
@@ -144,138 +110,78 @@ def test_arisha_apartment_widget_full_functionality(map_page):
 def test_arisha_apartment_information(map_page):
     """Тест проверки информации об апартаменте Arisha."""
 
-    with allure.step("Открываем страницу апартамента Arisha"):
-        map_page.apartment_widget.open_apartment_page("arisha", "104")
+    with allure.step("Открываем карту и переходим к проекту Arisha"):
+        map_page.open(route_type="map")
+        map_page.click_project_on_map("arisha")
 
-        # Ждем появления информации об апартаменте
+    with allure.step("Кликаем на кнопку All units"):
+        map_page.project.click_on_all_units_button()
+        map_page.assert_url_contains("catalog_2d", "Не перешли на страницу каталога")
+
+    with allure.step("Ищем и кликаем на первый доступный апартамент"):
+        map_page.project.find_and_click_available_apartment("arisha")
+
+    with allure.step("Ожидаем полной загрузки страницы апартамента"):
         map_page.apartment_info.wait_for_info_to_appear("arisha")
-        allure.attach(
-            "Информация об апартаменте появилась",
-            name="Info Appeared",
-            attachment_type=allure.attachment_type.TEXT,
-        )
-
-    with allure.step("Проверяем номер апартамента"):
-        apartment_number_correct = map_page.apartment_info.check_apartment_number(
-            "arisha", "104"
-        )
-        assert apartment_number_correct, "Номер апартамента APT. 104 не найден"
-        allure.attach(
-            "Номер апартамента APT. 104 корректный",
-            name="Apartment Number",
-            attachment_type=allure.attachment_type.TEXT,
-        )
+        map_page.wait_for_timeout(2000)
 
     with allure.step("Проверяем тип апартамента"):
         type_visible = map_page.apartment_info.check_apartment_type("arisha")
-        assert type_visible, "Тип апартамента '2 Bedroom' не найден"
-        allure.attach(
-            "Тип апартамента '2 Bedroom' отображается",
-            name="Apartment Type",
-            attachment_type=allure.attachment_type.TEXT,
-        )
-
-    with allure.step("Проверяем информацию о этаже (опционально)"):
-        floor_visible = map_page.apartment_info.check_floor_info("arisha")
-        if floor_visible:
-            allure.attach(
-                "Этаж 'Floor: 1' отображается",
-                name="Floor Info",
-                attachment_type=allure.attachment_type.TEXT,
-            )
-        else:
-            allure.attach(
-                "Информация о этаже не найдена (может отсутствовать на продакшене)",
-                name="Floor Info",
-                attachment_type=allure.attachment_type.TEXT,
-            )
+        map_page.assert_that(type_visible, "Тип апартамента не отображается")
 
     with allure.step("Проверяем информацию о здании"):
         building_visible = map_page.apartment_info.check_building_info("arisha")
-        assert building_visible, "Информация о здании 'Building: 1' не найдена"
-        allure.attach(
-            "Здание 'Building: 1' отображается",
-            name="Building Info",
-            attachment_type=allure.attachment_type.TEXT,
-        )
+        map_page.assert_that(building_visible, "Информация о здании не найдена")
 
     with allure.step("Проверяем информацию о площади"):
         area_visible = map_page.apartment_info.check_area_info("arisha")
-        assert area_visible, "Информация о площади '1 090,38 sq ft' не найдена"
-        allure.attach(
-            "Площадь '1 090,38 sq ft' отображается",
-            name="Area Info",
-            attachment_type=allure.attachment_type.TEXT,
-        )
+        map_page.assert_that(area_visible, "Информация о площади не найдена")
 
     with allure.step("Проверяем информацию о виде"):
         view_visible = map_page.apartment_info.check_view_info("arisha")
-        assert view_visible, "Информация о виде 'Green Community' не найдена"
-        allure.attach(
-            "Вид 'Green Community' отображается",
-            name="View Info",
-            attachment_type=allure.attachment_type.TEXT,
-        )
+        map_page.assert_that(view_visible, "Информация о виде не найдена")
 
     with allure.step("Проверяем особенности апартамента"):
         features = map_page.apartment_info.check_features("arisha")
 
-        assert features[
-            "modern_design"
-        ], "Особенность 'Modern interior design' не найдена"
-        assert features[
-            "high_quality"
-        ], "Особенность 'High quality materials' не найдена"
-        assert features[
-            "built_in_appliances"
-        ], "Особенность 'Built-in appliances' не найдена"
-
-        allure.attach(
-            "Все особенности апартамента отображаются",
-            name="Features",
-            attachment_type=allure.attachment_type.TEXT,
+        map_page.assert_that(
+            features["modern_design"], 
+            "Особенность 'Modern interior design' не найдена"
+        )
+        map_page.assert_that(
+            features["high_quality"], 
+            "Особенность 'High quality materials' не найдена"
+        )
+        map_page.assert_that(
+            features["built_in_appliances"], 
+            "Особенность 'Built-in appliances' не найдена"
         )
 
     with allure.step("Проверяем счетчик просмотров"):
         watching_visible = map_page.apartment_info.check_watching_count("arisha")
-        assert watching_visible, "Счетчик просмотров 'watching now' не найден"
-        allure.attach(
-            "Счетчик просмотров 'watching now' отображается",
-            name="Watching Count",
-            attachment_type=allure.attachment_type.TEXT,
-        )
+        map_page.assert_that(watching_visible, "Счетчик просмотров 'watching now' не найден")
 
-    with allure.step("Получаем полный текст информации для проверки"):
+    with allure.step("Получаем полный текст информации"):
         info_text = map_page.apartment_info.get_info_text("arisha")
-        allure.attach(
-            info_text,
-            name="Full Info Text",
-            attachment_type=allure.attachment_type.TEXT,
-        )
+        allure.attach(info_text, name="Full Info Text", attachment_type=allure.attachment_type.TEXT)
 
-        # Проверяем наличие всех ключевых элементов в тексте
-        expected_elements = [
-            "APT. 104",
-            "2 Bedroom",
+        # Проверяем наличие ключевых элементов в тексте
+        required_elements = [
+            "APT.",
+            "Bedroom",
             "Building:",
             "Total area:",
-            "Green Community",
             "Modern interior design",
             "High quality materials",
             "Built-in appliances",
             "watching now",
         ]
 
-        for element in expected_elements:
-            assert (
-                element in info_text
-            ), f"Элемент '{element}' не найден в тексте информации"
-
-        allure.attach(
-            "Все ключевые элементы найдены в тексте информации",
-            name="Text Verification",
-            attachment_type=allure.attachment_type.TEXT,
-        )
+        for element in required_elements:
+            map_page.assert_that(
+                element in info_text,
+                f"Элемент '{element}' не найден в тексте информации об апартаменте"
+            )
 
     with allure.step("Делаем скриншот информации об апартаменте"):
         info_screenshot = map_page.apartment_info.take_info_screenshot("arisha")

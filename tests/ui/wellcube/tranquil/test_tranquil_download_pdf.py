@@ -42,12 +42,15 @@ def test_tranquil_download_ownership_offer(wellcube_page, agent_page):
             attachment_type=allure.attachment_type.TEXT,
         )
 
-        # Проверяем что новая вкладка открылась (в headless режиме PDF может не загружаться)
-        assert new_tab is not None, "Новая вкладка не открылась"
+        # Проверяем что новая вкладка открылась
+        wellcube_page.assert_that(new_tab is not None, "Новая вкладка с PDF не открылась")
 
         # Если URL содержит PDF, проверяем его
         if pdf_url.endswith(".pdf"):
-            assert "tranquil" in pdf_url.lower(), f"URL не содержит tranquil: {pdf_url}"
+            wellcube_page.assert_that(
+                "tranquil" in pdf_url.lower(),
+                f"URL PDF не содержит название проекта tranquil: {pdf_url}"
+            )
             allure.attach(
                 "PDF успешно загружен",
                 name="PDF Status",
