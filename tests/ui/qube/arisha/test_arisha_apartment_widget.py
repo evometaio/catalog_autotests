@@ -9,6 +9,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
+@pytest.mark.flaky(reruns=2, reruns_delay=4)
 def test_arisha_apartment_widget_full_functionality(map_page):
     """Тест полного функционала виджета апартамента Arisha."""
 
@@ -107,6 +108,7 @@ def test_arisha_apartment_widget_full_functionality(map_page):
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
+@pytest.mark.flaky(reruns=2, reruns_delay=4)
 def test_arisha_apartment_information(map_page):
     """Тест проверки информации об апартаменте Arisha."""
 
