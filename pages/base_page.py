@@ -7,6 +7,7 @@ from locators.project_locators import (
     QubeLocators,
     WellcubePageLocators,
 )
+import allure
 
 
 class BasePage:
@@ -820,7 +821,6 @@ class BasePage:
             Returns:
                 str: URL после перехода к зданию
             """
-            import allure
 
             # Кликаем на навигацию по зданиям
             self.parent.click(self.parent.project_locators.BUILDING_NAV_BUTTON)
@@ -849,7 +849,6 @@ class BasePage:
             Returns:
                 str: URL после перехода к этажу
             """
-            import allure
 
             # Кликаем на навигацию по этажам
             self.parent.click(self.parent.project_locators.FLOOR_NAV_BUTTON)
@@ -889,7 +888,6 @@ class BasePage:
             Returns:
                 str: URL после перехода
             """
-            import allure
 
             floor_url = self.parent.base_url.replace(
                 "/map",
@@ -912,7 +910,6 @@ class BasePage:
             Returns:
                 bool: True если удалось кликнуть на апартамент
             """
-            import allure
 
             # Ждем загрузки плана этажа
             self.parent.page.wait_for_selector(
