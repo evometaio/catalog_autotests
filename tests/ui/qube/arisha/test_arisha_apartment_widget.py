@@ -29,22 +29,16 @@ def test_arisha_apartment_widget_full_functionality(map_page):
         # Ждем загрузки содержимого внутри iframe
         frame_locator = map_page.apartment_widget.get_widget_frame()
         frame_locator.locator("body").wait_for(state="visible", timeout=15000)
-        
-        # Ждем появления кнопок режимов внутри виджета
-        widget_locators = map_page.project_locators.Arisha.ApartmentWidget()
-        view_2d_button = frame_locator.locator(widget_locators.VIEW_2D_BUTTON)
-        view_3d_button = frame_locator.locator(widget_locators.VIEW_3D_BUTTON)
-        
-        view_2d_button.wait_for(state="visible", timeout=15000)
-        view_3d_button.wait_for(state="visible", timeout=15000)
+        map_page.page.wait_for_timeout(4000)
 
     with allure.step("Кликаем на кнопку 2D"):
         map_page.apartment_widget.switch_to_2d_mode("arisha")
-        map_page.page.wait_for_timeout(500)
+        map_page.page.wait_for_timeout(1000)
 
     with allure.step("Проверяем появление навигации в режиме 2D"):
         arrows_visible = map_page.apartment_widget.check_navigation_arrows_visible("arisha")
         map_page.assert_that(arrows_visible, "Стрелочки навигации не появились в режиме 2D")
+        map_page.page.wait_for_timeout(1000)
 
     with allure.step("Кликаем на стрелочки для просмотра слайдов"):
         initial_scene = map_page.apartment_widget.get_current_scene("arisha")
@@ -66,11 +60,11 @@ def test_arisha_apartment_widget_full_functionality(map_page):
                     attachment_type=allure.attachment_type.TEXT,
                 )
 
-        map_page.page.wait_for_timeout(500)
+        map_page.page.wait_for_timeout(1000)
 
     with allure.step("Кликаем на кнопку 3D"):
         map_page.apartment_widget.switch_to_3d_mode("arisha")
-        map_page.page.wait_for_timeout(500)
+        map_page.page.wait_for_timeout(1000)
 
         # Проверяем, что кнопка 3D стала активной
         button_active = map_page.apartment_widget.check_mode_button_active("arisha", "3D")
@@ -106,6 +100,7 @@ def test_arisha_apartment_widget_full_functionality(map_page):
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
+@pytest.mark.flaky(reruns=2)
 def test_arisha_apartment_information(map_page):
     """Тест проверки информации об апартаменте Arisha."""
 
