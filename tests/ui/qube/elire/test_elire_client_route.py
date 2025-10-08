@@ -21,9 +21,7 @@ def test_elire_request_viewing_form(client_page, fake):
 
     with allure.step("Открываем клиентскую страницу проекта Elire"):
         client_page.open(route_type="client")
-
-        current_url = client_page.get_current_url()
-        assert "client" in current_url, "Не открылась клиентская страница"
+        client_page.assert_url_contains("client", "Не открылась клиентская страница")
 
     with allure.step("Кликаем на проект Elire"):
         client_page.click_project_on_map("elire")
@@ -32,7 +30,6 @@ def test_elire_request_viewing_form(client_page, fake):
         client_page.project.click_on_residences_button_and_request_viewing_form()
 
     with allure.step("Заполняем и отправляем форму Request Viewing"):
-        # Заполняем и отправляем форму
         client_page.project.fill_and_submit_request_viewing_form(fake)
 
     with allure.step("Проверяем успешную отправку формы"):
@@ -44,4 +41,7 @@ def test_elire_request_viewing_form(client_page, fake):
         )
 
         success_displayed = client_page.project.is_success_message_displayed()
-        assert success_displayed, "Сообщение об успешной отправке не отображается"
+        client_page.assert_that(
+            success_displayed, 
+            "Модальное окно с сообщением об успешной отправке не отображается"
+        )

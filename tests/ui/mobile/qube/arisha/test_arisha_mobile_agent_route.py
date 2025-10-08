@@ -16,9 +16,10 @@ class TestArishaMobileAgentRoute:
         try:
             with allure.step("Переходим на страницу каталога Arisha"):
                 mobile_agent_page.navigate_to_mobile_catalog_page("arisha")
-                assert (
-                    "catalog_2d" in mobile_agent_page.page.url
-                    or "/area" in mobile_agent_page.page.url
+                current_url = mobile_agent_page.page.url
+                mobile_agent_page.assert_that(
+                    "catalog_2d" in current_url or "/area" in current_url,
+                    "Не перешли на страницу каталога или area"
                 )
 
             with allure.step("Ищем и кликаем на первый доступный апартамент"):
@@ -26,9 +27,8 @@ class TestArishaMobileAgentRoute:
                 mobile_agent_page.page.wait_for_timeout(1000)
 
             with allure.step("Кликаем на кнопку PDF"):
-                # Просто кликаем на кнопку PDF без проверки скачивания
                 pdf_clicked = mobile_agent_page.click_mobile_pdf_button()
-                assert pdf_clicked, "Кнопка PDF не была нажата"
+                mobile_agent_page.assert_that(pdf_clicked, "Кнопка PDF не была нажата")
 
         finally:
             # Проверяем адаптивность на мобильном устройстве

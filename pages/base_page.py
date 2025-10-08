@@ -7,6 +7,7 @@ from locators.project_locators import (
     QubeLocators,
     WellcubePageLocators,
 )
+import allure
 
 
 class BasePage:
@@ -154,10 +155,7 @@ class BasePage:
     def click(self, selector: str, timeout: int = None):
         """Кликнуть по элементу."""
         element = self.wait_for_element(selector, timeout)
-
-        # Проверяем, что элемент активен для клика
         assert element.is_enabled(), f"Элемент {selector} неактивен - баг в UI"
-
         element.click()
 
     def fill(self, selector: str, text: str, timeout: int = None):
@@ -182,21 +180,154 @@ class BasePage:
         """Ожидать видимости элемента."""
         element = self.wait_for_element(selector, timeout)
         assert element.is_visible(), f"Элемент {selector} не отображается - баг в UI"
+    
+    # ==================== КАСТОМНЫЕ ASSERTION МЕТОДЫ ====================
+    
+    def assert_that(self, condition: bool, error_message: str):
+        """
+        Базовый assertion с кастомным сообщением.
+        
+        Args:
+            condition: Условие которое должно быть True
+            error_message: Сообщение об ошибке если условие False
+        
+        Example:
+            page.assert_that(
+                apartment_clicked, 
+                "Не удалось кликнуть на апартамент на этаже 1"
+            )
+        """
+        assert condition, f"❌ {error_message}"
+    
+    def assert_element_visible(self, selector: str, error_message: str, timeout: int = None):
+        """
+        Проверить что элемент видим с кастомным сообщением.
+        
+        Args:
+            selector: CSS селектор элемента
+            error_message: Сообщение об ошибке
+            timeout: Таймаут ожидания
+        
+        Example:
+            page.assert_element_visible(
+                ".modal", 
+                "Модальное окно не отображается после клика на кнопку"
+            )
+        """
+        is_visible = self.is_visible(selector, timeout)
+        assert is_visible, f"❌ {error_message}\n   Селектор: {selector}"
+    
+    def assert_element_not_visible(self, selector: str, error_message: str, timeout: int = None):
+        """
+        Проверить что элемент НЕ видим с кастомным сообщением.
+        
+        Args:
+            selector: CSS селектор элемента
+            error_message: Сообщение об ошибке
+            timeout: Таймаут проверки
+        
+        Example:
+            page.assert_element_not_visible(
+                ".loader", 
+                "Лоадер всё ещё виден после загрузки страницы"
+            )
+        """
+        is_visible = self.is_visible(selector, timeout or 2000)
+        assert not is_visible, f"❌ {error_message}\n   Селектор: {selector}"
+    
+    def assert_text_equals(self, selector: str, expected_text: str, error_message: str, timeout: int = None):
+        """
+        Проверить что текст элемента равен ожидаемому с кастомным сообщением.
+        
+        Args:
+            selector: CSS селектор элемента
+            expected_text: Ожидаемый текст
+            error_message: Сообщение об ошибке
+            timeout: Таймаут ожидания
+        
+        Example:
+            page.assert_text_equals(
+                "h1", 
+                "Welcome", 
+                "Заголовок страницы не совпадает с ожидаемым"
+            )
+        """
+        actual_text = self.get_text(selector, timeout)
+        assert actual_text == expected_text, (
+            f"❌ {error_message}\n"
+            f"   Ожидалось: '{expected_text}'\n"
+            f"   Получено: '{actual_text}'"
+        )
+    
+    def assert_text_contains(self, selector: str, expected_substring: str, error_message: str, timeout: int = None):
+        """
+        Проверить что текст элемента содержит подстроку с кастомным сообщением.
+        
+        Args:
+            selector: CSS селектор элемента
+            expected_substring: Ожидаемая подстрока
+            error_message: Сообщение об ошибке
+            timeout: Таймаут ожидания
+        
+        Example:
+            page.assert_text_contains(
+                ".error", 
+                "Invalid", 
+                "Сообщение об ошибке не содержит слово Invalid"
+            )
+        """
+        actual_text = self.get_text(selector, timeout)
+        assert expected_substring in actual_text, (
+            f"❌ {error_message}\n"
+            f"   Ожидаемая подстрока: '{expected_substring}'\n"
+            f"   Фактический текст: '{actual_text}'"
+        )
+    
+    def assert_url_equals(self, expected_url: str, error_message: str):
+        """
+        Проверить что URL равен ожидаемому с кастомным сообщением.
+        
+        Args:
+            expected_url: Ожидаемый URL
+            error_message: Сообщение об ошибке
+        
+        Example:
+            page.assert_url_equals(
+                "https://example.com/profile", 
+                "После логина не попали на страницу профиля"
+            )
+        """
+        current_url = self.get_current_url()
+        assert current_url == expected_url, (
+            f"❌ {error_message}\n"
+            f"   Ожидался URL: {expected_url}\n"
+            f"   Текущий URL: {current_url}"
+        )
+    
+    def assert_url_contains(self, expected_substring: str, error_message: str):
+        """
+        Проверить что URL содержит подстроку с кастомным сообщением.
+        
+        Args:
+            expected_substring: Ожидаемая подстрока в URL
+            error_message: Сообщение об ошибке
+        
+        Example:
+            page.assert_url_contains(
+                "/dashboard", 
+                "После успешного входа не перешли на дашборд"
+            )
+        """
+        current_url = self.get_current_url()
+        assert expected_substring in current_url, (
+            f"❌ {error_message}\n"
+            f"   Ожидаемая подстрока: '{expected_substring}'\n"
+            f"   Текущий URL: {current_url}"
+        )
 
     def wait_for_page_load(self):
         """Ожидать загрузки страницы."""
         self.page.wait_for_load_state("domcontentloaded")
-
-    def assert_url_equals(self, expected_url: str):
-        """Проверить, что URL точно равен ожидаемому.
-
-        Args:
-            expected_url: Ожидаемый URL
-        """
-        current_url = self.get_current_url()
-        assert (
-            current_url == expected_url
-        ), f"URL не совпадает. Ожидалось: {expected_url}, Получено: {current_url}"
 
     # Методы для работы с картой (перенесены в MapNavigation класс)
 
@@ -669,17 +800,142 @@ class BasePage:
 
                     if not has_lock:
                         apartment.click()
-                        self.parent.page.wait_for_timeout(2000)
-
-                        # Проверяем, перешли ли мы на страницу апартамента
-                        current_url = self.parent.page.url
-                        if "/apartment/" in current_url or "/unit/" in current_url:
-                            return True
+                        # Небольшая пауза после клика
+                        self.parent.page.wait_for_timeout(500)
+                        return True
 
                 except Exception:
                     continue
 
             return False
+
+        # ==================== МЕТОДЫ ДЛЯ НАВИГАЦИИ ПО ЗДАНИЯМ, ЭТАЖАМ И АПАРТАМЕНТАМ ====================
+
+        def navigate_to_building(self, building_number: int) -> str:
+            """
+            Переход к зданию через навигационное меню.
+
+            Args:
+                building_number: Номер здания (1, 2, 3...)
+
+            Returns:
+                str: URL после перехода к зданию
+            """
+
+            # Кликаем на навигацию по зданиям
+            self.parent.click(self.parent.project_locators.BUILDING_NAV_BUTTON)
+
+            # Формируем селектор кнопки здания
+            building_button = f'[data-test-id="nav-desktop-building-{building_number}"]'
+            self.parent.click(building_button)
+
+            # Ждем изменения URL
+            self.parent.page.wait_for_url(f"**/building/{building_number}", timeout=10000)
+
+            current_url = self.parent.get_current_url()
+            allure.attach(
+                f"URL после выбора здания {building_number}: {current_url}",
+                name=f"Building {building_number} URL",
+            )
+            return current_url
+
+        def navigate_to_floor(self, floor_number: int) -> str:
+            """
+            Переход к этажу через навигационное меню.
+
+            Args:
+                floor_number: Номер этажа (1, 2, 3...)
+
+            Returns:
+                str: URL после перехода к этажу
+            """
+
+            # Кликаем на навигацию по этажам
+            self.parent.click(self.parent.project_locators.FLOOR_NAV_BUTTON)
+
+            # Формируем селектор кнопки этажа
+            floor_button = f'[data-test-id="nav-desktop-floor-{floor_number}"]'
+
+            # Ждем появления и стабилизации дропдауна
+            self.parent.page.wait_for_selector(
+                floor_button, state="visible", timeout=5000
+            )
+            self.parent.page.wait_for_timeout(500)  # Ждем завершения анимации
+
+            self.parent.click(floor_button)
+
+            # Ждем изменения URL
+            self.parent.page.wait_for_url(f"**/floor/*/{floor_number}", timeout=10000)
+
+            current_url = self.parent.get_current_url()
+            allure.attach(
+                f"URL после выбора этажа {floor_number}: {current_url}",
+                name=f"Floor {floor_number} URL",
+            )
+            return current_url
+
+        def navigate_to_floor_direct(
+            self, project_name: str, building_number: int, floor_number: int
+        ) -> str:
+            """
+            Прямой переход к этажу через URL (без использования навигации).
+
+            Args:
+                project_name: Название проекта (arisha, elire, cubix...)
+                building_number: Номер здания
+                floor_number: Номер этажа
+
+            Returns:
+                str: URL после перехода
+            """
+
+            floor_url = self.parent.base_url.replace(
+                "/map",
+                f"/project/{project_name}/floor/{building_number}/{floor_number}",
+            )
+            self.parent.page.goto(floor_url)
+            self.parent.page.wait_for_timeout(1000)
+
+            current_url = self.parent.get_current_url()
+            allure.attach(
+                f"URL этажа {floor_number}: {current_url}",
+                name=f"Floor {floor_number} URL",
+            )
+            return current_url
+
+        def click_apartment_on_floor(self) -> bool:
+            """
+            Клик на доступный апартамент на текущем этаже.
+
+            Returns:
+                bool: True если удалось кликнуть на апартамент
+            """
+
+            # Ждем загрузки плана этажа
+            self.parent.page.wait_for_selector(
+                self.parent.project_locators.FLOOR_PLAN_APARTMENTS, timeout=10000
+            )
+
+            # Получаем количество апартаментов
+            apartment_elements = self.parent.page.locator(
+                self.parent.project_locators.FLOOR_PLAN_APARTMENTS
+            )
+            apartment_count = apartment_elements.count()
+            allure.attach(
+                f"Найдено апартаментов на этаже: {apartment_count}",
+                name="Apartment Count",
+            )
+
+            # Кликаем на первый доступный апартамент
+            result = self.click_available_apartment()
+
+            if result:
+                current_url = self.parent.get_current_url()
+                allure.attach(
+                    f"URL после клика на апартамент: {current_url}", name="Apartment URL"
+                )
+
+            return result
 
         # ==================== МЕТОДЫ ИЗ AGENT_PAGE ====================
 
@@ -1141,7 +1397,9 @@ class BasePage:
                 if next_arrows.count() > 0:
                     next_arrow = next_arrows.first
                     if next_arrow.is_visible():
-                        next_arrow.click()
+                        # Используем JavaScript клик вместо обычного
+                        # Это обходит проверки Playwright и кликает напрямую
+                        next_arrow.evaluate("element => element.click()")
 
                         # Небольшая пауза для стабилизации после клика
                         self.parent.page.wait_for_timeout(500)

@@ -141,7 +141,6 @@ jobs:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
           MOBILE_DEVICE: iphone_13
           OS_NAME: ${{ runner.os }}
-          OS_PLATFORM: "iphone 13"
 
       - name: Run mobile tests (Pixel 5)
         run: pytest tests/ui/mobile/ --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
@@ -149,7 +148,6 @@ jobs:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
           MOBILE_DEVICE: pixel_5
           OS_NAME: ${{ runner.os }}
-          OS_PLATFORM: "pixel 5"
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -321,7 +319,7 @@ jobs:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            ${{ (needs.ubuntu-firefox.result == 'success' && needs.windows-chromium.result == 'success' && needs.macos-webkit.result == 'success') && '✅Done' || '❌Failed' }} <b>Итоговый отчет по тестам</b> 
+            ${{ (needs.ubuntu-firefox.result == 'success' && needs.windows-chromium.result == 'success' && needs.macos-webkit.result == 'success') && '✅' || '❌ Failed' }} <b>Итоговый отчет по тестам</b> 
 
             Проект: ${{ github.repository }}
             Ветка: ${{ github.ref_name }}

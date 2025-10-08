@@ -23,9 +23,10 @@ def test_elire_building_floor_apartment_navigation(map_page):
     with allure.step("Кликаем на Residences"):
         map_page.elire.click_on_residences_button()
 
-        assert map_page.is_visible(
-            map_page.project_locators.Elire.RESIDENCES_BUTTON
-        ), "Не найдена кнопка Residences"
+        map_page.assert_element_visible(
+            map_page.project_locators.Elire.RESIDENCES_BUTTON,
+            "Кнопка Residences не отображается после клика"
+        )
 
         # Обрабатываем модальное окно авторизации только на PROD (на DEV авторизации нет)
         if env == "prod":
@@ -43,10 +44,10 @@ def test_elire_building_floor_apartment_navigation(map_page):
         )
         map_page.click(start_3d_button)
 
-        # Проверяем, что кнопка была найдена и кликнута
-        assert map_page.is_visible(
-            start_3d_button
-        ), "Не найдена кнопка Start 3D Experience"
+        map_page.assert_element_visible(
+            start_3d_button,
+            "Кнопка Start 3D Experience не найдена после клика"
+        )
 
     # Проверяем URL здания
     map_page.page.wait_for_url("**/elire/configuration/1br-residence", timeout=10000)
@@ -60,7 +61,7 @@ def test_elire_building_floor_apartment_navigation(map_page):
         final_url = map_page.get_current_url()
         allure.attach(f"Финальный URL: {final_url}", name="Final URL")
 
-        # Проверяем, что мы на правильной странице
-        assert (
-            "/elire/configuration/1br-residence" in final_url
-        ), f"Не на странице 1 Bedroom Residence. URL: {final_url}"
+        map_page.assert_url_contains(
+            "/elire/configuration/1br-residence",
+            "Не перешли на страницу конфигурации 1 Bedroom Residence"
+        )
