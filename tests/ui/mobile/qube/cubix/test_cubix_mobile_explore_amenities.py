@@ -12,7 +12,6 @@ def test_cubix_mobile_explore_amenities(mobile_page):
     
     with allure.step("Открываем карту на мобильном устройстве"):
         mobile_page.page.goto(mobile_page.base_url)
-        # mobile_page.page.wait_for_load_state("domcontentloaded")
 
     with allure.step("Кликаем на проект Cubix на карте"):
         mobile_page.click_mobile_project_on_map("cubix")
