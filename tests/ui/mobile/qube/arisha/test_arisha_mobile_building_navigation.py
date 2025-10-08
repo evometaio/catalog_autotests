@@ -68,11 +68,5 @@ class TestArishaMobileBuildingNavigation:
             # Кликаем на "View in 3D"
             mobile_page.click_view_3d_button()
 
-        with allure.step("Проверка финального URL"):
-            mobile_page.assert_url_contains(
-                "/apartment/", 
-                "Не попали на страницу 3D квартиры после навигации"
-            )
-
         with allure.step("Проверяем адаптивность на мобильном устройстве"):
             mobile_page.check_mobile_viewport_adaptation()

@@ -8,7 +8,7 @@
 MOBILE_PROJECT_SELECTORS = {
     "arisha": 'div[aria-label="ARISHA TERRACES"]',
     "elire": 'div[aria-label="Elire"]',
-    "cubix": 'div[aria-label="CUBIX RESIDENCE"]',
+    "cubix": 'div[aria-label="CUBIX RESIDENCE"], div[aria-label="CUBIX RESIDENCES"]',
     "peylaa": 'div[aria-label="Peylaa"]',
 }
 
@@ -29,8 +29,18 @@ MOBILE_CLOSE_BUTTON = 'button[aria-label="Close"], .ant-modal-close'
 MOBILE_ARISHA_MENU_BUTTON = 'button:has-text("arisha")'
 MOBILE_ALL_UNITS_BUTTON = "#catalog_2d"
 
+# Навигация по проекту Cubix
+MOBILE_CUBIX_MENU_BUTTON = 'button:has-text("cubix")'
+
 # PDF функциональность
 MOBILE_PDF_BUTTON = 'span[aria-label="file-pdf"]'  # PDF кнопка через иконку
+
+# Explore Amenities для мобильных устройств
+MOBILE_EXPLORE_AMENITIES_BUTTON = '(//button[@data-test-id="project-info-window-explore-amenities"])[1]'
+
+# Слайдер Amenities - навигация для мобильных устройств
+MOBILE_AMENITIES_SLIDER_NEXT_BUTTON = '.ant-modal-content span[aria-label="right"]'
+MOBILE_AMENITIES_SLIDER_PREV_BUTTON = '.ant-modal-content span[aria-label="left"]'
 
 # ==================== МОБИЛЬНЫЕ ЛОКАТОРЫ APARTMENTS ====================
 
@@ -101,7 +111,7 @@ MOBILE_BUILDING_SELECTOR = ".react-horizontal-scrolling-menu--item"
 MOBILE_FLOOR_SELECTOR = ".react-horizontal-scrolling-menu--item"
 
 # Кнопки навигации
-MOBILE_VIEW_BUTTON = "button._button_svuuj_46"
+MOBILE_VIEW_BUTTON = 'button:has-text("Choose the floor")'
 
 # Модальное окно "Zoom and drag screen"
 MOBILE_MODAL_OK_BUTTON = 'button:has-text("OK")'

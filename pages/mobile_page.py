@@ -1,63 +1,6 @@
-"""
-Мобильная страница с методами, специфичными для мобильных устройств.
-Содержит адаптивные локаторы и методы для работы с мобильным UI.
-"""
-
 import allure
 from playwright.sync_api import Locator, Page
-
-from locators.mobile_locators import (
-    MOBILE_ALL_UNITS_BUTTON,
-    MOBILE_APARTMENT_CIRCLE,
-    MOBILE_APARTMENT_LOCK_ICON,
-    MOBILE_APARTMENT_PATH,
-    MOBILE_APARTMENT_RECT,
-    MOBILE_APARTMENT_SELECTOR,
-    MOBILE_APARTMENT_SVG,
-    MOBILE_APARTMENT_VISIBLE_CLASS,
-    MOBILE_ARISHA_MENU_BUTTON,
-    MOBILE_BUILDING_SELECTOR,
-    MOBILE_CLOSE_BUTTON,
-    MOBILE_CONTENT_IMAGES,
-    MOBILE_CONTENT_LINKS,
-    MOBILE_CONTENT_TEXT,
-    MOBILE_ERROR_MESSAGES,
-    MOBILE_EXPLORE_BUTTON,
-    MOBILE_FLOOR_SELECTOR,
-    MOBILE_FORM_BUTTONS,
-    MOBILE_FORM_INPUTS,
-    MOBILE_HORIZONTAL_MENU_ITEM,
-    MOBILE_LOADING_INDICATORS,
-    MOBILE_LOADING_OVERLAY,
-    MOBILE_MENU_ITEMS,
-    MOBILE_MODAL_CONTENT,
-    MOBILE_MODAL_DIALOG,
-    MOBILE_MODAL_MASK,
-    MOBILE_MODAL_OK_BUTTON,
-    MOBILE_NAVIGATION_LIST,
-    MOBILE_NAVIGATION_MENU,
-    MOBILE_NOTIFICATION,
-    MOBILE_PDF_BUTTON,
-    MOBILE_PROJECT_INFO_MODAL,
-    MOBILE_PROJECT_SELECTORS,
-    MOBILE_SCROLL_INDICATOR,
-    MOBILE_SCROLLABLE_CONTAINER,
-    MOBILE_SPINNER,
-    MOBILE_TIMEOUTS,
-    MOBILE_TOAST_MESSAGE,
-    MOBILE_TOUCH_ELEMENTS,
-    MOBILE_VIEW_3D_BUTTON,
-    MOBILE_VIEW_APARTMENT_BUTTON,
-    MOBILE_VIEW_BUTTON,
-    MOBILE_VIEWPORT_CONTAINER,
-    get_mobile_apartment_selector,
-    get_mobile_building_selector,
-    get_mobile_button_selector,
-    get_mobile_floor_selector,
-    get_mobile_icon_selector,
-    get_mobile_project_selector,
-)
-
+from locators.mobile_locators import *
 from .base_page import BasePage
 
 
@@ -233,7 +176,7 @@ class MobilePage(BasePage):
             # 3. Кликаем на "Explore Project"
             self.click_mobile_explore_project_button(project_name)
 
-            # 4. Кликаем на кнопку проекта (например, "arisha") для открытия меню
+            # 4. Кликаем на кнопку проекта для открытия меню
             if project_name.lower() == "arisha":
                 arisha_button = self.page.locator(MOBILE_ARISHA_MENU_BUTTON)
                 arisha_button.wait_for(state="visible", timeout=10000)
@@ -247,13 +190,32 @@ class MobilePage(BasePage):
 
                 # 6. Ждем перехода на страницу каталога
                 self.page.wait_for_url("**/catalog_2d", timeout=10000)
+            elif project_name.lower() == "cubix":
+                cubix_button = self.page.locator(MOBILE_CUBIX_MENU_BUTTON)
+                cubix_button.wait_for(state="visible", timeout=10000)
+                cubix_button.click()
+
+                # 5. Для Cubix клик на кнопку сразу переводит на страницу каталога
+                # Ждем перехода на страницу каталога
+                self.page.wait_for_url("**/catalog_2d", timeout=10000)
             else:
                 # Для других проектов может потребоваться другая логика
                 raise NotImplementedError(
                     f"Навигация к каталогу для проекта {project_name} не реализована"
                 )
 
-    # ==================== МОБИЛЬНЫЕ МЕТОДЫ ДЛЯ ФАЙЛОВ ====================
+
+    def click_mobile_explore_amenities_button(self):
+        """Кликнуть на кнопку Explore Amenities для мобильных устройств."""
+        mobile_amenities_button = '(//button[@data-test-id="project-info-window-explore-amenities"])[1]'
+        self.click(mobile_amenities_button)
+
+    def click_mobile_amenities_next_button(self):
+        """Кликнуть на стрелку 'вправо' в слайдере amenities на мобильном."""
+        next_button_selector = '.ant-modal-content span[aria-label="right"]'
+        next_button = self.page.locator(next_button_selector)
+        next_button.click()
+
 
     def find_and_click_available_apartment(self):
         """Найти и кликнуть на первый доступный apartment."""
