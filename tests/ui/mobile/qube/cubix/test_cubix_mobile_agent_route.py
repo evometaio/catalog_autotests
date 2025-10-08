@@ -14,9 +14,8 @@ class TestCubixMobileAgentRoute:
         """Тест скачивания PDF на странице каталога Cubix на мобильном устройстве."""
 
         try:
-            with allure.step("Переходим на карту агента"):
-                mobile_agent_page.page.goto(mobile_agent_page.agent_base_url)
-                mobile_agent_page.page.wait_for_load_state("domcontentloaded")
+            with allure.step("Открываем агентскую страницу"):
+                mobile_agent_page.open(route_type="agent")
 
             with allure.step("Кликаем на проект Cubix на карте"):
                 mobile_agent_page.click_mobile_project_on_map("cubix")

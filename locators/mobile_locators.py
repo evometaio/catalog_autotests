@@ -8,7 +8,7 @@
 MOBILE_PROJECT_SELECTORS = {
     "arisha": 'div[aria-label="ARISHA TERRACES"]',
     "elire": 'div[aria-label="Elire"]',
-    "cubix": 'div[aria-label="CUBIX RESIDENCE"]',
+    "cubix": 'div[aria-label="CUBIX RESIDENCE"], div[aria-label="CUBIX RESIDENCES"]',
     "peylaa": 'div[aria-label="Peylaa"]',
 }
 

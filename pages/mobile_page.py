@@ -204,7 +204,18 @@ class MobilePage(BasePage):
                     f"Навигация к каталогу для проекта {project_name} не реализована"
                 )
 
-    # ==================== МОБИЛЬНЫЕ МЕТОДЫ ДЛЯ ФАЙЛОВ ====================
+
+    def click_mobile_explore_amenities_button(self):
+        """Кликнуть на кнопку Explore Amenities для мобильных устройств."""
+        mobile_amenities_button = '(//button[@data-test-id="project-info-window-explore-amenities"])[1]'
+        self.click(mobile_amenities_button)
+
+    def click_mobile_amenities_next_button(self):
+        """Кликнуть на стрелку 'вправо' в слайдере amenities на мобильном."""
+        next_button_selector = '.ant-modal-content span[aria-label="right"]'
+        next_button = self.page.locator(next_button_selector)
+        next_button.click()
+
 
     def find_and_click_available_apartment(self):
         """Найти и кликнуть на первый доступный apartment."""
