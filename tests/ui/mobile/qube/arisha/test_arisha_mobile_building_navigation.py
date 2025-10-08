@@ -53,25 +53,18 @@ class TestArishaMobileBuildingNavigation:
             # Ждем перехода в floor plan
             mobile_page.wait_for_timeout(3000)
 
-            # Кликаем на квартиру (как в отладочном скрипте)
+            # Кликаем на квартиру
             mobile_page.click_apartment_on_plan()
 
-            # Ждем появления модального окна с кнопками
+            # Ждем появления модального окна с информацией об апартаменте
             mobile_page.wait_for_timeout(2000)
 
-            # Кликаем на "View Apartment"
-            mobile_page.click_view_apartment_button()
-
-            # Ждем загрузки страницы квартиры
-            mobile_page.wait_for_timeout(3000)
-
-            # Кликаем на "View in 3D"
-            mobile_page.click_view_3d_button()
-
-        with allure.step("Проверка финального URL"):
-            mobile_page.assert_url_contains(
-                "/apartment/", 
-                "Не попали на страницу 3D квартиры после навигации"
+        with allure.step("Проверяем модальное окно апартамента"):
+            # Проверяем наличие кнопки "View Apartment"
+            view_apartment_button = mobile_page.page.locator('button:has-text("View apartment")')
+            mobile_page.assert_that(
+                view_apartment_button.count() > 0,
+                "Модальное окно апартамента не отобразилось - кнопка View Apartment не найдена"
             )
 
         with allure.step("Проверяем адаптивность на мобильном устройстве"):

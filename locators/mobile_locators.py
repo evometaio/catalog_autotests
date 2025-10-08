@@ -111,7 +111,7 @@ MOBILE_BUILDING_SELECTOR = ".react-horizontal-scrolling-menu--item"
 MOBILE_FLOOR_SELECTOR = ".react-horizontal-scrolling-menu--item"
 
 # Кнопки навигации
-MOBILE_VIEW_BUTTON = "button._button_svuuj_46"
+MOBILE_VIEW_BUTTON = 'button:has-text("Choose the floor")'
 
 # Модальное окно "Zoom and drag screen"
 MOBILE_MODAL_OK_BUTTON = 'button:has-text("OK")'
