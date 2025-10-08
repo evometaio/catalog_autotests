@@ -35,6 +35,13 @@ MOBILE_CUBIX_MENU_BUTTON = 'button:has-text("cubix")'
 # PDF функциональность
 MOBILE_PDF_BUTTON = 'span[aria-label="file-pdf"]'  # PDF кнопка через иконку
 
+# Explore Amenities для мобильных устройств
+MOBILE_EXPLORE_AMENITIES_BUTTON = '(//button[@data-test-id="project-info-window-explore-amenities"])[1]'
+
+# Слайдер Amenities - навигация для мобильных устройств
+MOBILE_AMENITIES_SLIDER_NEXT_BUTTON = '.ant-modal-content span[aria-label="right"]'
+MOBILE_AMENITIES_SLIDER_PREV_BUTTON = '.ant-modal-content span[aria-label="left"]'
+
 # ==================== МОБИЛЬНЫЕ ЛОКАТОРЫ APARTMENTS ====================
 
 # Селекторы для apartments
