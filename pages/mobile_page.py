@@ -21,6 +21,7 @@ from locators.mobile_locators import (
     MOBILE_CONTENT_IMAGES,
     MOBILE_CONTENT_LINKS,
     MOBILE_CONTENT_TEXT,
+    MOBILE_CUBIX_MENU_BUTTON,
     MOBILE_ERROR_MESSAGES,
     MOBILE_EXPLORE_BUTTON,
     MOBILE_FLOOR_SELECTOR,
@@ -233,7 +234,7 @@ class MobilePage(BasePage):
             # 3. Кликаем на "Explore Project"
             self.click_mobile_explore_project_button(project_name)
 
-            # 4. Кликаем на кнопку проекта (например, "arisha") для открытия меню
+            # 4. Кликаем на кнопку проекта для открытия меню
             if project_name.lower() == "arisha":
                 arisha_button = self.page.locator(MOBILE_ARISHA_MENU_BUTTON)
                 arisha_button.wait_for(state="visible", timeout=10000)
@@ -246,6 +247,14 @@ class MobilePage(BasePage):
                 all_units_button.click()
 
                 # 6. Ждем перехода на страницу каталога
+                self.page.wait_for_url("**/catalog_2d", timeout=10000)
+            elif project_name.lower() == "cubix":
+                cubix_button = self.page.locator(MOBILE_CUBIX_MENU_BUTTON)
+                cubix_button.wait_for(state="visible", timeout=10000)
+                cubix_button.click()
+
+                # 5. Для Cubix клик на кнопку сразу переводит на страницу каталога
+                # Ждем перехода на страницу каталога
                 self.page.wait_for_url("**/catalog_2d", timeout=10000)
             else:
                 # Для других проектов может потребоваться другая логика

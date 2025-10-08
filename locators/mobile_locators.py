@@ -29,6 +29,9 @@ MOBILE_CLOSE_BUTTON = 'button[aria-label="Close"], .ant-modal-close'
 MOBILE_ARISHA_MENU_BUTTON = 'button:has-text("arisha")'
 MOBILE_ALL_UNITS_BUTTON = "#catalog_2d"
 
+# Навигация по проекту Cubix
+MOBILE_CUBIX_MENU_BUTTON = 'button:has-text("cubix")'
+
 # PDF функциональность
 MOBILE_PDF_BUTTON = 'span[aria-label="file-pdf"]'  # PDF кнопка через иконку
 
