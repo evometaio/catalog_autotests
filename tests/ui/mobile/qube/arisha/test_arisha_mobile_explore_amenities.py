@@ -2,22 +2,37 @@ import allure
 import pytest
 
 
-@allure.feature("Qube - Проект Cubix (mobile)")
+@allure.feature("Qube - Проект Arisha (mobile)")
 @allure.story("Explore Amenities - Мобильная")
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
-def test_cubix_mobile_explore_amenities(mobile_page):
-    """Тест Explore Amenities для проекта Cubix на мобильном устройстве."""
-
+def test_arisha_mobile_explore_amenities(mobile_page):
+    """Тест Explore Amenities для проекта Arisha на мобильном устройстве."""
     with allure.step("Открываем карту"):
         mobile_page.open(route_type="map")
 
-    with allure.step("Кликаем на проект Cubix на карте"):
-        mobile_page.click_mobile_project_on_map("cubix")
+    with allure.step("Кликаем на проект Arisha на карте"):
+        mobile_page.click_mobile_project_on_map("arisha")
 
     with allure.step("Кликаем на Explore Project"):
-        mobile_page.click_mobile_explore_project_button("cubix")
+        mobile_page.click_mobile_explore_project_button("arisha")
+
+    with allure.step("Открываем мобильное меню Arisha"):
+        mobile_menu_toggle = mobile_page.page.locator(
+            '[data-test-id="nav-mobile-menu-toggle"]'
+        )
+        mobile_menu_toggle.wait_for(state="visible", timeout=10000)
+        mobile_menu_toggle.click()
+        mobile_page.page.wait_for_timeout(1000)
+
+    with allure.step("Кликаем на All Units в меню"):
+        all_units_button = mobile_page.page.locator(
+            '[data-test-id="nav-mobile-catalog2d"]'
+        )
+        all_units_button.wait_for(state="visible", timeout=10000)
+        all_units_button.click()
+        mobile_page.page.wait_for_timeout(1000)
 
     with allure.step("Кликаем на кнопку Explore Amenities"):
         mobile_page.click_mobile_explore_amenities_button()

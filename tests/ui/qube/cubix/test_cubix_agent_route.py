@@ -35,7 +35,7 @@ def test_cubix_download_pdf_on_agent_page(agent_page):
                 content = f.read(10)
                 agent_page.assert_that(
                     content.startswith(b"%PDF"),
-                    f"Файл не является валидным PDF, заголовок: {content[:10]}"
+                    f"Файл не является валидным PDF, заголовок: {content[:10]}",
                 )
 
     finally:

@@ -2,22 +2,22 @@ import allure
 import pytest
 
 
-@allure.feature("Qube - Проект Cubix (mobile)")
+@allure.feature("Wellcube - Проект Tranquil (mobile)")
 @allure.story("Explore Amenities - Мобильная")
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
-def test_cubix_mobile_explore_amenities(mobile_page):
-    """Тест Explore Amenities для проекта Cubix на мобильном устройстве."""
-
-    with allure.step("Открываем карту"):
+@pytest.mark.skip(reason="Реализовать")
+def test_tranquil_mobile_explore_amenities(mobile_page):
+    """Тест Explore Amenities для проекта Tranquil на мобильном устройстве."""
+    with allure.step("Открываем карту Wellcube"):
         mobile_page.open(route_type="map")
 
-    with allure.step("Кликаем на проект Cubix на карте"):
-        mobile_page.click_mobile_project_on_map("cubix")
+    with allure.step("Кликаем на проект Tranquil"):
+        mobile_page.click_mobile_project_on_map("tranquil")
 
     with allure.step("Кликаем на Explore Project"):
-        mobile_page.click_mobile_explore_project_button("cubix")
+        mobile_page.click_mobile_explore_project_button("tranquil")
 
     with allure.step("Кликаем на кнопку Explore Amenities"):
         mobile_page.click_mobile_explore_amenities_button()

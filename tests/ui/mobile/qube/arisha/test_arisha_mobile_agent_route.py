@@ -19,7 +19,7 @@ class TestArishaMobileAgentRoute:
                 current_url = mobile_agent_page.page.url
                 mobile_agent_page.assert_that(
                     "catalog_2d" in current_url or "/area" in current_url,
-                    "Не перешли на страницу каталога или area"
+                    "Не перешли на страницу каталога или area",
                 )
 
             with allure.step("Ищем и кликаем на первый доступный апартамент"):

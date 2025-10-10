@@ -42,6 +42,6 @@ def test_elire_request_viewing_form(client_page, fake):
 
         success_displayed = client_page.project.is_success_message_displayed()
         client_page.assert_that(
-            success_displayed, 
-            "Модальное окно с сообщением об успешной отправке не отображается"
+            success_displayed,
+            "Модальное окно с сообщением об успешной отправке не отображается",
         )

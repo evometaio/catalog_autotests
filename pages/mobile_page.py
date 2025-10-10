@@ -1,6 +1,8 @@
 import allure
 from playwright.sync_api import Locator, Page
+
 from locators.mobile_locators import *
+
 from .base_page import BasePage
 
 
@@ -41,6 +43,80 @@ class MobilePage(BasePage):
     # Все локаторы теперь импортируются из locators/mobile_locators.py
 
     # ==================== МОБИЛЬНЫЕ МЕТОДЫ ДЛЯ КАРТЫ ====================
+
+    def click_360_area_tour_button(self):
+        """Кликнуть на кнопку 360 Area Tour для мобильных устройств (второй элемент)."""
+        with allure.step("Кликаем на кнопку 360 Area Tour"):
+            button_selector = (
+                '(//button[@data-test-id="nav-rotation-view-controls-button"])[2]'
+            )
+            button = self.page.locator(button_selector)
+            button.wait_for(state="visible", timeout=10000)
+            button.click()
+
+    def click_mobile_explore_residences_button(self):
+        """Кликнуть на кнопку Explore Residences для Elire (второй элемент)."""
+        with allure.step("Кликаем на Explore Residences"):
+            button = self.page.locator('button:has-text("explore residences")').nth(1)
+            button.wait_for(state="visible", timeout=10000)
+            button.click()
+
+    def click_mobile_start_3d_experience_button(self):
+        """Кликнуть на кнопку Start 3D Experience для Elire."""
+        with allure.step("Кликаем на Start 3D Experience"):
+            button = self.page.locator(
+                '[data-test-id="property-info-primary-button-1 BEDROOM RESIDENCE"]'
+            ).first
+            button.wait_for(state="visible", timeout=10000)
+            button.click()
+
+    def click_mobile_services_amenities_button(self):
+        """Кликнуть на кнопку Services & Amenities для Elire."""
+        with allure.step("Кликаем на Services & Amenities"):
+            button = self.page.locator('button:has-text("services & amenities")')
+            button.wait_for(state="visible", timeout=10000)
+            button.click()
+
+    def verify_elire_services_modal_displayed(self):
+        """Проверить отображение модального окна Services & Amenities для Elire."""
+        with allure.step("Проверяем отображение модального окна Services & Amenities"):
+            modal = self.page.locator(".ant-modal-content")
+            modal.wait_for(state="visible", timeout=10000)
+            assert (
+                modal.is_visible()
+            ), "Модальное окно Services & Amenities не отображается"
+
+    def verify_elire_services_modal_title(self):
+        """Проверить наличие заголовка CORE SERVICES."""
+        with allure.step("Проверяем наличие заголовка CORE SERVICES"):
+            title = self.page.locator('[data-test-id="public-zone-info-slider-title"]')
+            assert title.is_visible(), "Заголовок CORE SERVICES не найден"
+
+    def navigate_elire_services_slider(self):
+        """Тестировать навигацию по слайдеру Services & Amenities."""
+        with allure.step("Тестируем навигацию по слайдеру - кликаем вправо"):
+            right_arrow = self.page.locator(
+                '.ant-modal-content span[aria-label="right"]'
+            )
+            if right_arrow.count() > 0:
+                for i in range(3):
+                    right_arrow.first.click(force=True)
+                    self.page.wait_for_timeout(800)
+
+        with allure.step("Тестируем навигацию по слайдеру - кликаем влево"):
+            left_arrow = self.page.locator('.ant-modal-content span[aria-label="left"]')
+            if left_arrow.count() > 0:
+                for i in range(2):
+                    left_arrow.first.click(force=True)
+                    self.page.wait_for_timeout(800)
+
+    def close_elire_services_modal(self):
+        """Закрыть модальное окно Services & Amenities."""
+        with allure.step("Закрываем модальное окно"):
+            close_button = self.page.locator(".ant-modal-close")
+            close_button.click()
+            modal = self.page.locator(".ant-modal-content")
+            modal.wait_for(state="hidden", timeout=5000)
 
     def get_mobile_project_selector(self, project_name: str) -> str:
         """Получить мобильный селектор для проекта."""
@@ -204,10 +280,11 @@ class MobilePage(BasePage):
                     f"Навигация к каталогу для проекта {project_name} не реализована"
                 )
 
-
     def click_mobile_explore_amenities_button(self):
         """Кликнуть на кнопку Explore Amenities для мобильных устройств."""
-        mobile_amenities_button = '(//button[@data-test-id="project-info-window-explore-amenities"])[1]'
+        mobile_amenities_button = (
+            '//button[@data-test-id="project-info-window-explore-amenities"]'
+        )
         self.click(mobile_amenities_button)
 
     def click_mobile_amenities_next_button(self):
@@ -215,7 +292,6 @@ class MobilePage(BasePage):
         next_button_selector = '.ant-modal-content span[aria-label="right"]'
         next_button = self.page.locator(next_button_selector)
         next_button.click()
-
 
     def find_and_click_available_apartment(self):
         """Найти и кликнуть на первый доступный apartment."""

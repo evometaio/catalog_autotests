@@ -3,7 +3,6 @@ import pytest
 
 
 @allure.feature("Qube - Проект Arisha (mobile)")
-@allure.feature("Мобильная навигация")
 @allure.story("Навигация по зданиям Arisha")
 @pytest.mark.mobile
 @pytest.mark.iphone
@@ -26,7 +25,9 @@ class TestArishaMobileBuildingNavigation:
             mobile_page.click_mobile_explore_project_button("arisha")
 
             # Проверяем что попали на страницу area
-            mobile_page.assert_url_contains("/area", "Не перешли на страницу /area после клика на проект")
+            mobile_page.assert_url_contains(
+                "/area", "Не перешли на страницу /area после клика на проект"
+            )
 
         with allure.step("Навигация по зданию 1, этажу 1"):
             mobile_page.close_zoom_modal()
@@ -37,7 +38,9 @@ class TestArishaMobileBuildingNavigation:
 
             # Кликаем на кнопку "View 1"
             view_clicked = mobile_page.click_view_building_button()
-            mobile_page.assert_that(view_clicked, "Не удалось кликнуть по кнопке View 1")
+            mobile_page.assert_that(
+                view_clicked, "Не удалось кликнуть по кнопке View 1"
+            )
 
             # Ждем обновления UI после клика "View 1"
             mobile_page.wait_for_timeout(3000)
@@ -48,7 +51,9 @@ class TestArishaMobileBuildingNavigation:
 
             # Кликаем на кнопку "View Floor 1"
             floor_view_clicked = mobile_page.click_view_floor_button()
-            mobile_page.assert_that(floor_view_clicked, "Не удалось кликнуть по кнопке View Floor 1")
+            mobile_page.assert_that(
+                floor_view_clicked, "Не удалось кликнуть по кнопке View Floor 1"
+            )
 
             # Ждем перехода в floor plan
             mobile_page.wait_for_timeout(3000)

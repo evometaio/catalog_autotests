@@ -1,0 +1,32 @@
+import allure
+import pytest
+
+
+@allure.feature("Capstone - Проект Peylaa (mobile)")
+@allure.story("360 тур по территории - Мобильная")
+@pytest.mark.smoke
+@pytest.mark.regression
+@pytest.mark.mobile
+@pytest.mark.skip(reason="Реализовать")
+def test_peylaa_mobile_360_area_tour(mobile_page):
+    """Тест 360 Area Tour для проекта Peylaa на мобильном устройстве."""
+    with allure.step("Открываем карту Capstone"):
+        mobile_page.open(route_type="map")
+
+    with allure.step("Кликаем на проект Peylaa"):
+        mobile_page.click_mobile_project_on_map("peylaa")
+
+    with allure.step("Кликаем на Explore Project"):
+        mobile_page.click_mobile_explore_project_button("peylaa")
+
+    with allure.step("Кликаем на кнопку Area tour"):
+        mobile_page.click_360_area_tour_button()
+
+    with allure.step("Проверяем отображение модального окна 360 Area Tour"):
+        mobile_page.verify_360_area_tour_modal_displayed()
+
+    with allure.step("Проверяем наличие контента в модальном окне"):
+        mobile_page.verify_360_area_tour_content()
+
+    with allure.step("Проверяем адаптивность на мобильном устройстве"):
+        mobile_page.check_mobile_viewport_adaptation()

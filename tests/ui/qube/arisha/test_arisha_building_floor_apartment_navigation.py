@@ -25,7 +25,9 @@ def test_arisha_building_floor_apartment_navigation(map_page):
 
     with allure.step("Кликаем на апартамент на этаже 1"):
         apartment_clicked = map_page.project.click_apartment_on_floor()
-        map_page.assert_that(apartment_clicked, "Не удалось кликнуть на апартамент на этаже 1")
+        map_page.assert_that(
+            apartment_clicked, "Не удалось кликнуть на апартамент на этаже 1"
+        )
 
     with allure.step("Переходим на этаж 2"):
         map_page.project.navigate_to_floor(floor_number=2)
@@ -33,4 +35,6 @@ def test_arisha_building_floor_apartment_navigation(map_page):
 
     with allure.step("Кликаем на апартамент на этаже 2"):
         apartment_clicked_2 = map_page.project.click_apartment_on_floor()
-        map_page.assert_that(apartment_clicked_2, "Не удалось кликнуть на апартамент на этаже 2")
+        map_page.assert_that(
+            apartment_clicked_2, "Не удалось кликнуть на апартамент на этаже 2"
+        )
