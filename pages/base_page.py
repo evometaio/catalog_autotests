@@ -1,3 +1,4 @@
+import allure
 from playwright.sync_api import Locator, Page, expect
 
 from locators.map_locators import MapLocators
@@ -7,7 +8,6 @@ from locators.project_locators import (
     QubeLocators,
     WellcubePageLocators,
 )
-import allure
 
 
 class BasePage:
@@ -180,75 +180,81 @@ class BasePage:
         """Ожидать видимости элемента."""
         element = self.wait_for_element(selector, timeout)
         assert element.is_visible(), f"Элемент {selector} не отображается - баг в UI"
-    
+
     # ==================== КАСТОМНЫЕ ASSERTION МЕТОДЫ ====================
-    
+
     def assert_that(self, condition: bool, error_message: str):
         """
         Базовый assertion с кастомным сообщением.
-        
+
         Args:
             condition: Условие которое должно быть True
             error_message: Сообщение об ошибке если условие False
-        
+
         Example:
             page.assert_that(
-                apartment_clicked, 
+                apartment_clicked,
                 "Не удалось кликнуть на апартамент на этаже 1"
             )
         """
         assert condition, f"❌ {error_message}"
-    
-    def assert_element_visible(self, selector: str, error_message: str, timeout: int = None):
+
+    def assert_element_visible(
+        self, selector: str, error_message: str, timeout: int = None
+    ):
         """
         Проверить что элемент видим с кастомным сообщением.
-        
+
         Args:
             selector: CSS селектор элемента
             error_message: Сообщение об ошибке
             timeout: Таймаут ожидания
-        
+
         Example:
             page.assert_element_visible(
-                ".modal", 
+                ".modal",
                 "Модальное окно не отображается после клика на кнопку"
             )
         """
         is_visible = self.is_visible(selector, timeout)
         assert is_visible, f"❌ {error_message}\n   Селектор: {selector}"
-    
-    def assert_element_not_visible(self, selector: str, error_message: str, timeout: int = None):
+
+    def assert_element_not_visible(
+        self, selector: str, error_message: str, timeout: int = None
+    ):
         """
         Проверить что элемент НЕ видим с кастомным сообщением.
-        
+
         Args:
             selector: CSS селектор элемента
             error_message: Сообщение об ошибке
             timeout: Таймаут проверки
-        
+
         Example:
             page.assert_element_not_visible(
-                ".loader", 
+                ".loader",
                 "Лоадер всё ещё виден после загрузки страницы"
             )
         """
         is_visible = self.is_visible(selector, timeout or 2000)
         assert not is_visible, f"❌ {error_message}\n   Селектор: {selector}"
-    
-    def assert_text_equals(self, selector: str, expected_text: str, error_message: str, timeout: int = None):
+
+    def assert_text_equals(
+        self, selector: str, expected_text: str, error_message: str, timeout: int = None
+    ):
         """
         Проверить что текст элемента равен ожидаемому с кастомным сообщением.
-        
+
         Args:
             selector: CSS селектор элемента
             expected_text: Ожидаемый текст
             error_message: Сообщение об ошибке
             timeout: Таймаут ожидания
-        
+
         Example:
             page.assert_text_equals(
-                "h1", 
-                "Welcome", 
+                "h1",
+                "Welcome",
                 "Заголовок страницы не совпадает с ожидаемым"
             )
         """
@@ -258,21 +264,27 @@ class BasePage:
             f"   Ожидалось: '{expected_text}'\n"
             f"   Получено: '{actual_text}'"
         )
-    
-    def assert_text_contains(self, selector: str, expected_substring: str, error_message: str, timeout: int = None):
+
+    def assert_text_contains(
+        self,
+        selector: str,
+        expected_substring: str,
+        error_message: str,
+        timeout: int = None,
+    ):
         """
         Проверить что текст элемента содержит подстроку с кастомным сообщением.
-        
+
         Args:
             selector: CSS селектор элемента
             expected_substring: Ожидаемая подстрока
             error_message: Сообщение об ошибке
             timeout: Таймаут ожидания
-        
+
         Example:
             page.assert_text_contains(
-                ".error", 
-                "Invalid", 
+                ".error",
+                "Invalid",
                 "Сообщение об ошибке не содержит слово Invalid"
             )
         """
@@ -282,18 +294,18 @@ class BasePage:
             f"   Ожидаемая подстрока: '{expected_substring}'\n"
             f"   Фактический текст: '{actual_text}'"
         )
-    
+
     def assert_url_equals(self, expected_url: str, error_message: str):
         """
         Проверить что URL равен ожидаемому с кастомным сообщением.
-        
+
         Args:
             expected_url: Ожидаемый URL
             error_message: Сообщение об ошибке
-        
+
         Example:
             page.assert_url_equals(
-                "https://example.com/profile", 
+                "https://example.com/profile",
                 "После логина не попали на страницу профиля"
             )
         """
@@ -303,18 +315,18 @@ class BasePage:
             f"   Ожидался URL: {expected_url}\n"
             f"   Текущий URL: {current_url}"
         )
-    
+
     def assert_url_contains(self, expected_substring: str, error_message: str):
         """
         Проверить что URL содержит подстроку с кастомным сообщением.
-        
+
         Args:
             expected_substring: Ожидаемая подстрока в URL
             error_message: Сообщение об ошибке
-        
+
         Example:
             page.assert_url_contains(
-                "/dashboard", 
+                "/dashboard",
                 "После успешного входа не перешли на дашборд"
             )
         """
@@ -830,7 +842,9 @@ class BasePage:
             self.parent.click(building_button)
 
             # Ждем изменения URL
-            self.parent.page.wait_for_url(f"**/building/{building_number}", timeout=10000)
+            self.parent.page.wait_for_url(
+                f"**/building/{building_number}", timeout=10000
+            )
 
             current_url = self.parent.get_current_url()
             allure.attach(
@@ -932,7 +946,8 @@ class BasePage:
             if result:
                 current_url = self.parent.get_current_url()
                 allure.attach(
-                    f"URL после клика на апартамент: {current_url}", name="Apartment URL"
+                    f"URL после клика на апартамент: {current_url}",
+                    name="Apartment URL",
                 )
 
             return result

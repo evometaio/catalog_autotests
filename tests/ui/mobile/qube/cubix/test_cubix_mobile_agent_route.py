@@ -35,4 +35,3 @@ class TestCubixMobileAgentRoute:
             # Проверяем адаптивность на мобильном устройстве
             with allure.step("Проверяем адаптивность на мобильном устройстве"):
                 mobile_agent_page.check_mobile_viewport_adaptation()
-

@@ -25,7 +25,7 @@ def test_elire_building_floor_apartment_navigation(map_page):
 
         map_page.assert_element_visible(
             map_page.project_locators.Elire.RESIDENCES_BUTTON,
-            "Кнопка Residences не отображается после клика"
+            "Кнопка Residences не отображается после клика",
         )
 
         # Обрабатываем модальное окно авторизации только на PROD (на DEV авторизации нет)
@@ -45,8 +45,7 @@ def test_elire_building_floor_apartment_navigation(map_page):
         map_page.click(start_3d_button)
 
         map_page.assert_element_visible(
-            start_3d_button,
-            "Кнопка Start 3D Experience не найдена после клика"
+            start_3d_button, "Кнопка Start 3D Experience не найдена после клика"
         )
 
     # Проверяем URL здания
@@ -63,5 +62,5 @@ def test_elire_building_floor_apartment_navigation(map_page):
 
         map_page.assert_url_contains(
             "/elire/configuration/1br-residence",
-            "Не перешли на страницу конфигурации 1 Bedroom Residence"
+            "Не перешли на страницу конфигурации 1 Bedroom Residence",
         )

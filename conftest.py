@@ -371,6 +371,8 @@ def mobile_page(page):
 
     mobile_page = MobilePage(page)
     mobile_page.base_url = base_url
+    # Устанавливаем правильные локаторы для Qube проектов
+    mobile_page.project_locators = QubeLocators()
     return mobile_page
 
 
@@ -393,6 +395,8 @@ def mobile_agent_page(page):
 
     mobile_page = MobilePage(page)
     mobile_page.base_url = base_url
+    # Устанавливаем правильные локаторы для Qube проектов
+    mobile_page.project_locators = QubeLocators()
     return mobile_page
 
 
@@ -415,4 +419,6 @@ def mobile_client_page(page):
 
     mobile_page = MobilePage(page)
     mobile_page.base_url = base_url
+    # Устанавливаем правильные локаторы для Qube проектов
+    mobile_page.project_locators = QubeLocators()
     return mobile_page
