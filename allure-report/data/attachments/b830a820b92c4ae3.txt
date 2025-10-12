@@ -1,0 +1,1 @@
+Кнопка 3: 'building 1' (class: ant-btn css-c2zssc ant-btn-default ant-btn-color-default ant-btn-variant-outlined CompactNavigation_menuButton__N6zXt)
