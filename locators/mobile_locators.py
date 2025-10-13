@@ -10,6 +10,7 @@ MOBILE_PROJECT_SELECTORS = {
     "elire": 'div[aria-label="Elire"]',
     "cubix": 'div[aria-label="CUBIX RESIDENCE"], div[aria-label="CUBIX RESIDENCES"]',
     "peylaa": 'div[aria-label="Peylaa"]',
+    "tranquil": 'div[aria-label="Tranquil Wellness Tower"]',
 }
 
 # ==================== МОБИЛЬНЫЕ ЛОКАТОРЫ КАРТЫ ====================

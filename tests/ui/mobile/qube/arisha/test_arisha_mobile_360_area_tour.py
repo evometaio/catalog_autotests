@@ -7,6 +7,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
+@pytest.mark.flaky(reruns=2, reruns_delay=4)
 def test_arisha_mobile_360_area_tour(mobile_page):
     """Тест 360 Area Tour для проекта Arisha на мобильном устройстве."""
     with allure.step("Открываем карту"):

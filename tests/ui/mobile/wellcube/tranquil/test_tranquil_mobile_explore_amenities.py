@@ -7,7 +7,6 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
-@pytest.mark.skip(reason="Реализовать")
 def test_tranquil_mobile_explore_amenities(mobile_page):
     """Тест Explore Amenities для проекта Tranquil на мобильном устройстве."""
     with allure.step("Открываем карту Wellcube"):
