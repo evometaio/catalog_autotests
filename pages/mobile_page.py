@@ -77,6 +77,38 @@ class MobilePage(BasePage):
             button.wait_for(state="visible", timeout=10000)
             button.click()
 
+    def navigate_to_mobile_arisha_all_units(self):
+        """Навигация к All Units через мобильное меню для Arisha."""
+        with allure.step("Открываем мобильное меню Arisha"):
+            mobile_menu_toggle = self.page.locator(
+                '[data-test-id="nav-mobile-menu-toggle"]'
+            )
+            mobile_menu_toggle.wait_for(state="visible", timeout=10000)
+            mobile_menu_toggle.click()
+
+        with allure.step("Кликаем на All Units в меню"):
+            all_units_button = self.page.locator(
+                '[data-test-id="nav-mobile-catalog2d"]'
+            )
+            all_units_button.wait_for(state="visible", timeout=10000)
+            all_units_button.click()
+
+    def click_on_fraction_ownership_offer_button(self):
+        """Кликнуть на кнопку Fraction Ownership Offer для Tranquil."""
+        with allure.step("Кликаем на кнопку Fraction Ownership Offer"):
+            button = self.page.locator(
+                '(//button[@data-test-id="property-info-primary-button-1102 A"])[1]'
+            )
+            button.first.click(force=True)
+
+    def wait_for_apartment_widget_load(self):
+        """Ожидание полной загрузки виджета апартамента."""
+        with allure.step("Ожидаем полной загрузки виджета апартамента"):
+            # Ждем появления iframe
+            self.page.wait_for_selector("iframe[class*='_iframe_']", timeout=15000)
+            # Ждем загрузки содержимого внутри iframe
+            self.page.wait_for_timeout(4000)
+
     def verify_elire_services_modal_displayed(self):
         """Проверить отображение модального окна Services & Amenities для Elire."""
         with allure.step("Проверяем отображение модального окна Services & Amenities"):

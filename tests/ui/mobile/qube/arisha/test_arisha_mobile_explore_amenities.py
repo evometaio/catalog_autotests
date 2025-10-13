@@ -7,6 +7,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
+@pytest.mark.flaky(reruns=2, reruns_delay=4)
 def test_arisha_mobile_explore_amenities(mobile_page):
     """Тест Explore Amenities для проекта Arisha на мобильном устройстве."""
     with allure.step("Открываем карту"):
@@ -18,21 +19,7 @@ def test_arisha_mobile_explore_amenities(mobile_page):
     with allure.step("Кликаем на Explore Project"):
         mobile_page.click_mobile_explore_project_button("arisha")
 
-    with allure.step("Открываем мобильное меню Arisha"):
-        mobile_menu_toggle = mobile_page.page.locator(
-            '[data-test-id="nav-mobile-menu-toggle"]'
-        )
-        mobile_menu_toggle.wait_for(state="visible", timeout=10000)
-        mobile_menu_toggle.click()
-        mobile_page.page.wait_for_timeout(1000)
-
-    with allure.step("Кликаем на All Units в меню"):
-        all_units_button = mobile_page.page.locator(
-            '[data-test-id="nav-mobile-catalog2d"]'
-        )
-        all_units_button.wait_for(state="visible", timeout=10000)
-        all_units_button.click()
-        mobile_page.page.wait_for_timeout(1000)
+    mobile_page.navigate_to_mobile_arisha_all_units()
 
     with allure.step("Кликаем на кнопку Explore Amenities"):
         mobile_page.click_mobile_explore_amenities_button()

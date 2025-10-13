@@ -357,22 +357,53 @@ def mobile_device_info():
 
 
 @pytest.fixture
-def mobile_page(page):
+def mobile_page(page, request):
     """Фикстура для MobilePage с картой."""
     import os
 
     from pages.mobile_page import MobilePage
 
     environment = os.getenv("TEST_ENVIRONMENT", "dev")
-    if environment == "dev":
-        base_url = os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map")
-    else:
-        base_url = os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
 
-    mobile_page = MobilePage(page)
-    mobile_page.base_url = base_url
-    # Устанавливаем правильные локаторы для Qube проектов
-    mobile_page.project_locators = QubeLocators()
+    # Определяем проект из имени теста
+    test_file = request.fspath.basename
+
+    if "capstone" in test_file or "peylaa" in test_file:
+        # Capstone проект
+        if environment == "dev":
+            base_url = os.getenv(
+                "DEV_CAPSTONE_BASE_URL", "https://capstone-dev.evometa.io/map"
+            )
+        else:
+            base_url = os.getenv(
+                "CAPSTONE_PROD_BASE_URL", "https://3dtours.peylaa-phuket.com/map"
+            )
+        mobile_page = MobilePage(page)
+        mobile_page.base_url = base_url
+        mobile_page.project_locators = CapstonePageLocators()
+    elif "wellcube" in test_file or "tranquil" in test_file:
+        # Wellcube проект
+        if environment == "dev":
+            base_url = os.getenv(
+                "DEV_WELLCUBE_BASE_URL", "https://catalog-dev.evometa.io/wellcube/map"
+            )
+        else:
+            base_url = os.getenv(
+                "WELLCUBE_PROD_BASE_URL", "https://catalog.evometa.io/wellcube/map"
+            )
+        mobile_page = MobilePage(page)
+        mobile_page.base_url = base_url
+        mobile_page.project_locators = WellcubePageLocators()
+    else:
+        # Qube проекты (по умолчанию)
+        if environment == "dev":
+            base_url = os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map")
+        else:
+            base_url = os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
+        mobile_page = MobilePage(page)
+        mobile_page.base_url = base_url
+        mobile_page.project_locators = QubeLocators()
+
     return mobile_page
 
 

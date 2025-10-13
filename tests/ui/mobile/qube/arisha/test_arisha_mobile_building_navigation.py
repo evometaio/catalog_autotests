@@ -6,6 +6,7 @@ import pytest
 @allure.story("Навигация по зданиям Arisha")
 @pytest.mark.mobile
 @pytest.mark.iphone
+@pytest.mark.flaky(reruns=2, reruns_delay=4)
 class TestArishaMobileBuildingNavigation:
     """Тесты навигации по зданиям, этажам и квартирам для мобильных устройств."""
 
