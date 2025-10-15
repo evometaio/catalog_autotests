@@ -26,7 +26,7 @@ def test_arisha_apartment_widget_full_functionality(arisha_page):
         arisha_page.assertions.assert_url_contains("catalog_2d", "Не перешли на страницу каталога")
 
     with allure.step("Ищем и кликаем на первый доступный апартамент"):
-        arisha_page.navigation.find_and_click_available_apartment("arisha")
+        arisha_page.navigation.find_and_click_available_apartment()
 
     with allure.step("Ожидаем полной загрузки виджета апартамента"):
         arisha_page.apartment_widget.wait_for_widget_load()
@@ -115,7 +115,7 @@ def test_arisha_apartment_information(arisha_page):
         arisha_page.assertions.assert_url_contains("catalog_2d", "Не перешли на страницу каталога")
 
     with allure.step("Ищем и кликаем на первый доступный апартамент"):
-        arisha_page.navigation.find_and_click_available_apartment("arisha")
+        arisha_page.navigation.find_and_click_available_apartment()
 
     with allure.step("Ожидаем полной загрузки страницы апартамента"):
         arisha_page.apartment_info.wait_for_info_to_appear()

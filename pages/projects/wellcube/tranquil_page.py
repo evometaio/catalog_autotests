@@ -42,4 +42,8 @@ class TranquilPage(BasePage):
     def click_fraction_ownership_offer_button(self):
         """Кликнуть на кнопку Fraction Ownership Offer (специфично для Tranquil)."""
         self.browser.click(self.project_locators.FRACTION_OWNERSHIP_OFFER_BUTTON)
+    
+    def click_download_pdf_button(self):
+        """Кликнуть на кнопку Download PDF."""
+        self.browser.click(self.project_locators.DOWNLOAD_PDF_BUTTON)
 

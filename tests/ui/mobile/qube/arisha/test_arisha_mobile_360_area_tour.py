@@ -20,7 +20,7 @@ def test_arisha_mobile_360_area_tour(mobile_page):
         mobile_page.mobile_map.click_explore_project("arisha")
 
     with allure.step("Кликаем на кнопку 360 Area Tour"):
-        mobile_page.area_tour_360.click_360_button()
+        mobile_page.click_360_area_tour_button()
 
     with allure.step("Проверяем отображение модального окна 360 Area Tour"):
         mobile_page.area_tour_360.verify_modal_displayed()

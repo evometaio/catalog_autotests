@@ -6,6 +6,10 @@ from locators.mobile_locators import *
 from ..base_page import BasePage
 from .mobile_components.mobile_map_component import MobileMapComponent
 from .mobile_components.mobile_navigation_component import MobileNavigationComponent
+from pages.components.area_tour_360_component import AreaTour360Component
+from pages.components.apartment_widget_component import ApartmentWidgetComponent
+from pages.core.browser_actions import BrowserActions
+from pages.core.assertions import Assertions
 
 
 class MobilePage(BasePage):
@@ -44,6 +48,17 @@ class MobilePage(BasePage):
         # Инициализируем мобильные компоненты
         self.mobile_map = MobileMapComponent(page)
         self.mobile_navigation = MobileNavigationComponent(page)
+        
+        # Добавляем desktop компоненты которые работают и на мобилке
+        self.area_tour_360 = AreaTour360Component(page, self.project_locators)
+        # apartment_widget будет инициализирован после установки project_name
+        self.apartment_widget = None
+        
+        # Переопределяем browser и assertions если они не были созданы в BasePage
+        if not hasattr(self, 'browser'):
+            self.browser = BrowserActions(page)
+        if not hasattr(self, 'assertions'):
+            self.assertions = Assertions(page)
 
     # ==================== МОБИЛЬНЫЕ ЛОКАТОРЫ ====================
     # Все локаторы теперь импортируются из locators/mobile_locators.py
@@ -278,13 +293,18 @@ class MobilePage(BasePage):
         mobile_amenities_button = (
             '//button[@data-test-id="project-info-window-explore-amenities"]'
         )
-        self.click(mobile_amenities_button)
+        self.browser.click(mobile_amenities_button)
 
     def click_mobile_amenities_next_button(self):
         """Кликнуть на стрелку 'вправо' в слайдере amenities на мобильном."""
         next_button_selector = '.ant-modal-content span[aria-label="right"]'
         next_button = self.page.locator(next_button_selector)
         next_button.click()
+    
+    def click_mobile_download_pdf_button(self):
+        """Кликнуть на кнопку Download PDF на мобильном устройстве."""
+        with allure.step("Кликаем на Download PDF"):
+            self.browser.click(MOBILE_DOWNLOAD_PDF_BUTTON)
 
     def find_and_click_available_apartment(self):
         """Найти и кликнуть на первый доступный apartment."""

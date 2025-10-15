@@ -22,7 +22,8 @@ def test_elire_explore_amenities(elire_page):
         elire_page.browser.expect_visible(elire_page.project_locators.AMENITIES_MODAL)
 
     with allure.step("Проверяем наличие заголовка модального окна"):
-        elire_page.browser.expect_visible(elire_page.project_locators.AMENITIES_MODAL_TITLE)
+        # У Elire используем специфичный data-test-id вместо общего селектора h3
+        elire_page.browser.expect_visible('[data-test-id="public-zone-info-slider-title"]')
 
     with allure.step("Проверяем наличие кнопки закрытия модального окна"):
         elire_page.browser.expect_visible(

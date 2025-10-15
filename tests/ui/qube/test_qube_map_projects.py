@@ -16,7 +16,7 @@ class TestQubeMapProjects:
             map_page.open(route_type="map")
 
         with allure.step("Проверяем, что карта загружена"):
-            map_page.check_map_loaded()
+            map_page.map.wait_for_map_loaded()
 
     @allure.story("Навигация по всем проектам QUBE")
     @pytest.mark.regression
@@ -28,10 +28,16 @@ class TestQubeMapProjects:
             map_page.open(route_type="map")
 
         with allure.step(f"Кликаем по проекту {project_name.upper()}"):
-            map_page.click_project(project_name)
+            map_page.map.click_project(project_name)
 
         with allure.step(f"Проверяем информацию о проекте {project_name.upper()}"):
-            map_page.check_project_info_visible(project_name)
+            # Проверяем что появилось окно с информацией о проекте
+            from locators.map_locators import MapLocators
+            map_locators = MapLocators()
+            map_page.assertions.assert_element_visible(
+                map_locators.PROJECT_INFO_WINDOW,
+                f"Информация о проекте {project_name} не отображается"
+            )
 
     @allure.story("Полный цикл навигации по проектам QUBE")
     @pytest.mark.regression
@@ -43,14 +49,21 @@ class TestQubeMapProjects:
         """Тест полного цикла навигации: карта -> проект -> карта."""
         with allure.step(f"Открываем страницу карты"):
             map_page.open(route_type="map")
-            map_page.check_map_loaded()
+            map_page.map.wait_for_map_loaded()
 
         with allure.step(f"Переходим на страницу проекта {project_name}"):
-            map_page.click_project_on_map(project_name)
-            map_page.check_project_page_loaded(project_name)
+            map_page.map.navigate_to_project(project_name)
+            # Проверяем URL проекта
+            map_page.assertions.assert_url_contains(
+                f"/{project_name}/",
+                f"Не перешли на страницу проекта {project_name}"
+            )
 
         with allure.step(f"Возвращаемся на карту"):
-            map_page.return_to_map_from_project_and_verify_returned_to_map()
+            # Нажимаем кнопку возврата на карту (обычно это логотип или кнопка "Map")
+            map_page.browser.click('[data-test-id="nav-desktop-map"]')
+            map_page.page.wait_for_timeout(2000)
+            map_page.assertions.assert_url_contains("/map", "Не вернулись на карту")
 
     @allure.story("Тестовый кастомный POI")
     @pytest.mark.smoke
@@ -62,4 +75,4 @@ class TestQubeMapProjects:
             map_page.open(route_type="map")
 
         with allure.step("Кликаем на кастомный POI"):
-            map_page.click_on_custom_poi()
+            map_page.map.click_on_custom_poi()

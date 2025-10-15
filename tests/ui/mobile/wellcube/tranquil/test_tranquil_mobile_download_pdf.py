@@ -24,7 +24,7 @@ def test_tranquil_mobile_download_ownership_offer(mobile_page):
 
         # Ожидаем открытия новой вкладки с PDF
         with mobile_page.page.expect_popup(timeout=10000) as popup_info:
-            mobile_page.browser.click('[data-test-id="download-pdf-button"]')
+            mobile_page.click_mobile_download_pdf_button()
 
         new_tab = popup_info.value
         # Небольшая задержка для стабилизации в headless режиме

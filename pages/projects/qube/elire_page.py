@@ -82,3 +82,17 @@ class ElirePage(QubeBasePage):
         """Кликнуть на кнопку Services & Amenities."""
         with allure.step("Кликаем на Services & Amenities"):
             self.browser.click(self.project_locators.SERVICES_AMENITIES_BUTTON)
+    
+    def click_residences_button_and_request_viewing_form(self):
+        """Кликнуть на Residences и открыть форму Request Viewing."""
+        self.click_residences_button()
+        self.open_request_viewing_form()
+    
+    def fill_and_submit_request_viewing_form(self, fake):
+        """Заполнить и отправить форму Request Viewing."""
+        self.fill_request_viewing_form(fake)
+        self.submit_request_viewing_form()
+    
+    def is_success_message_displayed(self) -> bool:
+        """Проверить отображается ли сообщение об успехе."""
+        return self.browser.is_visible(self.project_locators.SUCCESS_MODAL)

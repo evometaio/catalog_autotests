@@ -28,9 +28,9 @@ class ApartmentWidgetComponent:
         self.project_name = project_name
         
         # Получаем локаторы виджета для конкретного проекта
-        project_class = getattr(project_locators, project_name.capitalize(), None)
-        if project_class and hasattr(project_class, 'ApartmentWidget'):
-            self.locators = project_class.ApartmentWidget()
+        # project_locators это КЛАСС локаторов (например, ArishaLocators)
+        if hasattr(project_locators, 'ApartmentWidget'):
+            self.locators = project_locators.ApartmentWidget
         else:
             # Fallback на базовые локаторы
             self.locators = None

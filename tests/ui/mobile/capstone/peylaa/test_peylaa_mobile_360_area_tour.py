@@ -19,7 +19,7 @@ def test_peylaa_mobile_360_area_tour(mobile_page):
         mobile_page.mobile_map.click_explore_project("peylaa")
 
     with allure.step("Кликаем на кнопку Area tour"):
-        mobile_page.area_tour_360.click_360_button()
+        mobile_page.click_360_area_tour_button()
         mobile_page.browser.wait_for_timeout(5000)
 
     with allure.step("Проверяем отображение модального окна 360 Area Tour"):

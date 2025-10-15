@@ -72,7 +72,7 @@ class TestArishaMobileBuildingNavigation:
             mobile_page.browser.wait_for_timeout(3000)
 
             # Кликаем на "View in 3D"
-            mobile_page.mobile_navigation.click_view_3d_button()
+            mobile_page.click_view_3d_button()
 
         with allure.step("Проверяем адаптивность на мобильном устройстве"):
             mobile_page.check_mobile_viewport_adaptation()

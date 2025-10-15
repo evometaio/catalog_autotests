@@ -20,7 +20,7 @@ def test_cubix_download_pdf_on_agent_page(cubix_page):
             cubix_page.map.navigate_to_project("cubix")
 
         with allure.step("Ищем и кликаем на первый доступный апартамент"):
-            cubix_page.navigation.find_and_click_available_apartment("cubix")
+            cubix_page.navigation.find_and_click_available_apartment()
 
         with allure.step("Кликаем на кнопку Sales Offer"):
             cubix_page.click_sales_offer_button()

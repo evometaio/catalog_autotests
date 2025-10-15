@@ -64,4 +64,44 @@ class QubeBasePage(BasePage):
     def click_sales_offer_button(self):
         """Кликнуть на кнопку Sales Offer (для агентских страниц, общее для всех Qube)."""
         self.browser.click(self.project_locators.SALES_OFFER_BUTTON)
+    
+    def navigate_to_building(self, building_number: int):
+        """Перейти к зданию."""
+        self.navigation.navigate_to_building(building_number)
+    
+    def navigate_to_floor(self, floor_number: int):
+        """Перейти к этажу."""
+        self.navigation.navigate_to_floor(floor_number)
+    
+    def download_pdf_and_verify(self):
+        """Скачать и проверить PDF."""
+        import os
+        import allure
+        
+        with self.page.expect_download() as download_info:
+            self.browser.click(self.project_locators.DOWNLOAD_PDF_BUTTON)
+        
+        download = download_info.value
+        file_path = os.path.join("downloads", download.suggested_filename)
+        os.makedirs("downloads", exist_ok=True)
+        download.save_as(file_path)
+        
+        allure.attach(
+            f"Файл сохранен: {file_path}",
+            name="Download Info",
+            attachment_type=allure.attachment_type.TEXT
+        )
+        
+        # Проверяем что файл существует
+        success = os.path.exists(file_path) and os.path.getsize(file_path) > 0
+        return success, file_path
+    
+    def cleanup_pdf_after_test(self):
+        """Удалить скачанные PDF файлы после теста."""
+        import os
+        import shutil
+        
+        if os.path.exists("downloads"):
+            shutil.rmtree("downloads")
+            print("Удалены скачанные файлы")
 

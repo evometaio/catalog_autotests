@@ -27,9 +27,9 @@ class ApartmentInfoComponent:
         self.project_name = project_name
         
         # Получаем локаторы информации для конкретного проекта
-        project_class = getattr(project_locators, project_name.capitalize(), None)
-        if project_class and hasattr(project_class, 'ApartmentInfo'):
-            self.locators = project_class.ApartmentInfo()
+        # project_locators это КЛАСС локаторов (например, ArishaLocators)
+        if hasattr(project_locators, 'ApartmentInfo'):
+            self.locators = project_locators.ApartmentInfo
         else:
             self.locators = None
 

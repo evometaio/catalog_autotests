@@ -29,9 +29,9 @@ class BaseLocators:
 
     # 360 Area Tour - доступен на всех страницах проектов
     AREA_TOUR_360_BUTTON = '[data-test-id="nav-rotation-view-controls-button"]'
-    AREA_TOUR_360_MODAL = "//div[contains(@class, 'modal')]"
-    AREA_TOUR_360_OVERLAY = "//div[contains(@class, 'overlay')]"
-    AREA_TOUR_360_CLOSE_BUTTON = "//button[contains(@class, 'close') and @aria-label='close']"
+    AREA_TOUR_360_MODAL = '[data-test-id="rotation-view-360-modal"]'
+    AREA_TOUR_360_OVERLAY = '[data-test-id="rotation-view-360-overlay"]'
+    AREA_TOUR_360_CLOSE_BUTTON = 'button[data-test-id="rotation-view-360-close-button"]'
     AREA_TOUR_360_CONTENT = "//img[contains(@class, '__react-image-turntable-img')] | //video | //canvas"
 
     # Агентские функции

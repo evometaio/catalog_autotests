@@ -62,9 +62,21 @@ class BasePage:
         
         Args:
             path: Дополнительный путь к базовому URL
-            route_type: Тип роута для проверки - "client", "agent" или "map"
+            route_type: Тип роута - "client", "agent" или "map". Если указан, изменяет URL соответственно.
         """
-        url = f"{self.base_url.rstrip('/')}/{path.lstrip('/')}" if path else self.base_url
+        # Определяем URL
+        url = self.base_url
+        
+        # Если указан route_type, изменяем URL
+        if route_type and route_type != "map":
+            # Для agent и client меняем /map на /agent/map или /client/map
+            if "/map" in url and route_type in ["agent", "client"]:
+                url = url.replace("/map", f"/{route_type}/map")
+        
+        # Добавляем дополнительный путь если есть
+        if path:
+            url = f"{url.rstrip('/')}/{path.lstrip('/')}"
+        
         self.page.goto(url)
         self.wait_for_page_load()
 
@@ -73,17 +85,13 @@ class BasePage:
         self.page.evaluate("document.documentElement.style.zoom = '1'")
 
         current_url = self.get_current_url()
-        assert url in current_url, \
-            f"Не удалось открыть страницу. Ожидалось: {url}, Получено: {current_url}"
-
+        
         # Проверяем тип роута, если указан
         if route_type:
-            if route_type == "client":
-                assert "client" in current_url, f"Не открылась клиентская страница. URL: {current_url}"
-            elif route_type == "agent":
-                assert "agent" in current_url, f"Не открылась агентская страница. URL: {current_url}"
-            elif route_type == "map":
-                assert "map" in current_url, f"Не открылась страница карты. URL: {current_url}"
+            self.assertions.assert_that(
+                route_type in current_url,
+                f"Не открылась страница {route_type}. URL: {current_url}"
+            )
 
     def get_current_url(self) -> str:
         """Получить текущий URL."""

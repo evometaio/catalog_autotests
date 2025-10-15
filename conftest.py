@@ -372,18 +372,37 @@ def mobile_page(page, request):
     
     if "capstone" in test_file or "peylaa" in test_file:
         project_type = "capstone"
-        locators = PeylaaLocators()
+        locators_class = PeylaaLocators
+        project_name = "peylaa"
     elif "wellcube" in test_file or "tranquil" in test_file:
         project_type = "wellcube"
-        locators = TranquilLocators()
+        locators_class = TranquilLocators
+        project_name = "tranquil"
+    elif "arisha" in test_file:
+        project_type = "qube"
+        locators_class = ArishaLocators
+        project_name = "arisha"
+    elif "elire" in test_file:
+        project_type = "qube"
+        locators_class = ElireLocators
+        project_name = "elire"
+    elif "cubix" in test_file:
+        project_type = "qube"
+        locators_class = CubixLocators
+        project_name = "cubix"
     else:
         project_type = "qube"
-        locators = BaseLocators()
+        locators_class = BaseLocators
+        project_name = "unknown"
     
     # Создаем страницу с правильным URL и локаторами
     mobile_page = MobilePage(page)
     mobile_page.base_url = _get_mobile_base_url("map", project_type)
-    mobile_page.project_locators = locators
+    mobile_page.project_locators = locators_class()
+    
+    # Инициализируем apartment_widget с правильным project_name и классом локаторов
+    from pages.components.apartment_widget_component import ApartmentWidgetComponent
+    mobile_page.apartment_widget = ApartmentWidgetComponent(page, locators_class, project_name)
     
     return mobile_page
 
@@ -416,32 +435,37 @@ def mobile_client_page(page):
 def arisha_page(page: Page):
     """Фикстура для страницы Arisha с новой архитектурой."""
     from pages.projects.qube.arisha_page import ArishaPage
-    return ArishaPage(page)
+    urls = _get_urls_by_environment()
+    return ArishaPage(page, urls["map"])
 
 
 @pytest.fixture
 def elire_page(page: Page):
     """Фикстура для страницы Elire с новой архитектурой."""
     from pages.projects.qube.elire_page import ElirePage
-    return ElirePage(page)
+    urls = _get_urls_by_environment()
+    return ElirePage(page, urls["map"])
 
 
 @pytest.fixture
 def cubix_page(page: Page):
     """Фикстура для страницы Cubix с новой архитектурой."""
     from pages.projects.qube.cubix_page import CubixPage
-    return CubixPage(page)
+    urls = _get_urls_by_environment()
+    return CubixPage(page, urls["map"])
 
 
 @pytest.fixture
 def peylaa_page(page: Page):
     """Фикстура для страницы Peylaa с новой архитектурой."""
     from pages.projects.capstone.peylaa_page import PeylaaPage
-    return PeylaaPage(page)
+    urls = _get_urls_by_environment()
+    return PeylaaPage(page, urls["capstone_map"])
 
 
 @pytest.fixture
 def tranquil_page(page: Page):
     """Фикстура для страницы Tranquil с новой архитектурой."""
     from pages.projects.wellcube.tranquil_page import TranquilPage
-    return TranquilPage(page)
+    urls = _get_urls_by_environment()
+    return TranquilPage(page, urls["wellcube_map"])
