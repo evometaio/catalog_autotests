@@ -7,19 +7,19 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-def test_peylaa_360_area_tour(capstone_project_page):
+def test_peylaa_360_area_tour(peylaa_page):
     """Тест 360 Area Tour для проекта Peylaa."""
     with allure.step("Открываем карту Capstone"):
-        capstone_project_page.open()
+        peylaa_page.open()
 
     with allure.step("Кликаем на проект Peylaa"):
-        capstone_project_page.click_project_on_map("peylaa")
+        peylaa_page.map.navigate_to_project("peylaa")
 
     with allure.step("Кликаем на кнопку Area tour"):
-        capstone_project_page.click_360_area_tour_button()
+        peylaa_page.area_tour_360.click_360_button()
 
     with allure.step("Проверяем отображение модального окна 360 Area Tour"):
-        capstone_project_page.verify_360_area_tour_modal_displayed()
+        peylaa_page.area_tour_360.verify_modal_displayed()
 
     with allure.step("Проверяем наличие контента в модальном окне"):
-        capstone_project_page.verify_360_area_tour_content()
+        peylaa_page.area_tour_360.verify_content()

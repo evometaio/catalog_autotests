@@ -44,7 +44,7 @@ mobile-test-dev-iphone-head: ## Запустить мобильные тесты
 
 mobile-prod-dev-pixel: ## Запустить мобильные тесты на Pixel 5 на DEV
 	@echo "$(GREEN)📱 Запуск мобильных тестов на Pixel 5 (DEV)...$(NC)"
-	MOBILE_DEVICE="pixel_5" TEST_ENVIRONMENT=prod HEADLESS=true $(PYTEST) tests/ui/mobile/ -sv --browser=chromium --alluredir=reports/allure-results || true
+	MOBILE_DEVICE="iphone_13" TEST_ENVIRONMENT=prod HEADLESS=true $(PYTEST) tests/ui/mobile/ -sv --browser=chromium --alluredir=reports/allure-results || true
 
 
 # Мобильная регрессия

@@ -10,28 +10,30 @@ class TestCubixMobileAgentRoute:
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.mobile
     @pytest.mark.regression
-    def test_cubix_mobile_download_pdf_on_catalog_page(self, mobile_agent_page):
+    def test_cubix_mobile_download_pdf_on_catalog_page(self, mobile_page):
         """Тест скачивания PDF на странице каталога Cubix на мобильном устройстве."""
 
         try:
             with allure.step("Открываем агентскую страницу"):
-                mobile_agent_page.open(route_type="agent")
+                mobile_page.open(route_type="agent")
 
             with allure.step("Кликаем на проект Cubix на карте"):
-                mobile_agent_page.click_mobile_project_on_map("cubix")
+                mobile_page.mobile_map.click_project("cubix")
 
             with allure.step("Кликаем на Explore Project"):
-                mobile_agent_page.click_mobile_explore_project_button("cubix")
+                mobile_page.mobile_map.click_explore_project("cubix")
 
             with allure.step("Ищем и кликаем на первый доступный апартамент"):
-                mobile_agent_page.find_and_click_available_apartment()
-                mobile_agent_page.page.wait_for_timeout(1000)
+                mobile_page.mobile_navigation.find_and_click_available_apartment()
+                mobile_page.page.wait_for_timeout(1000)
 
             with allure.step("Кликаем на кнопку PDF"):
-                pdf_clicked = mobile_agent_page.click_mobile_pdf_button()
-                mobile_agent_page.assert_that(pdf_clicked, "Кнопка PDF не была нажата")
+                pdf_clicked = mobile_page.click_mobile_pdf_button()
+                mobile_page.assertions.assert_that(
+                    pdf_clicked, "Кнопка PDF не была нажата"
+                )
 
         finally:
             # Проверяем адаптивность на мобильном устройстве
             with allure.step("Проверяем адаптивность на мобильном устройстве"):
-                mobile_agent_page.check_mobile_viewport_adaptation()
+                mobile_page.check_mobile_viewport_adaptation()

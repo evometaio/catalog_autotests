@@ -35,6 +35,9 @@ MOBILE_CUBIX_MENU_BUTTON = 'button:has-text("cubix")'
 
 # PDF функциональность
 MOBILE_PDF_BUTTON = 'span[aria-label="file-pdf"]'  # PDF кнопка через иконку
+MOBILE_DOWNLOAD_PDF_BUTTON = (
+    "//button[.//span[text()='Download PDF']]"  # Кнопка Download PDF через текст
+)
 
 # Explore Amenities для мобильных устройств
 MOBILE_EXPLORE_AMENITIES_BUTTON = (

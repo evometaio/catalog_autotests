@@ -8,22 +8,23 @@ import pytest
 @pytest.mark.regression
 @pytest.mark.ui
 @pytest.mark.flaky(reruns=2, reruns_delay=4)
-def test_arisha_360_area_tour(map_page):
-    """Тест 360 Area Tour для проекта Arisha."""
-    with allure.step("Открываем главную страницу"):
-        map_page.open(route_type="map")
+@pytest.mark.parametrize("route_type", ["map", "agent", "client"])
+def test_arisha_360_area_tour(arisha_page, route_type):
+    """Тест 360 Area Tour для проекта Arisha на всех роутах."""
+    with allure.step(f"Открываем страницу {route_type}"):
+        arisha_page.open(route_type=route_type)
 
     with allure.step("Кликаем на проект Arisha"):
-        map_page.click_project_on_map("arisha")
+        arisha_page.map.navigate_to_project("arisha")
 
     with allure.step("Кликаем на кнопку 360 Area Tour"):
-        map_page.click_360_area_tour_button()
+        arisha_page.area_tour_360.click_360_button()
 
     with allure.step("Проверяем отображение модального окна 360 Area Tour"):
-        map_page.verify_360_area_tour_modal_displayed()
+        arisha_page.area_tour_360.verify_modal_displayed()
 
     with allure.step("Проверяем наличие контента в модальном окне"):
-        map_page.verify_360_area_tour_content()
+        arisha_page.area_tour_360.verify_content()
 
     with allure.step("Закрываем модальное окно 360 Area Tour"):
-        map_page.close_360_area_tour_modal()
+        arisha_page.area_tour_360.close_modal()

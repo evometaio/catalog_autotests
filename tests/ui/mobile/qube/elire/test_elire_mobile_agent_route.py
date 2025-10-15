@@ -8,6 +8,6 @@ import pytest
 @pytest.mark.regression
 @pytest.mark.mobile
 @pytest.mark.skip(reason="Desktop тест не реализован")
-def test_elire_mobile_agent_route(mobile_agent_page):
+def test_elire_mobile_agent_route(mobile_page):
     """Тест агентского роута для проекта Elire на мобильном устройстве."""
     pass

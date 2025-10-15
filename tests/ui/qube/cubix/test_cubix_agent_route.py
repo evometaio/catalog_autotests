@@ -8,32 +8,32 @@ import pytest
 @pytest.mark.regression
 @pytest.mark.ui
 @pytest.mark.flaky(reruns=2, reruns_delay=3)
-def test_cubix_download_pdf_on_agent_page(agent_page):
+def test_cubix_download_pdf_on_agent_page(cubix_page):
     """Тест скачивания PDF на агентской странице проекта Cubix."""
     downloaded_file_path = ""
 
     try:
         with allure.step("Открываем агентскую страницу"):
-            agent_page.open(route_type="agent")
+            cubix_page.open(route_type="agent")
 
         with allure.step("Кликаем на проект Cubix"):
-            agent_page.click_project_on_map("cubix")
+            cubix_page.map.navigate_to_project("cubix")
 
         with allure.step("Ищем и кликаем на первый доступный апартамент"):
-            agent_page.project.find_and_click_available_apartment("cubix")
+            cubix_page.navigation.find_and_click_available_apartment()
 
         with allure.step("Кликаем на кнопку Sales Offer"):
-            agent_page.project.click_on_sales_offer_button()
+            cubix_page.click_sales_offer_button()
 
         with allure.step("Скачиваем PDF"):
-            success, file_path = agent_page.project.download_pdf_and_verify()
-            agent_page.assert_that(success, "PDF не был скачан")
+            success, file_path = cubix_page.download_pdf_and_verify()
+            cubix_page.assertions.assert_that(success, "PDF не был скачан")
             downloaded_file_path = file_path
 
         with allure.step("Проверяем что файл является валидным PDF"):
             with open(file_path, "rb") as f:
                 content = f.read(10)
-                agent_page.assert_that(
+                cubix_page.assertions.assert_that(
                     content.startswith(b"%PDF"),
                     f"Файл не является валидным PDF, заголовок: {content[:10]}",
                 )
@@ -42,4 +42,4 @@ def test_cubix_download_pdf_on_agent_page(agent_page):
         # Очищаем скачанный файл в любом случае (успех или ошибка)
         if downloaded_file_path:
             with allure.step("Удаляем скачанный PDF файл"):
-                agent_page.project.cleanup_pdf_after_test()
+                cubix_page.cleanup_pdf_after_test()
