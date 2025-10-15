@@ -9,12 +9,12 @@ from playwright.sync_api import Page
 # Загружаем переменные из .env файла
 load_dotenv()
 
-from locators.qube.arisha_locators import ArishaLocators
-from locators.qube.elire_locators import ElireLocators
-from locators.qube.cubix_locators import CubixLocators
-from locators.capstone.peylaa_locators import PeylaaLocators
-from locators.wellcube.tranquil_locators import TranquilLocators
 from locators.base_locators import BaseLocators
+from locators.capstone.peylaa_locators import PeylaaLocators
+from locators.qube.arisha_locators import ArishaLocators
+from locators.qube.cubix_locators import CubixLocators
+from locators.qube.elire_locators import ElireLocators
+from locators.wellcube.tranquil_locators import TranquilLocators
 from pages.base_page import BasePage
 
 # ==================== МОБИЛЬНЫЕ УСТРОЙСТВА ====================
@@ -250,8 +250,6 @@ def client_page(page: Page):
     return BasePage(page, url, BaseLocators)
 
 
-
-
 # Хук для обработки результатов тестов
 def pytest_runtest_makereport(item, call):
     """Обработчик результатов выполнения тестов."""
@@ -323,17 +321,17 @@ def get_available_devices() -> list:
 def _get_mobile_base_url(route_type: str = "map", project_type: str = "qube") -> str:
     """
     Вспомогательная функция для получения base_url для мобильных фикстур.
-    
+
     Args:
         route_type: Тип роута ("map", "agent", "client")
         project_type: Тип проекта ("qube", "capstone", "wellcube")
-    
+
     Returns:
         str: Base URL для указанного окружения
     """
     environment = os.getenv("TEST_ENVIRONMENT", "dev")
     urls = _get_urls_by_environment()
-    
+
     if project_type == "capstone":
         return urls["capstone_map"]
     elif project_type == "wellcube":
@@ -369,7 +367,7 @@ def mobile_page(page, request):
 
     # Определяем проект из имени теста
     test_file = request.fspath.basename
-    
+
     if "capstone" in test_file or "peylaa" in test_file:
         project_type = "capstone"
         locators_class = PeylaaLocators
@@ -394,16 +392,19 @@ def mobile_page(page, request):
         project_type = "qube"
         locators_class = BaseLocators
         project_name = "unknown"
-    
+
     # Создаем страницу с правильным URL и локаторами
     mobile_page = MobilePage(page)
     mobile_page.base_url = _get_mobile_base_url("map", project_type)
     mobile_page.project_locators = locators_class()
-    
+
     # Инициализируем apartment_widget с правильным project_name и классом локаторов
     from pages.components.apartment_widget_component import ApartmentWidgetComponent
-    mobile_page.apartment_widget = ApartmentWidgetComponent(page, locators_class, project_name)
-    
+
+    mobile_page.apartment_widget = ApartmentWidgetComponent(
+        page, locators_class, project_name
+    )
+
     return mobile_page
 
 
@@ -431,10 +432,12 @@ def mobile_client_page(page):
 
 # ==================== НОВЫЕ ФИКСТУРЫ С УЛУЧШЕННОЙ АРХИТЕКТУРОЙ ====================
 
+
 @pytest.fixture
 def arisha_page(page: Page):
     """Фикстура для страницы Arisha с новой архитектурой."""
     from pages.projects.qube.arisha_page import ArishaPage
+
     urls = _get_urls_by_environment()
     return ArishaPage(page, urls["map"])
 
@@ -443,6 +446,7 @@ def arisha_page(page: Page):
 def elire_page(page: Page):
     """Фикстура для страницы Elire с новой архитектурой."""
     from pages.projects.qube.elire_page import ElirePage
+
     urls = _get_urls_by_environment()
     return ElirePage(page, urls["map"])
 
@@ -451,6 +455,7 @@ def elire_page(page: Page):
 def cubix_page(page: Page):
     """Фикстура для страницы Cubix с новой архитектурой."""
     from pages.projects.qube.cubix_page import CubixPage
+
     urls = _get_urls_by_environment()
     return CubixPage(page, urls["map"])
 
@@ -459,6 +464,7 @@ def cubix_page(page: Page):
 def peylaa_page(page: Page):
     """Фикстура для страницы Peylaa с новой архитектурой."""
     from pages.projects.capstone.peylaa_page import PeylaaPage
+
     urls = _get_urls_by_environment()
     return PeylaaPage(page, urls["capstone_map"])
 
@@ -467,5 +473,6 @@ def peylaa_page(page: Page):
 def tranquil_page(page: Page):
     """Фикстура для страницы Tranquil с новой архитектурой."""
     from pages.projects.wellcube.tranquil_page import TranquilPage
+
     urls = _get_urls_by_environment()
     return TranquilPage(page, urls["wellcube_map"])

@@ -9,7 +9,7 @@ from locators.map_locators import MapLocators
 class MapComponent:
     """
     Компонент карты.
-    
+
     Ответственность:
     - Загрузка карты
     - Клик по проектам на карте
@@ -21,7 +21,7 @@ class MapComponent:
     def __init__(self, page: Page, project_locators):
         """
         Инициализация компонента карты.
-        
+
         Args:
             page: Playwright Page объект
             project_locators: Локаторы проекта
@@ -38,16 +38,16 @@ class MapComponent:
                 self.page.wait_for_selector(
                     self.locators.MAP_CONTAINER,
                     state="visible",
-                    timeout=self.MAP_LOAD_TIMEOUT
+                    timeout=self.MAP_LOAD_TIMEOUT,
                 )
-                
+
                 # Ждем появления проектов
                 self.page.wait_for_selector(
                     self.locators.ALL_PROJECTS_SELECTOR,
                     state="visible",
-                    timeout=self.MAP_LOAD_TIMEOUT
+                    timeout=self.MAP_LOAD_TIMEOUT,
                 )
-                
+
                 # Пауза для стабилизации
                 self.page.wait_for_timeout(2000)
             except Exception as e:
@@ -62,20 +62,16 @@ class MapComponent:
     def click_project(self, project_name: str):
         """
         Кликнуть по проекту на карте.
-        
+
         Args:
             project_name: Название проекта (arisha, elire, etc.)
         """
         with allure.step(f"Кликаем на проект {project_name.upper()}"):
             selector = self._get_project_selector(project_name)
-            
+
             # Ждем появления проекта
-            self.page.wait_for_selector(
-                selector, 
-                state="visible", 
-                timeout=10000
-            )
-            
+            self.page.wait_for_selector(selector, state="visible", timeout=10000)
+
             # Для изображений на карте используем force_click
             if project_name.lower() == "peylaa" and "img" in selector:
                 element = self.page.locator(selector)
@@ -87,34 +83,32 @@ class MapComponent:
     def click_explore_project(self, project_name: str):
         """
         Кликнуть на кнопку Explore Project.
-        
+
         Args:
             project_name: Название проекта
         """
         with allure.step(f"Кликаем на Explore Project для {project_name.upper()}"):
             # Ждем информационного окна
             self.page.wait_for_selector(
-                self.locators.PROJECT_INFO_WINDOW,
-                state="visible",
-                timeout=10000
+                self.locators.PROJECT_INFO_WINDOW, state="visible", timeout=10000
             )
-            
+
             # Получаем селектор кнопки
             button_selector = self._get_explore_button_selector(project_name)
-            
+
             # Ждем появления кнопки и проверяем её готовность
             button = self.page.locator(button_selector)
             button.wait_for(state="visible", timeout=10000)
-            
-            assert button.is_enabled(), \
-                f"Кнопка Explore Project заблокирована для {project_name} - баг в UI"
-            
+
+            assert (
+                button.is_enabled()
+            ), f"Кнопка Explore Project заблокирована для {project_name} - баг в UI"
+
             button.click()
-            
+
             # Ждем перехода на страницу проекта
             self.page.wait_for_url(
-                self.project_locators.PROJECT_URL_PATTERN,
-                timeout=10000
+                self.project_locators.PROJECT_URL_PATTERN, timeout=10000
             )
 
     def click_on_custom_poi(self):
@@ -124,7 +118,7 @@ class MapComponent:
     def navigate_to_project(self, project_name: str):
         """
         Полная навигация: загрузка карты -> клик на проект -> Explore.
-        
+
         Args:
             project_name: Название проекта
         """
@@ -136,19 +130,20 @@ class MapComponent:
     def check_project_info_visible(self, project_name: str):
         """
         Проверить видимость информационного окна проекта.
-        
+
         Args:
             project_name: Название проекта
         """
         element = self.page.locator(self.locators.PROJECT_INFO_WINDOW)
         element.wait_for(state="visible", timeout=10000)
-        assert element.is_visible(), \
-            f"Информационное окно проекта {project_name} не отображается"
+        assert (
+            element.is_visible()
+        ), f"Информационное окно проекта {project_name} не отображается"
 
     def check_project_page_loaded(self, project_name: str):
         """
         Проверить что страница проекта загружена.
-        
+
         Args:
             project_name: Название проекта
         """
@@ -165,8 +160,9 @@ class MapComponent:
         # Проверяем URL
         current_url = self.page.url
         self.page.wait_for_load_state("domcontentloaded")
-        assert f"/project/{project.PROJECT_NAME}" in current_url, \
-            f"Не на странице проекта {project.PROJECT_DISPLAY_NAME}. Текущий URL: {current_url}"
+        assert (
+            f"/project/{project.PROJECT_NAME}" in current_url
+        ), f"Не на странице проекта {project.PROJECT_DISPLAY_NAME}. Текущий URL: {current_url}"
 
     def return_to_map_from_project(self):
         """Вернуться на карту из проекта."""
@@ -176,10 +172,10 @@ class MapComponent:
     def _get_project_selector(self, project_name: str) -> str:
         """Получить селектор проекта."""
         import os
-        
+
         project_name_lower = project_name.lower()
         device = os.getenv("MOBILE_DEVICE", "desktop")
-        
+
         # Мапинг проектов на селекторы
         if device != "desktop":
             # Мобильные селекторы
@@ -199,18 +195,21 @@ class MapComponent:
                 "tranquil": 'div[aria-label="Tranquil Wellness Tower"]',
                 "peylaa": 'div[aria-label="Peylaa"]',
             }
-        
-        return selectors.get(project_name_lower, f'div[aria-label*="{project_name.upper()}"]')
+
+        return selectors.get(
+            project_name_lower, f'div[aria-label*="{project_name.upper()}"]'
+        )
 
     def _get_explore_button_selector(self, project_name: str) -> str:
         """Получить селектор кнопки Explore."""
         import os
-        
+
         project_name_lower = project_name.lower()
         device = os.getenv("MOBILE_DEVICE", "desktop")
-        
+
         if device != "desktop":
-            return f'[data-test-id="map-project-point-button-mobile-{project_name_lower}"]'
+            return (
+                f'[data-test-id="map-project-point-button-mobile-{project_name_lower}"]'
+            )
         else:
             return f'[data-test-id="map-project-point-button-desktop-{project_name_lower}"]'
-

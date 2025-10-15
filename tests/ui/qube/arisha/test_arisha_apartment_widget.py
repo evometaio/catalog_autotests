@@ -23,7 +23,9 @@ def test_arisha_apartment_widget_full_functionality(arisha_page):
 
     with allure.step("Кликаем на кнопку All units"):
         arisha_page.click_all_units_button()
-        arisha_page.assertions.assert_url_contains("catalog_2d", "Не перешли на страницу каталога")
+        arisha_page.assertions.assert_url_contains(
+            "catalog_2d", "Не перешли на страницу каталога"
+        )
 
     with allure.step("Ищем и кликаем на первый доступный апартамент"):
         arisha_page.navigation.find_and_click_available_apartment()
@@ -112,7 +114,9 @@ def test_arisha_apartment_information(arisha_page):
 
     with allure.step("Кликаем на кнопку All units"):
         arisha_page.click_all_units_button()
-        arisha_page.assertions.assert_url_contains("catalog_2d", "Не перешли на страницу каталога")
+        arisha_page.assertions.assert_url_contains(
+            "catalog_2d", "Не перешли на страницу каталога"
+        )
 
     with allure.step("Ищем и кликаем на первый доступный апартамент"):
         arisha_page.navigation.find_and_click_available_apartment()
@@ -123,15 +127,21 @@ def test_arisha_apartment_information(arisha_page):
 
     with allure.step("Проверяем тип апартамента"):
         type_visible = arisha_page.apartment_info.check_apartment_type()
-        arisha_page.assertions.assert_that(type_visible, "Тип апартамента не отображается")
+        arisha_page.assertions.assert_that(
+            type_visible, "Тип апартамента не отображается"
+        )
 
     with allure.step("Проверяем информацию о здании"):
         building_visible = arisha_page.apartment_info.check_building_info()
-        arisha_page.assertions.assert_that(building_visible, "Информация о здании не найдена")
+        arisha_page.assertions.assert_that(
+            building_visible, "Информация о здании не найдена"
+        )
 
     with allure.step("Проверяем информацию о площади"):
         area_visible = arisha_page.apartment_info.check_area_info()
-        arisha_page.assertions.assert_that(area_visible, "Информация о площади не найдена")
+        arisha_page.assertions.assert_that(
+            area_visible, "Информация о площади не найдена"
+        )
 
     with allure.step("Проверяем информацию о виде"):
         view_visible = arisha_page.apartment_info.check_view_info()

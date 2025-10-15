@@ -33,10 +33,11 @@ class TestQubeMapProjects:
         with allure.step(f"Проверяем информацию о проекте {project_name.upper()}"):
             # Проверяем что появилось окно с информацией о проекте
             from locators.map_locators import MapLocators
+
             map_locators = MapLocators()
             map_page.assertions.assert_element_visible(
                 map_locators.PROJECT_INFO_WINDOW,
-                f"Информация о проекте {project_name} не отображается"
+                f"Информация о проекте {project_name} не отображается",
             )
 
     @allure.story("Полный цикл навигации по проектам QUBE")
@@ -55,8 +56,7 @@ class TestQubeMapProjects:
             map_page.map.navigate_to_project(project_name)
             # Проверяем URL проекта
             map_page.assertions.assert_url_contains(
-                f"/{project_name}/",
-                f"Не перешли на страницу проекта {project_name}"
+                f"/{project_name}/", f"Не перешли на страницу проекта {project_name}"
             )
 
         with allure.step(f"Возвращаемся на карту"):

@@ -9,8 +9,7 @@ class PeylaaLocators(BaseLocators):
     # Основная информация о проекте
     PROJECT_NAME = "peylaa"
     PROJECT_DISPLAY_NAME = "Peylaa"
-    
+
     # MAP локаторы для разных окружений
     MAP_LOCATOR_DEV = 'div[title="Peylaa"][aria-label="Peylaa"]'
     MAP_LOCATOR_PROD = 'div[aria-label*="Peylaa"]'
-

@@ -21,7 +21,9 @@ def test_elire_request_viewing_form(elire_page, fake):
 
     with allure.step("Открываем клиентскую страницу проекта Elire"):
         elire_page.open(route_type="client")
-        elire_page.assertions.assert_url_contains("client", "Не открылась клиентская страница")
+        elire_page.assertions.assert_url_contains(
+            "client", "Не открылась клиентская страница"
+        )
 
     with allure.step("Кликаем на проект Elire"):
         elire_page.map.navigate_to_project("elire")

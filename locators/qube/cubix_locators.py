@@ -10,4 +10,3 @@ class CubixLocators(BaseLocators):
     PROJECT_NAME = "cubix"
     PROJECT_DISPLAY_NAME = "Cubix"
     MAP_LOCATOR = 'div[aria-label*="CUBIX RESIDENCE"], div[aria-label*="Cubix"], div[aria-label*="CUBIX"]'
-

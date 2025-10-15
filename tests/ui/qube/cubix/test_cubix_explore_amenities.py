@@ -16,7 +16,9 @@ def test_cubix_explore_amenities(cubix_page):
         cubix_page.map.navigate_to_project("cubix")
 
     with allure.step("Проверяем наличие кнопки Explore Amenities"):
-        cubix_page.browser.expect_visible(cubix_page.project_locators.EXPLORE_AMENITIES_BUTTON)
+        cubix_page.browser.expect_visible(
+            cubix_page.project_locators.EXPLORE_AMENITIES_BUTTON
+        )
 
     with allure.step("Кликаем на кнопку Explore Amenities"):
         cubix_page.amenities.click_explore_button()

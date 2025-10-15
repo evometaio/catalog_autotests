@@ -14,31 +14,36 @@ class PageFactory:
     def get_page_by_project(page: Page, project_name: str):
         """
         Получить page object для конкретного проекта.
-        
+
         Args:
             page: Playwright Page объект
             project_name: Название проекта (arisha, elire, cubix, peylaa, tranquil)
-            
+
         Returns:
             Соответствующий page object проекта
         """
         project_name_lower = project_name.lower()
-        
+
         # Импортируем нужный класс динамически
         if project_name_lower == "arisha":
             from pages.projects.qube.arisha_page import ArishaPage
+
             return ArishaPage(page)
         elif project_name_lower == "elire":
             from pages.projects.qube.elire_page import ElirePage
+
             return ElirePage(page)
         elif project_name_lower == "cubix":
             from pages.projects.qube.cubix_page import CubixPage
+
             return CubixPage(page)
         elif project_name_lower == "peylaa":
             from pages.projects.capstone.peylaa_page import PeylaaPage
+
             return PeylaaPage(page)
         elif project_name_lower == "tranquil":
             from pages.projects.wellcube.tranquil_page import TranquilPage
+
             return TranquilPage(page)
         else:
             raise ValueError(f"Неизвестный проект: {project_name}")
@@ -47,23 +52,25 @@ class PageFactory:
     def get_page_by_developer(page: Page, developer_type: str):
         """
         Получить базовую page для типа застройщика.
-        
+
         Args:
             page: Playwright Page объект
             developer_type: Тип застройщика ('qube', 'wellcube', 'capstone')
-            
+
         Returns:
             BasePage с правильными локаторами
         """
         urls = _get_urls_by_environment()
-        
+
         if developer_type == "qube":
             return BasePage(page, urls["map"], BaseLocators)
         elif developer_type == "capstone":
             from pages.projects.capstone.peylaa_page import PeylaaPage
+
             return PeylaaPage(page)
         elif developer_type == "wellcube":
             from pages.projects.wellcube.tranquil_page import TranquilPage
+
             return TranquilPage(page)
         else:
             raise ValueError(f"Неизвестный тип застройщика: {developer_type}")

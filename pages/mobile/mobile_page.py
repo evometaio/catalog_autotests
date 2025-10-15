@@ -2,14 +2,14 @@ import allure
 from playwright.sync_api import Locator, Page
 
 from locators.mobile_locators import *
+from pages.components.apartment_widget_component import ApartmentWidgetComponent
+from pages.components.area_tour_360_component import AreaTour360Component
+from pages.core.assertions import Assertions
+from pages.core.browser_actions import BrowserActions
 
 from ..base_page import BasePage
 from .mobile_components.mobile_map_component import MobileMapComponent
 from .mobile_components.mobile_navigation_component import MobileNavigationComponent
-from pages.components.area_tour_360_component import AreaTour360Component
-from pages.components.apartment_widget_component import ApartmentWidgetComponent
-from pages.core.browser_actions import BrowserActions
-from pages.core.assertions import Assertions
 
 
 class MobilePage(BasePage):
@@ -44,20 +44,20 @@ class MobilePage(BasePage):
         # Инициализируем BasePage с правильным URL
         super().__init__(page, base_url)
         self.device_type = "mobile"
-        
+
         # Инициализируем мобильные компоненты
         self.mobile_map = MobileMapComponent(page)
         self.mobile_navigation = MobileNavigationComponent(page)
-        
+
         # Добавляем desktop компоненты которые работают и на мобилке
         self.area_tour_360 = AreaTour360Component(page, self.project_locators)
         # apartment_widget будет инициализирован после установки project_name
         self.apartment_widget = None
-        
+
         # Переопределяем browser и assertions если они не были созданы в BasePage
-        if not hasattr(self, 'browser'):
+        if not hasattr(self, "browser"):
             self.browser = BrowserActions(page)
-        if not hasattr(self, 'assertions'):
+        if not hasattr(self, "assertions"):
             self.assertions = Assertions(page)
 
     # ==================== МОБИЛЬНЫЕ ЛОКАТОРЫ ====================
@@ -172,7 +172,7 @@ class MobilePage(BasePage):
             modal.wait_for(state="hidden", timeout=5000)
 
     # ==================== МЕТОДЫ КАРТЫ - ДЕЛЕГАТЫ К MOBILE_MAP ====================
-    
+
     def get_mobile_project_selector(self, project_name: str) -> str:
         """Получить мобильный селектор для проекта."""
         return self.mobile_map.get_mobile_project_selector(project_name)
@@ -300,7 +300,7 @@ class MobilePage(BasePage):
         next_button_selector = '.ant-modal-content span[aria-label="right"]'
         next_button = self.page.locator(next_button_selector)
         next_button.click()
-    
+
     def click_mobile_download_pdf_button(self):
         """Кликнуть на кнопку Download PDF на мобильном устройстве."""
         with allure.step("Кликаем на Download PDF"):
@@ -454,7 +454,7 @@ class MobilePage(BasePage):
     # ==================== МЕТОДЫ НАВИГАЦИИ ПО ЗДАНИЯМ И ЭТАЖАМ ====================
 
     # ==================== МЕТОДЫ НАВИГАЦИИ - ДЕЛЕГАТЫ К MOBILE_NAVIGATION ====================
-    
+
     def close_zoom_modal(self) -> bool:
         """Закрывает модальное окно 'Zoom and drag screen'."""
         return self.mobile_navigation.close_zoom_modal()
@@ -485,8 +485,10 @@ class MobilePage(BasePage):
 
     def click_view_3d_button(self) -> bool:
         """Кликает на кнопку 'View in 3D'."""
-        view_3d_button = self.page.locator('[data-test-id="info-content-primary-button"]')
-        
+        view_3d_button = self.page.locator(
+            '[data-test-id="info-content-primary-button"]'
+        )
+
         if view_3d_button.count() > 1:
             view_3d_button.nth(1).click(force=True)
             self.page.wait_for_timeout(3000)

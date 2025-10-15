@@ -35,7 +35,9 @@ class TestArishaMobileBuildingNavigation:
 
             # Кликаем на здание
             building_clicked = mobile_page.mobile_navigation.click_building("1")
-            mobile_page.assertions.assert_that(building_clicked, "Не удалось кликнуть по зданию 1")
+            mobile_page.assertions.assert_that(
+                building_clicked, "Не удалось кликнуть по зданию 1"
+            )
 
             # Кликаем на кнопку "View 1"
             view_clicked = mobile_page.mobile_navigation.click_view_building_button()
@@ -48,7 +50,9 @@ class TestArishaMobileBuildingNavigation:
 
             # Кликаем на этаж
             floor_clicked = mobile_page.mobile_navigation.click_floor("1")
-            mobile_page.assertions.assert_that(floor_clicked, "Не удалось кликнуть по этажу 1")
+            mobile_page.assertions.assert_that(
+                floor_clicked, "Не удалось кликнуть по этажу 1"
+            )
 
             # Кликаем на кнопку "View Floor 1"
             floor_view_clicked = mobile_page.mobile_navigation.click_view_floor_button()

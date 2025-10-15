@@ -20,7 +20,9 @@ def test_arisha_explore_amenities(arisha_page):
         arisha_page.click_all_units_button()
 
     with allure.step("Проверяем наличие кнопки Explore Amenities"):
-        arisha_page.browser.expect_visible(arisha_page.project_locators.EXPLORE_AMENITIES_BUTTON)
+        arisha_page.browser.expect_visible(
+            arisha_page.project_locators.EXPLORE_AMENITIES_BUTTON
+        )
 
     with allure.step("Кликаем на кнопку Explore Amenities"):
         arisha_page.amenities.click_explore_button()

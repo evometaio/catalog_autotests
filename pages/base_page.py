@@ -2,18 +2,18 @@
 
 from playwright.sync_api import Page
 
-from locators.map_locators import MapLocators
 from locators.base_locators import BaseLocators
-from pages.core.browser_actions import BrowserActions
-from pages.core.assertions import Assertions
-from pages.components.map_component import MapComponent
+from locators.map_locators import MapLocators
 from pages.components.amenities_component import AmenitiesComponent
+from pages.components.map_component import MapComponent
+from pages.core.assertions import Assertions
+from pages.core.browser_actions import BrowserActions
 
 
 class BasePage:
     """
     Базовый класс для всех страниц.
-    
+
     Ответственность:
     - Инициализация Page объекта
     - Композиция базовых компонентов
@@ -29,7 +29,7 @@ class BasePage:
     def __init__(self, page: Page, base_url: str = None, locators_class: type = None):
         """
         Инициализация базовой страницы.
-        
+
         Args:
             page: Playwright Page объект
             base_url: Базовый URL приложения
@@ -37,7 +37,7 @@ class BasePage:
         """
         self.page = page
         self.base_url = base_url
-        
+
         # Локаторы
         self.map_locators = MapLocators()
         if locators_class:
@@ -47,7 +47,9 @@ class BasePage:
 
         # URL-ы для навигации (если base_url содержит /map)
         if base_url and "/map" in base_url:
-            self.project_url_template = base_url.replace("/map", "/project/{project}/area")
+            self.project_url_template = base_url.replace(
+                "/map", "/project/{project}/area"
+            )
             self.map_url = base_url
 
         # Композиция компонентов
@@ -59,24 +61,24 @@ class BasePage:
     def open(self, path: str = "", route_type: str = None):
         """
         Открыть страницу.
-        
+
         Args:
             path: Дополнительный путь к базовому URL
             route_type: Тип роута - "client", "agent" или "map". Если указан, изменяет URL соответственно.
         """
         # Определяем URL
         url = self.base_url
-        
+
         # Если указан route_type, изменяем URL
         if route_type and route_type != "map":
             # Для agent и client меняем /map на /agent/map или /client/map
             if "/map" in url and route_type in ["agent", "client"]:
                 url = url.replace("/map", f"/{route_type}/map")
-        
+
         # Добавляем дополнительный путь если есть
         if path:
             url = f"{url.rstrip('/')}/{path.lstrip('/')}"
-        
+
         self.page.goto(url)
         self.wait_for_page_load()
 
@@ -85,12 +87,12 @@ class BasePage:
         self.page.evaluate("document.documentElement.style.zoom = '1'")
 
         current_url = self.get_current_url()
-        
+
         # Проверяем тип роута, если указан
         if route_type:
             self.assertions.assert_that(
                 route_type in current_url,
-                f"Не открылась страница {route_type}. URL: {current_url}"
+                f"Не открылась страница {route_type}. URL: {current_url}",
             )
 
     def get_current_url(self) -> str:
@@ -104,11 +106,11 @@ class BasePage:
     def get_project_url(self, project_name: str, page_type: str = "catalog_2d"):
         """
         Получить URL для конкретного проекта и типа страницы.
-        
+
         Args:
             project_name: Название проекта
             page_type: Тип страницы (catalog_2d, area, map)
-            
+
         Returns:
             str: URL для проекта
         """
@@ -157,13 +159,23 @@ class BasePage:
                 self.browser.click("button[data-test-id='modal-form-primary-button']")
 
                 try:
-                    self.page.wait_for_selector(".ant-modal-content", state="hidden", timeout=15000)
+                    self.page.wait_for_selector(
+                        ".ant-modal-content", state="hidden", timeout=15000
+                    )
                 except:
-                    error_elements = self.page.locator(".ant-message-error, .ant-form-item-explain-error")
+                    error_elements = self.page.locator(
+                        ".ant-message-error, .ant-form-item-explain-error"
+                    )
                     if error_elements.count() > 0:
-                        raise AssertionError(f"Ошибка авторизации: {error_elements.text_content()}")
+                        raise AssertionError(
+                            f"Ошибка авторизации: {error_elements.text_content()}"
+                        )
                     else:
                         self.browser.click(".ant-modal-close")
-                        self.page.wait_for_selector(".ant-modal-content", state="hidden", timeout=5000)
+                        self.page.wait_for_selector(
+                            ".ant-modal-content", state="hidden", timeout=5000
+                        )
             else:
-                raise AssertionError("Не заданы переменные окружения USERNAME_ELIRE и PASSWORD_ELIRE")
+                raise AssertionError(
+                    "Не заданы переменные окружения USERNAME_ELIRE и PASSWORD_ELIRE"
+                )

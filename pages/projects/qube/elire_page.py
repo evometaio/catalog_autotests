@@ -3,21 +3,22 @@
 import allure
 from playwright.sync_api import Page
 
-from .qube_base_page import QubeBasePage
 from locators.qube.elire_locators import ElireLocators
+
+from .qube_base_page import QubeBasePage
 
 
 class ElirePage(QubeBasePage):
     """
     Страница проекта Elire.
-    
+
     Наследует от QubeBasePage и добавляет специфичную функциональность Elire.
     """
 
     def __init__(self, page: Page, url: str = None):
         """
         Инициализация Elire страницы.
-        
+
         Args:
             page: Playwright Page объект
             url: URL страницы
@@ -40,7 +41,7 @@ class ElirePage(QubeBasePage):
     def fill_request_viewing_form(self, fake):
         """
         Заполнить форму Request Viewing.
-        
+
         Args:
             fake: Faker объект для генерации данных
         """
@@ -61,17 +62,19 @@ class ElirePage(QubeBasePage):
         with allure.step("Проверяем сообщение об успехе"):
             self.assertions.assert_element_visible(
                 self.project_locators.SUCCESS_MODAL,
-                "Модальное окно успеха не отображается"
+                "Модальное окно успеха не отображается",
             )
-            
+
             # Проверяем текст
             modal = self.page.locator(self.project_locators.SUCCESS_MODAL)
             modal_text = modal.text_content()
-            
-            assert "Thank you!" in modal_text, \
-                "Текст 'Thank you!' не найден в модальном окне"
-            assert "Our specialist will contact you shortly." in modal_text, \
-                "Текст подтверждения не найден в модальном окне"
+
+            assert (
+                "Thank you!" in modal_text
+            ), "Текст 'Thank you!' не найден в модальном окне"
+            assert (
+                "Our specialist will contact you shortly." in modal_text
+            ), "Текст подтверждения не найден в модальном окне"
 
     def click_start_3d_expansion_button(self):
         """Кликнуть на кнопку Start 3D Expansion."""
@@ -82,17 +85,17 @@ class ElirePage(QubeBasePage):
         """Кликнуть на кнопку Services & Amenities."""
         with allure.step("Кликаем на Services & Amenities"):
             self.browser.click(self.project_locators.SERVICES_AMENITIES_BUTTON)
-    
+
     def click_residences_button_and_request_viewing_form(self):
         """Кликнуть на Residences и открыть форму Request Viewing."""
         self.click_residences_button()
         self.open_request_viewing_form()
-    
+
     def fill_and_submit_request_viewing_form(self, fake):
         """Заполнить и отправить форму Request Viewing."""
         self.fill_request_viewing_form(fake)
         self.submit_request_viewing_form()
-    
+
     def is_success_message_displayed(self) -> bool:
         """Проверить отображается ли сообщение об успехе."""
         return self.browser.is_visible(self.project_locators.SUCCESS_MODAL)

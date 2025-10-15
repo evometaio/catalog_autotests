@@ -37,23 +37,37 @@ class ArishaLocators(BaseLocators):
         INFO_CONTAINER = "._info_1k7zz_45, .ant-card"
 
         # Заголовок с номером апартамента
-        APARTMENT_NUMBER = '.ant-card:has-text("APT. 104"), ._info_1k7zz_45:has-text("APT. 104")'
+        APARTMENT_NUMBER = (
+            '.ant-card:has-text("APT. 104"), ._info_1k7zz_45:has-text("APT. 104")'
+        )
 
         # Информация о типе
         TYPE_INFO = '.ant-card:has-text("Type:"), ._info_1k7zz_45:has-text("Type:")'
-        TYPE_VALUE = '.ant-card:has-text("2 Bedroom"), ._info_1k7zz_45:has-text("2 Bedroom")'
+        TYPE_VALUE = (
+            '.ant-card:has-text("2 Bedroom"), ._info_1k7zz_45:has-text("2 Bedroom")'
+        )
 
         # Информация о этаже
         FLOOR_INFO = '.ant-card:has-text("Floor:"), ._info_1k7zz_45:has-text("Floor:")'
-        FLOOR_VALUE = '.ant-card:has-text("Floor: 1"), ._info_1k7zz_45:has-text("Floor: 1")'
+        FLOOR_VALUE = (
+            '.ant-card:has-text("Floor: 1"), ._info_1k7zz_45:has-text("Floor: 1")'
+        )
 
         # Информация о здании
-        BUILDING_INFO = '.ant-card:has-text("Building:"), ._info_1k7zz_45:has-text("Building:")'
-        BUILDING_VALUE = '.ant-card:has-text("Building: 1"), ._info_1k7zz_45:has-text("Building: 1")'
+        BUILDING_INFO = (
+            '.ant-card:has-text("Building:"), ._info_1k7zz_45:has-text("Building:")'
+        )
+        BUILDING_VALUE = (
+            '.ant-card:has-text("Building: 1"), ._info_1k7zz_45:has-text("Building: 1")'
+        )
 
         # Информация о площади
-        AREA_INFO = '.ant-card:has-text("Total area:"), ._info_1k7zz_45:has-text("Total area:")'
-        AREA_VALUE = '.ant-card:has-text("Total area:"), ._info_1k7zz_45:has-text("Total area:")'
+        AREA_INFO = (
+            '.ant-card:has-text("Total area:"), ._info_1k7zz_45:has-text("Total area:")'
+        )
+        AREA_VALUE = (
+            '.ant-card:has-text("Total area:"), ._info_1k7zz_45:has-text("Total area:")'
+        )
 
         # Информация о виде
         VIEW_INFO = '.ant-card:has-text("View:"), ._info_1k7zz_45:has-text("View:")'
@@ -66,4 +80,3 @@ class ArishaLocators(BaseLocators):
 
         # Счетчик просмотров
         WATCHING_COUNT = '.ant-card:has-text("watching now"), ._info_1k7zz_45:has-text("watching now")'
-

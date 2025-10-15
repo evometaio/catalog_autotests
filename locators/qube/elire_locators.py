@@ -10,7 +10,7 @@ class ElireLocators(BaseLocators):
     PROJECT_NAME = "elire"
     PROJECT_DISPLAY_NAME = "Elire"
     MAP_LOCATOR = 'div[aria-label="Elire"]'
-    
+
     # Специфичные кнопки Elire
     RESIDENCES_BUTTON = '[data-test-id="nav-desktop-catalog2d"]'
     REQUEST_VIEWING_BUTTON = "(//button[@data-test-id='property-info-secondary-button-1 BEDROOM RESIDENCE'])[2]"
@@ -29,5 +29,6 @@ class ElireLocators(BaseLocators):
     # Локаторы для модального окна успешной отправки
     SUCCESS_MODAL = 'xpath=(//div[@class="ant-modal-content"])[1]'
     SUCCESS_MODAL_TITLE = 'xpath=.//div[contains(text(), "Thank you!")]'
-    SUCCESS_MODAL_TEXT = 'xpath=.//div[contains(text(), "Our specialist will contact you shortly.")]'
-
+    SUCCESS_MODAL_TEXT = (
+        'xpath=.//div[contains(text(), "Our specialist will contact you shortly.")]'
+    )

@@ -40,7 +40,9 @@ def test_tranquil_mobile_download_ownership_offer(mobile_page):
         )
 
         # Проверяем что новая вкладка открылась
-        mobile_page.assertions.assert_that(new_tab is not None, "Новая вкладка с PDF не открылась")
+        mobile_page.assertions.assert_that(
+            new_tab is not None, "Новая вкладка с PDF не открылась"
+        )
 
         # Если URL содержит PDF, проверяем его
         if pdf_url.endswith(".pdf"):

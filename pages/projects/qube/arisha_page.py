@@ -2,21 +2,22 @@
 
 from playwright.sync_api import Page
 
-from .qube_base_page import QubeBasePage
 from locators.qube.arisha_locators import ArishaLocators
+
+from .qube_base_page import QubeBasePage
 
 
 class ArishaPage(QubeBasePage):
     """
     Страница проекта Arisha.
-    
+
     Наследует от QubeBasePage. Вся общая функциональность Qube уже есть в базовом классе.
     """
 
     def __init__(self, page: Page, url: str = None):
         """
         Инициализация Arisha страницы.
-        
+
         Args:
             page: Playwright Page объект
             url: URL страницы

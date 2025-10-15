@@ -29,7 +29,9 @@ class TestCubixMobileAgentRoute:
 
             with allure.step("Кликаем на кнопку PDF"):
                 pdf_clicked = mobile_page.click_mobile_pdf_button()
-                mobile_page.assertions.assert_that(pdf_clicked, "Кнопка PDF не была нажата")
+                mobile_page.assertions.assert_that(
+                    pdf_clicked, "Кнопка PDF не была нажата"
+                )
 
         finally:
             # Проверяем адаптивность на мобильном устройстве

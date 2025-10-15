@@ -10,12 +10,14 @@ class BaseLocators:
 
     # Общие кнопки навигации
     ALL_UNITS_BUTTON = '[data-test-id="nav-desktop-catalog2d-standalone"]'
-    
+
     # Универсальные локаторы для поиска апартаментов
     ALL_APARTMENT_TITLES = "//span[contains(text(), 'VIEW APARTMENT')]"
 
     # Локаторы для Explore Amenities (общие для всех проектов)
-    EXPLORE_AMENITIES_BUTTON = '(//button[@data-test-id="project-info-window-explore-amenities"])[2]'
+    EXPLORE_AMENITIES_BUTTON = (
+        '(//button[@data-test-id="project-info-window-explore-amenities"])[2]'
+    )
     AMENITIES_MODAL = ".ant-modal-content"
     AMENITIES_MODAL_TITLE = ".ant-modal-content h3"
     AMENITIES_MODAL_CLOSE_BUTTON = ".ant-modal-close"
@@ -32,7 +34,9 @@ class BaseLocators:
     AREA_TOUR_360_MODAL = '[data-test-id="rotation-view-360-modal"]'
     AREA_TOUR_360_OVERLAY = '[data-test-id="rotation-view-360-overlay"]'
     AREA_TOUR_360_CLOSE_BUTTON = 'button[data-test-id="rotation-view-360-close-button"]'
-    AREA_TOUR_360_CONTENT = "//img[contains(@class, '__react-image-turntable-img')] | //video | //canvas"
+    AREA_TOUR_360_CONTENT = (
+        "//img[contains(@class, '__react-image-turntable-img')] | //video | //canvas"
+    )
 
     # Агентские функции
     SALES_OFFER_BUTTON = "//span[text()='Sales Offer']"
@@ -42,7 +46,7 @@ class BaseLocators:
     BUILDING_NAV_BUTTON = '[data-test-id="nav-desktop-building"]'
     FLOOR_NAV_BUTTON = '[data-test-id="nav-desktop-floor"]'
     APARTMENT_NAV_BUTTON = '[data-test-id="nav-desktop-apartment"]'
-    
+
     # Примечание: Селекторы для конкретных зданий/этажей формируются динамически
     # Здание: f'[data-test-id="nav-desktop-building-{number}"]'
     # Этаж: f'[data-test-id="nav-desktop-floor-{number}"]'
@@ -53,4 +57,3 @@ class BaseLocators:
     # Локаторы для клиентских страниц
     CALLBACK_FORM_BUTTON = "//button[.//*[@aria-label='phone']]"
     CALLBACK_FORM_MODAL = "//div[@class='ant-modal-content']"
-

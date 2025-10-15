@@ -17,11 +17,15 @@ def test_arisha_building_floor_apartment_navigation(arisha_page):
 
     with allure.step("Выбираем здание 1"):
         arisha_page.navigate_to_building(building_number=1)
-        arisha_page.assertions.assert_url_contains("/building/1", "Не перешли на страницу здания 1")
+        arisha_page.assertions.assert_url_contains(
+            "/building/1", "Не перешли на страницу здания 1"
+        )
 
     with allure.step("Выбираем этаж 1"):
         arisha_page.navigate_to_floor(floor_number=1)
-        arisha_page.assertions.assert_url_contains("/floor/1/1", "Не перешли на страницу этажа 1")
+        arisha_page.assertions.assert_url_contains(
+            "/floor/1/1", "Не перешли на страницу этажа 1"
+        )
 
     with allure.step("Кликаем на апартамент на этаже 1"):
         apartment_clicked = arisha_page.navigation.click_apartment_on_floor()
@@ -31,7 +35,9 @@ def test_arisha_building_floor_apartment_navigation(arisha_page):
 
     with allure.step("Переходим на этаж 2"):
         arisha_page.navigate_to_floor(floor_number=2)
-        arisha_page.assertions.assert_url_contains("/floor/1/2", "Не перешли на страницу этажа 2")
+        arisha_page.assertions.assert_url_contains(
+            "/floor/1/2", "Не перешли на страницу этажа 2"
+        )
 
     with allure.step("Кликаем на апартамент на этаже 2"):
         apartment_clicked_2 = arisha_page.navigation.click_apartment_on_floor()

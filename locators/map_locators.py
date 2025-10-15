@@ -6,7 +6,7 @@ class MapLocators:
 
     # Основной контейнер карты
     MAP_CONTAINER = '[data-testid="map"]'
-    
+
     # Custom POI для тестов
     POI_LOCATOR = '//div[@title="TestPoi"]'
 
