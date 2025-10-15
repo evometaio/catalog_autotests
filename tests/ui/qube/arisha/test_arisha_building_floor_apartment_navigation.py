@@ -8,11 +8,12 @@ import pytest
 @pytest.mark.regression
 @pytest.mark.ui
 @pytest.mark.flaky(reruns=2, reruns_delay=4)
-def test_arisha_building_floor_apartment_navigation(arisha_page):
-    """Тест навигации по зданиям, этажам и апартаментам проекта Arisha."""
+@pytest.mark.parametrize("route_type", ["map", "agent", "client"])
+def test_arisha_building_floor_apartment_navigation(arisha_page, route_type):
+    """Тест навигации по зданиям, этажам и апартаментам проекта Arisha на всех роутах."""
 
-    with allure.step("Открываем карту и переходим к проекту Arisha"):
-        arisha_page.open(route_type="map")
+    with allure.step(f"Открываем страницу {route_type} и переходим к проекту Arisha"):
+        arisha_page.open(route_type=route_type)
         arisha_page.map.navigate_to_project("arisha")
 
     with allure.step("Выбираем здание 1"):

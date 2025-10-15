@@ -8,10 +8,11 @@ import pytest
 @pytest.mark.regression
 @pytest.mark.mobile
 @pytest.mark.flaky(reruns=2, reruns_delay=4)
-def test_arisha_mobile_360_area_tour(mobile_page):
-    """Тест 360 Area Tour для проекта Arisha на мобильном устройстве."""
-    with allure.step("Открываем карту"):
-        mobile_page.open(route_type="map")
+@pytest.mark.parametrize("route_type", ["map", "agent", "client"])
+def test_arisha_mobile_360_area_tour(mobile_page, route_type):
+    """Тест 360 Area Tour для проекта Arisha на мобильном устройстве на всех роутах."""
+    with allure.step(f"Открываем страницу {route_type}"):
+        mobile_page.open(route_type=route_type)
 
     with allure.step("Кликаем на проект Arisha на карте"):
         mobile_page.mobile_map.click_project("arisha")

@@ -38,6 +38,9 @@ class BaseLocators:
         "//img[contains(@class, '__react-image-turntable-img')] | //video | //canvas"
     )
 
+    # Навигация
+    NAV_MAP_BUTTON = '//li[@data-test-id="nav-desktop-map"]'
+
     # Агентские функции
     SALES_OFFER_BUTTON = "//span[text()='Sales Offer']"
     DOWNLOAD_PDF_BUTTON = "//button[.//span[text() = 'Download PDF']]"

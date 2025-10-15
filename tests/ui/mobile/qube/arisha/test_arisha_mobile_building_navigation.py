@@ -13,12 +13,15 @@ class TestArishaMobileBuildingNavigation:
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.mobile
     @pytest.mark.regression
-    def test_arisha_mobile_building_floor_apartment_navigation(self, mobile_page):
-        """Тест полной навигации по зданию, этажу и квартире на мобильном устройстве."""
+    @pytest.mark.parametrize("route_type", ["map", "agent", "client"])
+    def test_arisha_mobile_building_floor_apartment_navigation(
+        self, mobile_page, route_type
+    ):
+        """Тест полной навигации по зданию, этажу и квартире на мобильном устройстве на всех роутах."""
 
-        with allure.step("Переход на страницу /area Arisha"):
+        with allure.step(f"Переход на страницу /area Arisha через {route_type}"):
             # Открываем карту
-            mobile_page.open()
+            mobile_page.open(route_type=route_type)
 
             # Кликаем на проект Arisha
             mobile_page.mobile_map.click_project("arisha")

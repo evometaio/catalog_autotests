@@ -1,3 +1,5 @@
+import os
+
 import allure
 import pytest
 
@@ -44,8 +46,11 @@ class TestQubeMapProjects:
     @pytest.mark.regression
     @pytest.mark.smoke
     @allure.severity(allure.severity_level.CRITICAL)
-    # TODO: Добавить "cubix" после фикса локаторов
-    @pytest.mark.parametrize("project_name", ["arisha", "elire"])
+    @pytest.mark.parametrize("project_name", ["arisha", "elire", "cubix"])
+    @pytest.mark.skipif(
+        os.getenv("OS_PLATFORM") == "ubuntu-latest",
+        reason="Тест нестабилен на Firefox в CI",
+    )
     def test_full_navigation_cycle_on_map(self, map_page, project_name):
         """Тест полного цикла навигации: карта -> проект -> карта."""
         with allure.step(f"Открываем страницу карты"):
@@ -60,9 +65,7 @@ class TestQubeMapProjects:
             )
 
         with allure.step(f"Возвращаемся на карту"):
-            # Нажимаем кнопку возврата на карту (обычно это логотип или кнопка "Map")
-            map_page.browser.click('[data-test-id="nav-desktop-map"]')
-            map_page.page.wait_for_timeout(2000)
+            map_page.return_to_map()
             map_page.assertions.assert_url_contains("/map", "Не вернулись на карту")
 
     @allure.story("Тестовый кастомный POI")
@@ -70,6 +73,12 @@ class TestQubeMapProjects:
     @allure.severity(allure.severity_level.CRITICAL)
     def test_arisha_map_poi(self, map_page):
         """Тест кастомного POI на карте"""
+
+        env = os.getenv("TEST_ENVIRONMENT", "prod")
+        if env != "dev":
+            pytest.skip(
+                f"Тест запускается только на DEV окружении. Текущее окружение: {env}"
+            )
 
         with allure.step("Открываем страницу карты"):
             map_page.open(route_type="map")

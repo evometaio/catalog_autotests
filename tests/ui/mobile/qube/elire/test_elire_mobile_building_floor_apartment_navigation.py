@@ -9,14 +9,15 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
-def test_elire_mobile_building_floor_apartment_navigation(mobile_page):
-    """Тест навигации по зданиям, этажам и апартаментам проекта Elire на мобильном устройстве."""
+@pytest.mark.parametrize("route_type", ["map", "agent", "client"])
+def test_elire_mobile_building_floor_apartment_navigation(mobile_page, route_type):
+    """Тест навигации по зданиям, этажам и апартаментам проекта Elire на мобильном устройстве на всех роутах."""
 
     # Получаем окружение для условной логики
     env = os.getenv("TEST_ENVIRONMENT", "prod")
 
-    with allure.step("Открываем карту и переходим к проекту Elire"):
-        mobile_page.open(route_type="map")
+    with allure.step(f"Открываем страницу {route_type} и переходим к проекту Elire"):
+        mobile_page.open(route_type=route_type)
         mobile_page.mobile_map.click_project("elire")
 
     with allure.step("Кликаем на Explore Project"):

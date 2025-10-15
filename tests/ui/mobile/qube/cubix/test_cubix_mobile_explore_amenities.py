@@ -7,11 +7,12 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
-def test_cubix_mobile_explore_amenities(mobile_page):
-    """Тест Explore Amenities для проекта Cubix на мобильном устройстве."""
+@pytest.mark.parametrize("route_type", ["map", "agent", "client"])
+def test_cubix_mobile_explore_amenities(mobile_page, route_type):
+    """Тест Explore Amenities для проекта Cubix на мобильном устройстве на всех роутах."""
 
-    with allure.step("Открываем карту"):
-        mobile_page.open(route_type="map")
+    with allure.step(f"Открываем страницу {route_type}"):
+        mobile_page.open(route_type=route_type)
 
     with allure.step("Кликаем на проект Cubix на карте"):
         mobile_page.mobile_map.click_project("cubix")

@@ -52,12 +52,35 @@ class ApartmentWidgetComponent:
             # Дополнительная пауза
             self.page.wait_for_timeout(4000)
 
+    def _close_modal_if_present(self):
+        """Закрыть модальное окно, если оно перекрывает виджет (только на client route)."""
+        # Проверяем, что мы на client route
+        current_url = self.page.url
+        if "/client/" not in current_url:
+            return  # Модалка появляется только на client route
+
+        try:
+            # Проверяем наличие модалки с коротким таймаутом
+            modal_close_button = self.page.locator(
+                'button[aria-label="Close"].ant-modal-close'
+            )
+            if modal_close_button.is_visible(timeout=1000):
+                with allure.step("Закрываем модальное окно client route"):
+                    modal_close_button.click()
+                    self.page.wait_for_timeout(500)
+        except Exception:
+            # Модалки нет - это нормально
+            pass
+
     def switch_to_2d_mode(self):
         """Переключиться в режим 2D."""
         if not self.locators:
             raise ValueError(
                 f"Локаторы виджета не найдены для проекта {self.project_name}"
             )
+
+        # Закрываем модалку если она есть (например, на client route)
+        self._close_modal_if_present()
 
         with allure.step("Переключаемся в режим 2D"):
             frame_locator = self.get_widget_frame()
@@ -85,6 +108,9 @@ class ApartmentWidgetComponent:
             raise ValueError(
                 f"Локаторы виджета не найдены для проекта {self.project_name}"
             )
+
+        # Закрываем модалку если она есть (например, на client route)
+        self._close_modal_if_present()
 
         with allure.step("Переключаемся в режим 3D"):
             frame_locator = self.get_widget_frame()

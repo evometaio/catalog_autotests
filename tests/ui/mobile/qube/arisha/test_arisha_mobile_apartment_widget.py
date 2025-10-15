@@ -7,11 +7,12 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
-def test_arisha_mobile_apartment_widget_full_functionality(mobile_page):
-    """Тест полного функционала виджета апартамента Arisha на мобильном устройстве."""
+@pytest.mark.parametrize("route_type", ["map", "agent", "client"])
+def test_arisha_mobile_apartment_widget_full_functionality(mobile_page, route_type):
+    """Тест полного функционала виджета апартамента Arisha на мобильном устройстве на всех роутах."""
 
-    with allure.step("Открываем карту и переходим к проекту Arisha"):
-        mobile_page.open(route_type="map")
+    with allure.step(f"Открываем страницу {route_type} и переходим к проекту Arisha"):
+        mobile_page.open(route_type=route_type)
         mobile_page.mobile_map.click_project("arisha")
 
     with allure.step("Кликаем на Explore Project"):

@@ -14,11 +14,12 @@ import pytest
     os.getenv("OS_PLATFORM") == "ubuntu-latest",
     reason="Тест нестабилен на Firefox в CI",
 )
-def test_arisha_apartment_widget_full_functionality(arisha_page):
-    """Тест полного функционала виджета апартамента Arisha."""
+@pytest.mark.parametrize("route_type", ["map", "agent", "client"])
+def test_arisha_apartment_widget_full_functionality(arisha_page, route_type):
+    """Тест полного функционала виджета апартамента Arisha на всех роутах."""
 
-    with allure.step("Открываем карту и переходим к проекту Arisha"):
-        arisha_page.open(route_type="map")
+    with allure.step(f"Открываем страницу {route_type} и переходим к проекту Arisha"):
+        arisha_page.open(route_type=route_type)
         arisha_page.map.navigate_to_project("arisha")
 
     with allure.step("Кликаем на кнопку All units"):
@@ -105,11 +106,12 @@ def test_arisha_apartment_widget_full_functionality(arisha_page):
 @pytest.mark.regression
 @pytest.mark.ui
 @pytest.mark.flaky(reruns=2)
-def test_arisha_apartment_information(arisha_page):
-    """Тест проверки информации об апартаменте Arisha."""
+@pytest.mark.parametrize("route_type", ["map", "agent", "client"])
+def test_arisha_apartment_information(arisha_page, route_type):
+    """Тест проверки информации об апартаменте Arisha на всех роутах."""
 
-    with allure.step("Открываем карту и переходим к проекту Arisha"):
-        arisha_page.open(route_type="map")
+    with allure.step(f"Открываем страницу {route_type} и переходим к проекту Arisha"):
+        arisha_page.open(route_type=route_type)
         arisha_page.map.navigate_to_project("arisha")
 
     with allure.step("Кликаем на кнопку All units"):

@@ -7,10 +7,11 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-def test_cubix_explore_amenities(cubix_page):
-    """Тест Explore Amenities для проекта Cubix."""
-    with allure.step("Открываем карту"):
-        cubix_page.open(route_type="map")
+@pytest.mark.parametrize("route_type", ["map", "agent", "client"])
+def test_cubix_explore_amenities(cubix_page, route_type):
+    """Тест Explore Amenities для проекта Cubix на всех роутах."""
+    with allure.step(f"Открываем страницу {route_type}"):
+        cubix_page.open(route_type=route_type)
 
     with allure.step("Кликаем на проект Cubix"):
         cubix_page.map.navigate_to_project("cubix")

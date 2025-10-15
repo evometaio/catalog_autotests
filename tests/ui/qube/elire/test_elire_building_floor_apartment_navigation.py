@@ -10,14 +10,15 @@ import pytest
 @pytest.mark.regression
 @pytest.mark.ui
 @pytest.mark.flaky(reruns=3, reruns_delay=4)
-def test_elire_building_floor_apartment_navigation(elire_page):
-    """Тест навигации по зданиям, этажам и апартаментам проекта Elire."""
+@pytest.mark.parametrize("route_type", ["map", "agent", "client"])
+def test_elire_building_floor_apartment_navigation(elire_page, route_type):
+    """Тест навигации по зданиям, этажам и апартаментам проекта Elire на всех роутах."""
 
     # Получаем окружение для условной логики
     env = os.getenv("TEST_ENVIRONMENT", "prod")
 
-    with allure.step("Открываем карту и переходим к проекту Elire"):
-        elire_page.open(route_type="map")
+    with allure.step(f"Открываем страницу {route_type} и переходим к проекту Elire"):
+        elire_page.open(route_type=route_type)
         elire_page.map.navigate_to_project("elire")
 
     with allure.step("Кликаем на Residences"):

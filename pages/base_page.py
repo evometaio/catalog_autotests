@@ -103,6 +103,12 @@ class BasePage:
         """Ожидать загрузки страницы."""
         self.page.wait_for_load_state("domcontentloaded")
 
+    def return_to_map(self):
+        """Вернуться на карту через кнопку навигации."""
+        # Используем .last т.к. на некоторых страницах (Cubix) может быть несколько элементов с этим локатором
+        self.page.locator(self.project_locators.NAV_MAP_BUTTON).last.click()
+        self.page.wait_for_timeout(2000)
+
     def get_project_url(self, project_name: str, page_type: str = "catalog_2d"):
         """
         Получить URL для конкретного проекта и типа страницы.
