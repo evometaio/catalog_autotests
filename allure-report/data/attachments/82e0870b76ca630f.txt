@@ -1,1 +1,0 @@
-Ищем кнопку с селектором: button:has-text("Choose the floor")
