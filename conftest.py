@@ -250,27 +250,6 @@ def client_page(page: Page):
     return BasePage(page, url, BaseLocators)
 
 
-@pytest.fixture
-def capstone_project_page(page: Page):
-    """Фикстура для страниц проектов Capstone (используйте peylaa_page вместо этого)."""
-    from pages.projects.capstone.peylaa_page import PeylaaPage
-    return PeylaaPage(page)
-
-
-@pytest.fixture
-def capstone_direct_project_page(page: Page):
-    """Фикстура для прямых URL проектов Capstone (используйте peylaa_page вместо этого)."""
-    from pages.projects.capstone.peylaa_page import PeylaaPage
-    urls = _get_urls_by_environment()
-    base_url = urls["capstone_map"].replace("/map", "")
-    return PeylaaPage(page, base_url)
-
-
-@pytest.fixture
-def wellcube_page(page: Page):
-    """Фикстура для страниц Wellcube проектов (используйте tranquil_page вместо этого)."""
-    from pages.projects.wellcube.tranquil_page import TranquilPage
-    return TranquilPage(page)
 
 
 # Хук для обработки результатов тестов
@@ -341,6 +320,33 @@ def get_available_devices() -> list:
     return list(MOBILE_DEVICES.keys())
 
 
+def _get_mobile_base_url(route_type: str = "map", project_type: str = "qube") -> str:
+    """
+    Вспомогательная функция для получения base_url для мобильных фикстур.
+    
+    Args:
+        route_type: Тип роута ("map", "agent", "client")
+        project_type: Тип проекта ("qube", "capstone", "wellcube")
+    
+    Returns:
+        str: Base URL для указанного окружения
+    """
+    environment = os.getenv("TEST_ENVIRONMENT", "dev")
+    urls = _get_urls_by_environment()
+    
+    if project_type == "capstone":
+        return urls["capstone_map"]
+    elif project_type == "wellcube":
+        return urls["wellcube_map"]
+    else:  # qube
+        if route_type == "agent":
+            return urls["agent"]
+        elif route_type == "client":
+            return urls["client"]
+        else:  # map
+            return urls["map"]
+
+
 @pytest.fixture(scope="function")
 def mobile_device_info():
     """Фикстура для получения информации о текущем мобильном устройстве."""
@@ -359,74 +365,36 @@ def mobile_device_info():
 @pytest.fixture
 def mobile_page(page, request):
     """Фикстура для MobilePage с картой."""
-    import os
-
     from pages.mobile.mobile_page import MobilePage
-
-    environment = os.getenv("TEST_ENVIRONMENT", "dev")
 
     # Определяем проект из имени теста
     test_file = request.fspath.basename
-
+    
     if "capstone" in test_file or "peylaa" in test_file:
-        # Capstone проект
-        if environment == "dev":
-            base_url = os.getenv(
-                "DEV_CAPSTONE_BASE_URL", "https://capstone-dev.evometa.io/map"
-            )
-        else:
-            base_url = os.getenv(
-                "CAPSTONE_PROD_BASE_URL", "https://3dtours.peylaa-phuket.com/map"
-            )
-        mobile_page = MobilePage(page)
-        mobile_page.base_url = base_url
-        mobile_page.project_locators = PeylaaLocators()
+        project_type = "capstone"
+        locators = PeylaaLocators()
     elif "wellcube" in test_file or "tranquil" in test_file:
-        # Wellcube проект
-        if environment == "dev":
-            base_url = os.getenv(
-                "DEV_WELLCUBE_BASE_URL", "https://catalog-dev.evometa.io/wellcube/map"
-            )
-        else:
-            base_url = os.getenv(
-                "WELLCUBE_PROD_BASE_URL", "https://catalog.evometa.io/wellcube/map"
-            )
-        mobile_page = MobilePage(page)
-        mobile_page.base_url = base_url
-        mobile_page.project_locators = TranquilLocators()
+        project_type = "wellcube"
+        locators = TranquilLocators()
     else:
-        # Qube проекты (по умолчанию)
-        if environment == "dev":
-            base_url = os.getenv("DEV_BASE_URL", "https://qube-dev-next.evometa.io/map")
-        else:
-            base_url = os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
-        mobile_page = MobilePage(page)
-        mobile_page.base_url = base_url
-        mobile_page.project_locators = BaseLocators()
-
+        project_type = "qube"
+        locators = BaseLocators()
+    
+    # Создаем страницу с правильным URL и локаторами
+    mobile_page = MobilePage(page)
+    mobile_page.base_url = _get_mobile_base_url("map", project_type)
+    mobile_page.project_locators = locators
+    
     return mobile_page
 
 
 @pytest.fixture
 def mobile_agent_page(page):
     """Фикстура для MobilePage с агентским роутом."""
-    import os
-
     from pages.mobile.mobile_page import MobilePage
 
-    environment = os.getenv("TEST_ENVIRONMENT", "dev")
-    if environment == "dev":
-        base_url = os.getenv(
-            "DEV_AGENT_BASE_URL", "https://qube-dev-next.evometa.io/agent/map"
-        )
-    else:
-        base_url = os.getenv(
-            "AGENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/agent/map"
-        )
-
     mobile_page = MobilePage(page)
-    mobile_page.base_url = base_url
-    # Устанавливаем правильные локаторы для Qube проектов
+    mobile_page.base_url = _get_mobile_base_url("agent", "qube")
     mobile_page.project_locators = BaseLocators()
     return mobile_page
 
@@ -434,23 +402,10 @@ def mobile_agent_page(page):
 @pytest.fixture
 def mobile_client_page(page):
     """Фикстура для MobilePage с клиентским роутом."""
-    import os
-
     from pages.mobile.mobile_page import MobilePage
 
-    environment = os.getenv("TEST_ENVIRONMENT", "dev")
-    if environment == "dev":
-        base_url = os.getenv(
-            "DEV_CLIENT_BASE_URL", "https://qube-dev-next.evometa.io/client/map"
-        )
-    else:
-        base_url = os.getenv(
-            "CLIENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/client/map"
-        )
-
     mobile_page = MobilePage(page)
-    mobile_page.base_url = base_url
-    # Устанавливаем правильные локаторы для Qube проектов
+    mobile_page.base_url = _get_mobile_base_url("client", "qube")
     mobile_page.project_locators = BaseLocators()
     return mobile_page
 
