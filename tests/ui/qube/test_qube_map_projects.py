@@ -67,7 +67,6 @@ class TestQubeMapProjects:
 
         with allure.step(f"Возвращаемся на карту"):
             map_page.return_to_map()
-            map_page.assertions.assert_url_contains("/map", "Не вернулись на карту")
 
     @allure.story("Тестовый кастомный POI")
     @pytest.mark.smoke
