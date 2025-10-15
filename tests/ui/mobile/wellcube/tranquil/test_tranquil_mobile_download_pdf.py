@@ -7,24 +7,24 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
-def test_tranquil_mobile_download_ownership_offer(mobile_page, mobile_agent_page):
+def test_tranquil_mobile_download_ownership_offer(mobile_page):
     """Тест скачивания PDF на проекте Tranquil на мобильном устройстве."""
 
     with allure.step("Открываем карту Wellcube"):
         mobile_page.open(route_type="map")
 
     with allure.step("Кликаем на проект Tranquil"):
-        mobile_page.click_mobile_project_on_map("tranquil")
+        mobile_page.mobile_map.click_project("tranquil")
 
     with allure.step("Кликаем на Explore Project"):
-        mobile_page.click_mobile_explore_project_button("tranquil")
+        mobile_page.mobile_map.click_explore_project("tranquil")
 
     with allure.step("Кликаем на кнопку Fraction Ownership Offer"):
         mobile_page.click_on_fraction_ownership_offer_button()
 
-        # Ожидаем открытия новой вкладки с PDF (как вы сказали, PDF открывается в новой вкладке)
+        # Ожидаем открытия новой вкладки с PDF
         with mobile_page.page.expect_popup(timeout=10000) as popup_info:
-            mobile_agent_page.project.click_on_download_pdf_button()
+            mobile_page.browser.click('[data-test-id="download-pdf-button"]')
 
         new_tab = popup_info.value
         # Небольшая задержка для стабилизации в headless режиме
@@ -40,11 +40,11 @@ def test_tranquil_mobile_download_ownership_offer(mobile_page, mobile_agent_page
         )
 
         # Проверяем что новая вкладка открылась
-        mobile_page.assert_that(new_tab is not None, "Новая вкладка с PDF не открылась")
+        mobile_page.assertions.assert_that(new_tab is not None, "Новая вкладка с PDF не открылась")
 
         # Если URL содержит PDF, проверяем его
         if pdf_url.endswith(".pdf"):
-            mobile_page.assert_that(
+            mobile_page.assertions.assert_that(
                 "tranquil" in pdf_url.lower(),
                 f"URL PDF не содержит название проекта tranquil: {pdf_url}",
             )

@@ -17,10 +17,10 @@ def test_elire_mobile_building_floor_apartment_navigation(mobile_page):
 
     with allure.step("Открываем карту и переходим к проекту Elire"):
         mobile_page.open(route_type="map")
-        mobile_page.click_mobile_project_on_map("elire")
+        mobile_page.mobile_map.click_project("elire")
 
     with allure.step("Кликаем на Explore Project"):
-        mobile_page.click_mobile_explore_project_button("elire")
+        mobile_page.mobile_map.click_explore_project("elire")
 
     mobile_page.click_mobile_explore_residences_button()
 
@@ -34,7 +34,7 @@ def test_elire_mobile_building_floor_apartment_navigation(mobile_page):
         mobile_page.page.wait_for_url(
             "**/elire/configuration/1br-residence", timeout=10000
         )
-        mobile_page.assert_url_contains(
+        mobile_page.assertions.assert_url_contains(
             "/elire/configuration/1br-residence",
             "Не перешли на страницу конфигурации 1 Bedroom Residence",
         )

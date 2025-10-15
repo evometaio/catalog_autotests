@@ -51,3 +51,15 @@ class TestQubeMapProjects:
 
         with allure.step(f"Возвращаемся на карту"):
             map_page.return_to_map_from_project_and_verify_returned_to_map()
+
+    @allure.story("Тестовый кастомный POI")
+    @pytest.mark.smoke
+    @allure.severity(allure.severity_level.CRITICAL)
+    def test_arisha_map_poi(self, map_page):
+        """Тест кастомного POI на карте"""
+
+        with allure.step("Открываем страницу карты"):
+            map_page.open(route_type="map")
+
+        with allure.step("Кликаем на кастомный POI"):
+            map_page.click_on_custom_poi()

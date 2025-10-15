@@ -9,11 +9,12 @@ from playwright.sync_api import Page
 # Загружаем переменные из .env файла
 load_dotenv()
 
-from locators.project_locators import (
-    CapstonePageLocators,
-    QubeLocators,
-    WellcubePageLocators,
-)
+from locators.qube.arisha_locators import ArishaLocators
+from locators.qube.elire_locators import ElireLocators
+from locators.qube.cubix_locators import CubixLocators
+from locators.capstone.peylaa_locators import PeylaaLocators
+from locators.wellcube.tranquil_locators import TranquilLocators
+from locators.base_locators import BaseLocators
 from pages.base_page import BasePage
 
 # ==================== МОБИЛЬНЫЕ УСТРОЙСТВА ====================
@@ -224,13 +225,13 @@ def map_page(page: Page, request):
 
     if project_name == "capstone":
         url = urls["capstone_map"]
-        return BasePage(page, url, CapstonePageLocators)
+        return BasePage(page, url, PeylaaLocators)
     elif project_name == "wellcube":
         url = urls["wellcube_map"]
-        return BasePage(page, url, WellcubePageLocators)
+        return BasePage(page, url, TranquilLocators)
     else:  # qube
         url = urls["map"]
-        return BasePage(page, url, QubeLocators)
+        return BasePage(page, url, BaseLocators)
 
 
 @pytest.fixture
@@ -238,7 +239,7 @@ def agent_page(page: Page):
     """Фикстура для агентских страниц всех проектов."""
     urls = _get_urls_by_environment()
     url = urls["agent"]
-    return BasePage(page, url, QubeLocators)
+    return BasePage(page, url, BaseLocators)
 
 
 @pytest.fixture
@@ -246,31 +247,30 @@ def client_page(page: Page):
     """Фикстура для клиентских страниц всех проектов."""
     urls = _get_urls_by_environment()
     url = urls["client"]
-    return BasePage(page, url, QubeLocators)
+    return BasePage(page, url, BaseLocators)
 
 
 @pytest.fixture
 def capstone_project_page(page: Page):
-    """Фикстура для страниц проектов Capstone."""
-    from pages.capstone.capstone_pages import CapstonePages
-
-    return CapstonePages(page)
+    """Фикстура для страниц проектов Capstone (используйте peylaa_page вместо этого)."""
+    from pages.projects.capstone.peylaa_page import PeylaaPage
+    return PeylaaPage(page)
 
 
 @pytest.fixture
 def capstone_direct_project_page(page: Page):
-    """Фикстура для прямых URL проектов Capstone (например, /project/peylaa/area)."""
+    """Фикстура для прямых URL проектов Capstone (используйте peylaa_page вместо этого)."""
+    from pages.projects.capstone.peylaa_page import PeylaaPage
     urls = _get_urls_by_environment()
-    base_url = urls["capstone_map"].replace("/map", "")  # Убираем /map из базового URL
-    return BasePage(page, base_url)
+    base_url = urls["capstone_map"].replace("/map", "")
+    return PeylaaPage(page, base_url)
 
 
 @pytest.fixture
 def wellcube_page(page: Page):
-    """Фикстура для страниц Wellcube проектов."""
-    from pages.wellcube.wellcube_pages import WellcubePages
-
-    return WellcubePages(page)
+    """Фикстура для страниц Wellcube проектов (используйте tranquil_page вместо этого)."""
+    from pages.projects.wellcube.tranquil_page import TranquilPage
+    return TranquilPage(page)
 
 
 # Хук для обработки результатов тестов
@@ -361,7 +361,7 @@ def mobile_page(page, request):
     """Фикстура для MobilePage с картой."""
     import os
 
-    from pages.mobile_page import MobilePage
+    from pages.mobile.mobile_page import MobilePage
 
     environment = os.getenv("TEST_ENVIRONMENT", "dev")
 
@@ -380,7 +380,7 @@ def mobile_page(page, request):
             )
         mobile_page = MobilePage(page)
         mobile_page.base_url = base_url
-        mobile_page.project_locators = CapstonePageLocators()
+        mobile_page.project_locators = PeylaaLocators()
     elif "wellcube" in test_file or "tranquil" in test_file:
         # Wellcube проект
         if environment == "dev":
@@ -393,7 +393,7 @@ def mobile_page(page, request):
             )
         mobile_page = MobilePage(page)
         mobile_page.base_url = base_url
-        mobile_page.project_locators = WellcubePageLocators()
+        mobile_page.project_locators = TranquilLocators()
     else:
         # Qube проекты (по умолчанию)
         if environment == "dev":
@@ -402,7 +402,7 @@ def mobile_page(page, request):
             base_url = os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map")
         mobile_page = MobilePage(page)
         mobile_page.base_url = base_url
-        mobile_page.project_locators = QubeLocators()
+        mobile_page.project_locators = BaseLocators()
 
     return mobile_page
 
@@ -412,7 +412,7 @@ def mobile_agent_page(page):
     """Фикстура для MobilePage с агентским роутом."""
     import os
 
-    from pages.mobile_page import MobilePage
+    from pages.mobile.mobile_page import MobilePage
 
     environment = os.getenv("TEST_ENVIRONMENT", "dev")
     if environment == "dev":
@@ -427,7 +427,7 @@ def mobile_agent_page(page):
     mobile_page = MobilePage(page)
     mobile_page.base_url = base_url
     # Устанавливаем правильные локаторы для Qube проектов
-    mobile_page.project_locators = QubeLocators()
+    mobile_page.project_locators = BaseLocators()
     return mobile_page
 
 
@@ -436,7 +436,7 @@ def mobile_client_page(page):
     """Фикстура для MobilePage с клиентским роутом."""
     import os
 
-    from pages.mobile_page import MobilePage
+    from pages.mobile.mobile_page import MobilePage
 
     environment = os.getenv("TEST_ENVIRONMENT", "dev")
     if environment == "dev":
@@ -451,5 +451,42 @@ def mobile_client_page(page):
     mobile_page = MobilePage(page)
     mobile_page.base_url = base_url
     # Устанавливаем правильные локаторы для Qube проектов
-    mobile_page.project_locators = QubeLocators()
+    mobile_page.project_locators = BaseLocators()
     return mobile_page
+
+
+# ==================== НОВЫЕ ФИКСТУРЫ С УЛУЧШЕННОЙ АРХИТЕКТУРОЙ ====================
+
+@pytest.fixture
+def arisha_page(page: Page):
+    """Фикстура для страницы Arisha с новой архитектурой."""
+    from pages.projects.qube.arisha_page import ArishaPage
+    return ArishaPage(page)
+
+
+@pytest.fixture
+def elire_page(page: Page):
+    """Фикстура для страницы Elire с новой архитектурой."""
+    from pages.projects.qube.elire_page import ElirePage
+    return ElirePage(page)
+
+
+@pytest.fixture
+def cubix_page(page: Page):
+    """Фикстура для страницы Cubix с новой архитектурой."""
+    from pages.projects.qube.cubix_page import CubixPage
+    return CubixPage(page)
+
+
+@pytest.fixture
+def peylaa_page(page: Page):
+    """Фикстура для страницы Peylaa с новой архитектурой."""
+    from pages.projects.capstone.peylaa_page import PeylaaPage
+    return PeylaaPage(page)
+
+
+@pytest.fixture
+def tranquil_page(page: Page):
+    """Фикстура для страницы Tranquil с новой архитектурой."""
+    from pages.projects.wellcube.tranquil_page import TranquilPage
+    return TranquilPage(page)
