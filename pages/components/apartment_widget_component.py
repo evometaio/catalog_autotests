@@ -67,7 +67,7 @@ class ApartmentWidgetComponent:
             if modal_close_button.is_visible(timeout=1000):
                 with allure.step("Закрываем модальное окно client route"):
                     modal_close_button.click()
-                    self.page.wait_for_timeout(500)
+                    self.page.wait_for_timeout(1500)
         except Exception:
             # Модалки нет - это нормально
             pass
