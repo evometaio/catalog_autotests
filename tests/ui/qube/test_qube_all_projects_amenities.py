@@ -12,7 +12,7 @@ from pages.page_factory import PageFactory
 @pytest.mark.parametrize(
     "project_name",
     [
-        pytest.param("arisha", marks=pytest.mark.flaky(reruns=2, reruns_delay=4)),
+        pytest.param("arisha", marks=pytest.mark.flaky(reruns=2, reruns_delay=2)),
         # "elire",  # Elire имеет другую структуру amenities с множественными заголовками, используйте test_elire_explore_amenities.py
         "cubix",
     ],

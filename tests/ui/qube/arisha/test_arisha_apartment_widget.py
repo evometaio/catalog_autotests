@@ -9,7 +9,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.flaky(reruns=2, reruns_delay=4)
+@pytest.mark.flaky(reruns=2, reruns_delay=2)
 @pytest.mark.skipif(
     os.getenv("OS_PLATFORM") == "ubuntu-latest",
     reason="Тест нестабилен на Firefox в CI",

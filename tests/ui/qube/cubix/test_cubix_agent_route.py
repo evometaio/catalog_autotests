@@ -7,7 +7,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.flaky(reruns=2, reruns_delay=3)
+@pytest.mark.flaky(reruns=2, reruns_delay=2)
 def test_cubix_download_pdf_on_agent_page(cubix_page):
     """Тест скачивания PDF на агентской странице проекта Cubix."""
     downloaded_file_path = ""

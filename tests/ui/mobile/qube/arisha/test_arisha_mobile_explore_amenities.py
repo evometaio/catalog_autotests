@@ -7,7 +7,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
-@pytest.mark.flaky(reruns=2, reruns_delay=4)
+@pytest.mark.flaky(reruns=2, reruns_delay=2)
 @pytest.mark.parametrize("route_type", ["map", "agent", "client"])
 def test_arisha_mobile_explore_amenities(mobile_page, route_type):
     """Тест Explore Amenities для проекта Arisha на мобильном устройстве на всех роутах."""

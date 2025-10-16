@@ -46,7 +46,7 @@ class TestQubeMapProjects:
     @pytest.mark.regression
     @pytest.mark.smoke
     @allure.severity(allure.severity_level.CRITICAL)
-    @pytest.mark.flaky(reruns=3, reruns_delay=4)
+    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     @pytest.mark.parametrize("project_name", ["arisha", "elire", "cubix"])
     @pytest.mark.skipif(
         os.getenv("OS_PLATFORM") == "ubuntu-latest",

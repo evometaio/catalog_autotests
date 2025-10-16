@@ -7,7 +7,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.flaky(reruns=2, reruns_delay=4)
+@pytest.mark.flaky(reruns=2, reruns_delay=2)
 @pytest.mark.parametrize("route_type", ["map", "agent", "client"])
 def test_arisha_explore_amenities(arisha_page, route_type):
     """Тест Explore Amenities для проекта Arisha на всех роутах."""

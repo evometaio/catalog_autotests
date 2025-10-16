@@ -10,7 +10,7 @@ class TestArishaMobileAgentRoute:
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.mobile
     @pytest.mark.regression
-    @pytest.mark.flaky(reruns=2, reruns_delay=4)
+    @pytest.mark.flaky(reruns=2, reruns_delay=2)
     def test_arisha_mobile_download_pdf_on_catalog_page(self, mobile_page):
         """Тест скачивания PDF на странице каталога Arisha на мобильном устройстве."""
 
