@@ -306,6 +306,13 @@ jobs:
           publish_dir: ./allure-report
           destination_dir: allure-report
 
+      - name: Upload Allure summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-summary
+          path: allure-report/widgets/summary.json
+
 
 
   notify:
@@ -313,18 +320,58 @@ jobs:
     needs: [ubuntu-firefox, windows-chromium, macos-webkit, deploy-allure]
     if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     steps:
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+      - name: Download results
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          path: allure-results
+          pattern: allure-results-*
+          merge-multiple: true
+
+      - name: Download Allure summary
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: allure-summary
+          path: ./allure-summary
+
+      - name: Compute test status counts
+        shell: bash
+        run: |
+          echo "🔍 Reading Allure summary only..."
+          if [ -f ./allure-summary/summary.json ]; then
+            echo "Found summary.json"
+            passed=$(jq -r '.statistic.passed' ./allure-summary/summary.json)
+            failed=$(jq -r '.statistic.failed' ./allure-summary/summary.json)
+            broken=$(jq -r '.statistic.broken' ./allure-summary/summary.json)
+            echo "Counts from summary.json: passed=$passed, failed=$failed, broken=$broken"
+          else
+            echo "summary.json not found, setting counts to 0 (no fallback to raw)."
+            passed=0; failed=0; broken=0
+          fi
+          echo "PASSED=$passed" >> "$GITHUB_ENV"
+          echo "FAILED=$failed" >> "$GITHUB_ENV"
+          echo "BROKEN=$broken" >> "$GITHUB_ENV"
       - name: Send Telegram summary
         uses: appleboy/telegram-action@v1.0.0
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            ${{ (needs.ubuntu-firefox.result == 'success' && needs.windows-chromium.result == 'success' && needs.macos-webkit.result == 'success') && '✅' || '❌ Failed' }} <b>Итоговый отчет по тестам</b> 
+            ${{ (needs.ubuntu-firefox.result == 'success' && needs.windows-chromium.result == 'success' && needs.macos-webkit.result == 'success') && '✅' || '❌' }} <b>Итоговый отчет по тестам</b> 
 
             Проект: ${{ github.repository }}
             Ветка: ${{ github.ref_name }}
             Окружение: ${{ github.event.inputs.environment || 'prod' }}
             Тип запуска: ${{ github.event.inputs.run_type || (github.event_name == 'schedule' && 'scheduled') || 'regression' }}
+
+            🟩 passed: ${{ env.PASSED }}
+            🟥 failed: ${{ env.FAILED }}
+            🟨 broken: ${{ env.BROKEN }}
 
             📊 Отчет: <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/allure-report/">Allure</a>
             🔗 Actions: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GH Actions</a>
