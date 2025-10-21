@@ -370,8 +370,8 @@ jobs:
             Тип запуска: ${{ github.event.inputs.run_type || (github.event_name == 'schedule' && 'scheduled') || 'regression' }}
 
             🟩 passed: ${{ env.PASSED }}
-            🟨 failed: ${{ env.FAILED }}
-            🟥 broken: ${{ env.BROKEN }}
+            🟥 failed: ${{ env.FAILED }}
+            🟨 broken: ${{ env.BROKEN }}
 
             📊 Отчет: <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/allure-report/">Allure</a>
             🔗 Actions: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GH Actions</a>
