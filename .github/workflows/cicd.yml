@@ -315,6 +315,7 @@ jobs:
     steps:
       - name: Download results
         uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           path: allure-results
           pattern: allure-results-*
@@ -323,14 +324,22 @@ jobs:
       - name: Compute test status counts
         shell: bash
         run: |
+          echo "🔍 Checking for test result files..."
+          ls -la allure-results/ || echo "No allure-results directory found"
+          
           shopt -s nullglob
           files=(allure-results/*-result.json)
+          echo "Found ${#files[@]} result files"
+          
           if [ ${#files[@]} -eq 0 ]; then
+            echo "No result files found, setting counts to 0"
             passed=0; failed=0; broken=0
           else
+            echo "Processing ${#files[@]} result files..."
             passed=$(grep -ho '"status": *"passed"'   "${files[@]}" | wc -l || true)
             failed=$(grep -ho '"status": *"failed"'   "${files[@]}" | wc -l || true)
             broken=$(grep -ho '"status": *"broken"'   "${files[@]}" | wc -l || true)
+            echo "Counts: passed=$passed, failed=$failed, broken=$broken"
           fi
           echo "PASSED=$passed" >> "$GITHUB_ENV"
           echo "FAILED=$failed" >> "$GITHUB_ENV"
