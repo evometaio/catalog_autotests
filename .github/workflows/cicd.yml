@@ -364,16 +364,16 @@ jobs:
           message: |
             ${{ (needs.ubuntu-firefox.result == 'success' && needs.windows-chromium.result == 'success' && needs.macos-webkit.result == 'success') && '✅' || '❌' }} <b>Итоговый отчет по тестам</b> 
 
-            Проект: ${{ github.repository }}
-            Ветка: ${{ github.ref_name }}
-            Окружение: ${{ github.event.inputs.environment || 'prod' }}
-            Тип запуска: ${{ github.event.inputs.run_type || (github.event_name == 'schedule' && 'scheduled') || 'regression' }}
+            <b>Проект:</b> ${{ github.repository }}
+            <b>Ветка:</b> ${{ github.ref_name }}
+            <b>Окружение:</b> ${{ github.event.inputs.environment || 'prod' }}
+            <b>Тип запуска:</b> ${{ github.event.inputs.run_type || (github.event_name == 'schedule' && 'scheduled') || 'regression' }}
 
-            🟩 passed: ${{ env.PASSED }}
-            🟥 failed: ${{ env.FAILED }}
-            🟨 broken: ${{ env.BROKEN }}
+            🟩 <b>passed:</b> ${{ env.PASSED }}
+            🟥 <b>failed:</b> ${{ env.FAILED }}
+            🟨 <b>broken:</b> ${{ env.BROKEN }}
 
-            📊 Отчет: <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/allure-report/">Allure</a>
-            🔗 Actions: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GH Actions</a>
+            📊 <b>Отчет:</b> <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/allure-report/">Allure</a>
+            🔗 <b>Actions:</b> <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GH Actions</a>
           format: html
           disable_web_page_preview: true
