@@ -311,8 +311,30 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     needs: [ubuntu-firefox, windows-chromium, macos-webkit, deploy-allure]
-    if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event_name == 'pull_request')
     steps:
+      - name: Download results
+        uses: actions/download-artifact@v4
+        with:
+          path: allure-results
+          pattern: allure-results-*
+          merge-multiple: true
+
+      - name: Compute test status counts
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(allure-results/*-result.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            passed=0; failed=0; broken=0
+          else
+            passed=$(grep -ho '"status": *"passed"'   "${files[@]}" | wc -l || true)
+            failed=$(grep -ho '"status": *"failed"'   "${files[@]}" | wc -l || true)
+            broken=$(grep -ho '"status": *"broken"'   "${files[@]}" | wc -l || true)
+          fi
+          echo "PASSED=$passed" >> "$GITHUB_ENV"
+          echo "FAILED=$failed" >> "$GITHUB_ENV"
+          echo "BROKEN=$broken" >> "$GITHUB_ENV"
       - name: Send Telegram summary
         uses: appleboy/telegram-action@v1.0.0
         with:
@@ -325,6 +347,10 @@ jobs:
             Ветка: ${{ github.ref_name }}
             Окружение: ${{ github.event.inputs.environment || 'prod' }}
             Тип запуска: ${{ github.event.inputs.run_type || (github.event_name == 'schedule' && 'scheduled') || 'regression' }}
+
+            passed: ${{ env.PASSED }}
+            failed: ${{ env.FAILED }}
+            broken: ${{ env.BROKEN }}
 
             📊 Отчет: <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/allure-report/">Allure</a>
             🔗 Actions: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GH Actions</a>
