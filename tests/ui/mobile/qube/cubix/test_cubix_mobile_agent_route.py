@@ -6,7 +6,7 @@ class TestCubixMobileAgentRoute:
     """Мобильные тесты для агентского роута Cubix."""
 
     @allure.feature("Qube - Проект Cubix (mobile)")
-    @allure.story("Агентский роут Cubix - Мобильная")
+    @allure.story("Скачивание PDF предложения")
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.mobile
     @pytest.mark.regression

@@ -3,7 +3,7 @@ import pytest
 
 
 @allure.feature("Qube - Проект Arisha (mobile)")
-@allure.story("Клиентский роут - Отправка обратной связи - Мобильная")
+@allure.story("Отправка обратной связи")
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile

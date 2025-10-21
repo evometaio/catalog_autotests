@@ -3,7 +3,7 @@ import pytest
 
 
 @allure.feature("Qube - Проект Arisha")
-@allure.story("Агентский роут - Загрузка PDF")
+@allure.story("Скачивание PDF Предложения")
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui

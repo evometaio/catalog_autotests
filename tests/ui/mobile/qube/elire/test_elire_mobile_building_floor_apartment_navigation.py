@@ -5,7 +5,7 @@ import pytest
 
 
 @allure.feature("Qube - Проект Elire (mobile)")
-@allure.story("Навигация по зданиям, этажам и апартаментам - Мобильная")
+@allure.story("Навигация по зданиям, этажам и апартаментам")
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile

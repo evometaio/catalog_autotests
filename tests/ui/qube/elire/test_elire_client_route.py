@@ -5,7 +5,7 @@ import pytest
 
 
 @allure.feature("Qube - Проект Elire")
-@allure.story("Клиентский роут - Форма Request Viewing")
+@allure.story("Форма Request Viewing")
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui

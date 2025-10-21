@@ -3,7 +3,7 @@ import pytest
 
 
 @allure.feature("Qube - Проект Arisha")
-@allure.story("360-градусный тур по территории")
+@allure.story("360 тур по территории")
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui

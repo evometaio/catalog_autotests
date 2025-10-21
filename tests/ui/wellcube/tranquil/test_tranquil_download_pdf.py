@@ -5,7 +5,7 @@ import pytest
 
 
 @allure.feature("Wellcube - Проект Tranquil")
-@allure.story("Загрузка PDF - Fraction Ownership Offer")
+@allure.story("Скачавание PDF - Fraction Ownership Offer")
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui

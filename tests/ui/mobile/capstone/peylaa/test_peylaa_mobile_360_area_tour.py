@@ -3,7 +3,7 @@ import pytest
 
 
 @allure.feature("Capstone - Проект Peylaa (mobile)")
-@allure.story("360-градусный тур по территории - Мобильная")
+@allure.story("360 тур по территории")
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile

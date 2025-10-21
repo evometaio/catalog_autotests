@@ -6,7 +6,7 @@ class TestArishaMobileAgentRoute:
     """Мобильные тесты для агентского роута Arisha."""
 
     @allure.feature("Qube - Проект Arisha (mobile)")
-    @allure.story("Агентский роут Arisha - Мобильная")
+    @allure.story("Скачивание PDF предложения")
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.mobile
     @pytest.mark.regression
