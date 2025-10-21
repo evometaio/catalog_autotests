@@ -313,6 +313,10 @@ jobs:
     needs: [ubuntu-firefox, windows-chromium, macos-webkit, deploy-allure]
     if: always() && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event_name == 'pull_request')
     steps:
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
       - name: Download results
         uses: actions/download-artifact@v4
         continue-on-error: true
@@ -335,10 +339,11 @@ jobs:
             echo "No result files found, setting counts to 0"
             passed=0; failed=0; broken=0
           else
-            echo "Processing ${#files[@]} result files..."
-            passed=$(grep -ho '"status": *"passed"'   "${files[@]}" | wc -l || true)
-            failed=$(grep -ho '"status": *"failed"'   "${files[@]}" | wc -l || true)
-            broken=$(grep -ho '"status": *"broken"'   "${files[@]}" | wc -l || true)
+            echo "Processing ${#files[@]} result files (top-level statuses only)..."
+            statuses=$(jq -r '.status // empty' "${files[@]}" || true)
+            passed=$(printf "%s\n" "$statuses" | grep -c '^passed$' || true)
+            failed=$(printf "%s\n" "$statuses" | grep -c '^failed$' || true)
+            broken=$(printf "%s\n" "$statuses" | grep -c '^broken$' || true)
             echo "Counts: passed=$passed, failed=$failed, broken=$broken"
           fi
           echo "PASSED=$passed" >> "$GITHUB_ENV"
