@@ -306,6 +306,13 @@ jobs:
           publish_dir: ./allure-report
           destination_dir: allure-report
 
+      - name: Upload Allure summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-summary
+          path: allure-report/widgets/summary.json
+
 
 
   notify:
@@ -325,26 +332,26 @@ jobs:
           pattern: allure-results-*
           merge-multiple: true
 
+      - name: Download Allure summary
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: allure-summary
+          path: ./allure-summary
+
       - name: Compute test status counts
         shell: bash
         run: |
-          echo "🔍 Checking for test result files..."
-          ls -la allure-results/ || echo "No allure-results directory found"
-          
-          shopt -s nullglob
-          files=(allure-results/*-result.json)
-          echo "Found ${#files[@]} result files"
-          
-          if [ ${#files[@]} -eq 0 ]; then
-            echo "No result files found, setting counts to 0"
-            passed=0; failed=0; broken=0
+          echo "🔍 Reading Allure summary only..."
+          if [ -f ./allure-summary/summary.json ]; then
+            echo "Found summary.json"
+            passed=$(jq -r '.statistic.passed' ./allure-summary/summary.json)
+            failed=$(jq -r '.statistic.failed' ./allure-summary/summary.json)
+            broken=$(jq -r '.statistic.broken' ./allure-summary/summary.json)
+            echo "Counts from summary.json: passed=$passed, failed=$failed, broken=$broken"
           else
-            echo "Processing ${#files[@]} result files (top-level statuses only)..."
-            statuses=$(jq -r '.status // empty' "${files[@]}" || true)
-            passed=$(printf "%s\n" "$statuses" | grep -c '^passed$' || true)
-            failed=$(printf "%s\n" "$statuses" | grep -c '^failed$' || true)
-            broken=$(printf "%s\n" "$statuses" | grep -c '^broken$' || true)
-            echo "Counts: passed=$passed, failed=$failed, broken=$broken"
+            echo "summary.json not found, setting counts to 0 (no fallback to raw)."
+            passed=0; failed=0; broken=0
           fi
           echo "PASSED=$passed" >> "$GITHUB_ENV"
           echo "FAILED=$failed" >> "$GITHUB_ENV"
@@ -362,9 +369,9 @@ jobs:
             Окружение: ${{ github.event.inputs.environment || 'prod' }}
             Тип запуска: ${{ github.event.inputs.run_type || (github.event_name == 'schedule' && 'scheduled') || 'regression' }}
 
-            passed: ${{ env.PASSED }}
-            failed: ${{ env.FAILED }}
-            broken: ${{ env.BROKEN }}
+            🟩 passed: ${{ env.PASSED }}
+            🟨 failed: ${{ env.FAILED }}
+            🟥 broken: ${{ env.BROKEN }}
 
             📊 Отчет: <a href="https://${{ github.repository_owner }}.github.io/catalog_autotests/allure-report/">Allure</a>
             🔗 Actions: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">GH Actions</a>
