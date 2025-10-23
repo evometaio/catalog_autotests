@@ -35,7 +35,9 @@ def test_elire_mobile_explore_amenities(mobile_page, route_type):
         )
 
     with allure.step("Проверяем отображение слайдера в модалке"):
-        mobile_page.browser.expect_visible(mobile_page.project_locators.AMENITIES_SLIDER)
+        mobile_page.browser.expect_visible(
+            mobile_page.project_locators.AMENITIES_SLIDER
+        )
 
     with allure.step("Проверяем наличие изображений в слайдере"):
         images = mobile_page.browser.query_selector_all(

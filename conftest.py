@@ -175,30 +175,6 @@ def base_url():
     return _get_urls_by_environment()["map"]
 
 
-@pytest.fixture(scope="session")
-def agent_url():
-    """Base agent URL в зависимости от окружения"""
-    return _get_urls_by_environment()["agent"]
-
-
-@pytest.fixture(scope="session")
-def client_url():
-    """Base client URL в зависимости от окружения"""
-    return _get_urls_by_environment()["client"]
-
-
-@pytest.fixture(scope="session")
-def capstone_map_url():
-    """URL карты проекта Capstone в зависимости от окружения"""
-    return _get_urls_by_environment()["capstone_map"]
-
-
-@pytest.fixture(scope="session")
-def wellcube_map_url():
-    """URL карты проекта Wellcube (Tranquil) в зависимости от окружения"""
-    return _get_urls_by_environment()["wellcube_map"]
-
-
 @pytest.fixture
 def fake():
     """Фикстура для генерации тестовых данных с помощью Faker."""
@@ -232,22 +208,6 @@ def map_page(page: Page, request):
     else:  # qube
         url = urls["map"]
         return BasePage(page, url, BaseLocators)
-
-
-@pytest.fixture
-def agent_page(page: Page):
-    """Фикстура для агентских страниц всех проектов."""
-    urls = _get_urls_by_environment()
-    url = urls["agent"]
-    return BasePage(page, url, BaseLocators)
-
-
-@pytest.fixture
-def client_page(page: Page):
-    """Фикстура для клиентских страниц всех проектов."""
-    urls = _get_urls_by_environment()
-    url = urls["client"]
-    return BasePage(page, url, BaseLocators)
 
 
 # Хук для обработки результатов тестов
@@ -311,11 +271,6 @@ def _get_urls_by_environment() -> dict:
 def get_mobile_device_config(device_name: str) -> dict:
     """Получить конфигурацию мобильного устройства."""
     return MOBILE_DEVICES.get(device_name, MOBILE_DEVICES["iphone_13"])
-
-
-def get_available_devices() -> list:
-    """Получить список доступных мобильных устройств."""
-    return list(MOBILE_DEVICES.keys())
 
 
 def _get_mobile_base_url(route_type: str = "map", project_type: str = "qube") -> str:
@@ -406,31 +361,6 @@ def mobile_page(page, request):
     )
 
     return mobile_page
-
-
-@pytest.fixture
-def mobile_agent_page(page):
-    """Фикстура для MobilePage с агентским роутом."""
-    from pages.mobile.mobile_page import MobilePage
-
-    mobile_page = MobilePage(page)
-    mobile_page.base_url = _get_mobile_base_url("agent", "qube")
-    mobile_page.project_locators = BaseLocators()
-    return mobile_page
-
-
-@pytest.fixture
-def mobile_client_page(page):
-    """Фикстура для MobilePage с клиентским роутом."""
-    from pages.mobile.mobile_page import MobilePage
-
-    mobile_page = MobilePage(page)
-    mobile_page.base_url = _get_mobile_base_url("client", "qube")
-    mobile_page.project_locators = BaseLocators()
-    return mobile_page
-
-
-# ==================== НОВЫЕ ФИКСТУРЫ С УЛУЧШЕННОЙ АРХИТЕКТУРОЙ ====================
 
 
 @pytest.fixture
