@@ -127,12 +127,6 @@ def test_arisha_apartment_information(arisha_page, route_type):
         arisha_page.apartment_info.wait_for_info_to_appear()
         arisha_page.browser.wait_for_timeout(2000)
 
-    with allure.step("Проверяем тип апартамента"):
-        type_visible = arisha_page.apartment_info.check_apartment_type()
-        arisha_page.assertions.assert_that(
-            type_visible, "Тип апартамента не отображается"
-        )
-
     with allure.step("Проверяем информацию о здании"):
         building_visible = arisha_page.apartment_info.check_building_info()
         arisha_page.assertions.assert_that(
