@@ -1,4 +1,0 @@
-Ошибка при ожидании загрузки карты: Page.wait_for_selector: Timeout 20000ms exceeded.
-Call log:
-  - waiting for locator("div[aria-label=\"Elire\"], div[aria-label*=\"ARISHA\"], div[aria-label*=\"CUBIX\"], div[aria-label*=\"Peylaa\"], div[aria-label*=\"Tranquil\"]") to be visible
-
