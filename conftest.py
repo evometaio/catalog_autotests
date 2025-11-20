@@ -11,6 +11,7 @@ load_dotenv()
 
 from locators.base_locators import BaseLocators
 from locators.capstone.peylaa_locators import PeylaaLocators
+from locators.lsr.mark_locators import MarkLocators
 from locators.qube.arisha_locators import ArishaLocators
 from locators.qube.cubix_locators import CubixLocators
 from locators.qube.elire_locators import ElireLocators
@@ -39,7 +40,7 @@ MOBILE_DEVICES = {
 
 def _create_environment_properties():
     """Создает файл environment.properties для Allure отчета"""
-    env = os.getenv("TEST_ENVIRONMENT", "prod")
+    env = os.getenv("TEST_ENVIRONMENT", "dev")
     device = os.getenv("MOBILE_DEVICE", "desktop")
 
     # Создаем директорию для результатов если её нет
@@ -220,7 +221,7 @@ def pytest_runtest_makereport(item, call):
 
 def _get_urls_by_environment() -> dict:
     """Получить все URL-ы для текущего окружения"""
-    env = os.getenv("TEST_ENVIRONMENT", "prod")
+    env = os.getenv("TEST_ENVIRONMENT", "dev")
 
     # Добавляем информацию в Allure (только окружение)
     allure.dynamic.label("environment", env)
@@ -243,6 +244,10 @@ def _get_urls_by_environment() -> dict:
             "wellcube_map": os.getenv(
                 "DEV_WELLCUBE_BASE_URL", "https://catalog-dev.evometa.io/wellcube/map"
             ),
+            # LSR проект (MARK)
+            "lsr_mark": os.getenv(
+                "DEV_LSR_MARK_BASE_URL", "https://catalog-ru-dev.evometa.io/lsr/project/mark/area"
+            ),
         }
     else:
         return {
@@ -261,6 +266,10 @@ def _get_urls_by_environment() -> dict:
             # Wellcube проект (Tranquil) - PROD
             "wellcube_map": os.getenv(
                 "WELLCUBE_PROD_BASE_URL", "https://catalog.evometa.io/wellcube/map"
+            ),
+            # LSR проект (MARK) - PROD
+            "lsr_mark": os.getenv(
+                "LSR_MARK_PROD_BASE_URL", "https://catalog-ru.evometa.io/lsr/project/mark/area"
             ),
         }
 
@@ -406,3 +415,12 @@ def tranquil_page(page: Page):
 
     urls = _get_urls_by_environment()
     return TranquilPage(page, urls["wellcube_map"])
+
+
+@pytest.fixture
+def mark_page(page: Page):
+    """Фикстура для страницы MARK с новой архитектурой."""
+    from pages.projects.lsr.mark_page import MarkPage
+
+    urls = _get_urls_by_environment()
+    return MarkPage(page, urls["lsr_mark"])

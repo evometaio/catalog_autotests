@@ -11,7 +11,7 @@ class ApartmentWidgetComponent:
     Ответственность:
     - Переключение режимов 2D/3D
     - Навигация по слайдам
-    - Управление скоростью
+    - Управление зумом/скоростью
     - Проверки отображения
     """
 
@@ -37,13 +37,19 @@ class ApartmentWidgetComponent:
 
     def get_widget_frame(self):
         """Получить frame_locator для виджета апартамента."""
+        # Для MARK используем универсальный селектор iframe
+        if self.project_name == "mark":
+            return self.page.frame_locator("iframe")
         return self.page.frame_locator("iframe[class*='_iframe_']")
 
     def wait_for_widget_load(self):
         """Ожидать загрузки виджета."""
         with allure.step("Ожидаем загрузки виджета апартамента"):
+            # Для MARK используем универсальный селектор iframe
+            iframe_selector = "iframe" if self.project_name == "mark" else "iframe[class*='_iframe_']"
+            
             # Ждем появления iframe
-            self.page.wait_for_selector("iframe[class*='_iframe_']", timeout=15000)
+            self.page.wait_for_selector(iframe_selector, timeout=15000)
 
             # Ждем загрузки содержимого iframe
             iframe = self.get_widget_frame()
@@ -98,9 +104,11 @@ class ApartmentWidgetComponent:
             # Ждем активации кнопки
             self.page.wait_for_timeout(1000)
 
-            # Ждем появления стрелочек навигации в режиме 2D
-            next_arrow = frame_locator.locator(self.locators.NEXT_ARROW).first
-            next_arrow.wait_for(state="visible", timeout=10000)
+            # Ждем появления стрелочек навигации в режиме 2D (только для проектов, где стрелки есть в 2D)
+            # В MARK стрелки появляются только в 3D режиме
+            if self.project_name != "mark":
+                next_arrow = frame_locator.locator(self.locators.NEXT_ARROW).first
+                next_arrow.wait_for(state="visible", timeout=10000)
 
     def switch_to_3d_mode(self):
         """Переключиться в режим 3D."""
@@ -128,9 +136,9 @@ class ApartmentWidgetComponent:
             # Ждем активации кнопки
             self.page.wait_for_timeout(1000)
 
-    def click_speed_button(self) -> bool:
+    def click_zoom_button(self) -> bool:
         """
-        Кликнуть на кнопку скорости 0.5x.
+        Кликнуть на кнопку зума 0.5x.
 
         Returns:
             bool: True если кнопка была найдена и нажата
@@ -138,12 +146,12 @@ class ApartmentWidgetComponent:
         if not self.locators:
             return False
 
-        with allure.step("Кликаем на кнопку скорости"):
+        with allure.step("Кликаем на кнопку зума"):
             frame_locator = self.get_widget_frame()
-            speed_button = frame_locator.locator(self.locators.SPEED_BUTTON)
+            zoom_button = frame_locator.locator(self.locators.SPEED_BUTTON)
 
-            if speed_button.count() > 0 and speed_button.first.is_visible():
-                speed_button.first.click()
+            if zoom_button.count() > 0 and zoom_button.first.is_visible():
+                zoom_button.first.click()
                 self.page.wait_for_timeout(500)
                 return True
             return False
@@ -208,7 +216,8 @@ class ApartmentWidgetComponent:
         scene_indicator = frame_locator.locator(self.locators.SCENE_INDICATOR)
 
         if scene_indicator.count() > 0:
-            return scene_indicator.first.text_content()
+            current_scene = scene_indicator.first.text_content()
+            return current_scene
         return None
 
     def check_navigation_arrows_visible(self) -> bool:
@@ -226,10 +235,16 @@ class ApartmentWidgetComponent:
         prev_arrows = frame_locator.locator(self.locators.PREV_ARROW)
         next_arrows = frame_locator.locator(self.locators.NEXT_ARROW)
 
-        prev_visible = prev_arrows.count() > 0 and prev_arrows.first.is_visible()
-        next_visible = next_arrows.count() > 0 and next_arrows.first.is_visible()
-
-        return prev_visible and next_visible
+        # Для MARK используем второй элемент (первый может быть скрыт)
+        if self.project_name == "mark":
+            # Проверяем, что второй элемент существует и видим
+            prev_visible = prev_arrows.count() > 0 and prev_arrows.is_visible()
+            next_visible = next_arrows.count() > 0 and next_arrows.is_visible()
+            return prev_visible and next_visible
+        else:
+            prev_visible = prev_arrows.count() > 0 and prev_arrows.first.is_visible()
+            next_visible = next_arrows.count() > 0 and next_arrows.first.is_visible()
+            return prev_visible and next_visible
 
     def check_navigation_arrows_hidden(self) -> bool:
         """
