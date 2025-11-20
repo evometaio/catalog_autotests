@@ -106,6 +106,13 @@ class MapComponent:
 
             button.click()
 
+            # Ждем перехода на страницу проекта
+            self.page.wait_for_url(
+                self.project_locators.PROJECT_URL_PATTERN,
+                wait_until="domcontentloaded",
+                timeout=10000,
+            )
+
     def click_on_custom_poi(self):
         """Кликнуть на кастомную POI."""
         self.page.locator(self.locators.POI_LOCATOR).click()
