@@ -104,5 +104,3 @@ def test_mark_mobile_apartment_widget_full_functionality(mark_page):
             name="Final Widget State (mobile)",
             attachment_type=allure.attachment_type.PNG,
         )
-
-

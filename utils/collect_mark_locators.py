@@ -46,7 +46,9 @@ def _get_mobile_device_config(device_name: str = "iphone_13") -> dict:
                 "Chrome/91.0.4472.120 Mobile Safari/537.36"
             ),
         },
-    }.get(device_name, _get_mobile_device_config.__defaults__[0])  # type: ignore
+    }.get(
+        device_name, _get_mobile_device_config.__defaults__[0]
+    )  # type: ignore
 
 
 def collect_page_locators(page: Page, name: str) -> Dict:
@@ -142,9 +144,7 @@ def navigate_to_catalog(page: Page, is_mobile: bool):
         all_units.first.click()
     else:
         print("\n➡️ DESKTOP: кликаем на кнопку All units")
-        all_units = page.locator(
-            '[data-test-id="nav-desktop-catalog2d-standalone"]'
-        )
+        all_units = page.locator('[data-test-id="nav-desktop-catalog2d-standalone"]')
         all_units.first.wait_for(state="visible", timeout=10000)
         all_units.first.click()
 
@@ -264,5 +264,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

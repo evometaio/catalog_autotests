@@ -34,8 +34,6 @@ def test_mark_mobile_catalog_navigation(mark_page):
         )
         # Ждем, пока на странице появится хотя бы одна кнопка квартиры
         property_buttons.first.wait_for(state="attached", timeout=10000)
-        assert property_buttons.count() > 0, (
-            "Не найдено кнопок квартир в каталоге на мобилке"
-        )
-
-
+        assert (
+            property_buttons.count() > 0
+        ), "Не найдено кнопок квартир в каталоге на мобилке"

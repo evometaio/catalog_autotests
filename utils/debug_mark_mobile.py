@@ -134,5 +134,3 @@ def debug_mark_mobile():
 
 if __name__ == "__main__":
     debug_mark_mobile()
-
-

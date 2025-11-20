@@ -9,7 +9,9 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
-@pytest.mark.skip(reason="Мобильный 360 тест для MARK ещё не оптимизирован, временно пропускаем")
+@pytest.mark.skip(
+    reason="Мобильный 360 тест для MARK ещё не оптимизирован, временно пропускаем"
+)
 @pytest.mark.parametrize(
     "panorama_type",
     ["rotation", "yard", "lobby-k1", "lobby-k2", "lobby-k3"],
@@ -64,5 +66,3 @@ def test_mark_mobile_360_area_tour(mark_page, panorama_type):
 
         total_content = iframe.count() + canvas.count() + video.count()
         assert total_content > 0, "Контент 360 тура не найден на мобильной странице"
-
-
