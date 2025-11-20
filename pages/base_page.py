@@ -51,11 +51,18 @@ class BasePage:
                 "/map", "/project/{project}/area"
             )
             self.map_url = base_url
+            self.has_map = True
+        else:
+            self.has_map = False
 
         # Композиция компонентов
         self.browser = BrowserActions(page)
         self.assertions = Assertions(page)
-        self.map = MapComponent(page, self.project_locators)
+
+        # MapComponent создаем только если есть /map роут
+        if self.has_map:
+            self.map = MapComponent(page, self.project_locators)
+
         self.amenities = AmenitiesComponent(page, self.project_locators)
 
     def open(self, path: str = "", route_type: str = None):
@@ -64,13 +71,15 @@ class BasePage:
 
         Args:
             path: Дополнительный путь к базовому URL
-            route_type: Тип роута - "client", "agent" или "map". Если указан, изменяет URL соответственно.
+            route_type: Тип роута - "client", "agent" или "map".
+                       Если указан, изменяет URL соответственно.
+                       Игнорируется для проектов без /map роута.
         """
         # Определяем URL
         url = self.base_url
 
-        # Если указан route_type, изменяем URL
-        if route_type and route_type != "map":
+        # Если указан route_type и есть /map роут, изменяем URL
+        if route_type and route_type != "map" and self.has_map:
             # Для agent и client меняем /map на /agent/map или /client/map
             if "/map" in url and route_type in ["agent", "client"]:
                 url = url.replace("/map", f"/{route_type}/map")
@@ -88,8 +97,8 @@ class BasePage:
 
         current_url = self.get_current_url()
 
-        # Проверяем тип роута, если указан
-        if route_type:
+        # Проверяем тип роута, если указан и есть /map роут
+        if route_type and self.has_map:
             self.assertions.assert_that(
                 route_type in current_url,
                 f"Не открылась страница {route_type}. URL: {current_url}",

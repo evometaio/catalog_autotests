@@ -290,8 +290,11 @@ class MobilePage(BasePage):
 
     def click_mobile_explore_amenities_button(self):
         """Кликнуть на кнопку Explore Amenities для мобильных устройств."""
+        # Для мобильных версий Arisha и Cubix корректен первый экземпляр кнопки
+        # Explore Amenities, поэтому используем явный индекс [1], чтобы
+        # избежать strict mode violation при наличии дубликатов.
         mobile_amenities_button = (
-            '//button[@data-test-id="project-info-window-explore-amenities"]'
+            '(//button[@data-test-id="project-info-window-explore-amenities"])[1]'
         )
         self.browser.click(mobile_amenities_button)
 

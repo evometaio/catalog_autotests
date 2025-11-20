@@ -45,6 +45,11 @@ class PageFactory:
             from pages.projects.wellcube.tranquil_page import TranquilPage
 
             return TranquilPage(page)
+        elif project_name_lower == "mark":
+            from pages.projects.lsr.mark_page import MarkPage
+
+            urls = _get_urls_by_environment()
+            return MarkPage(page, urls["lsr_mark"])
         else:
             raise ValueError(f"Неизвестный проект: {project_name}")
 
@@ -72,6 +77,11 @@ class PageFactory:
             from pages.projects.wellcube.tranquil_page import TranquilPage
 
             return TranquilPage(page)
+        elif developer_type == "lsr":
+            from pages.projects.lsr.mark_page import MarkPage
+
+            urls = _get_urls_by_environment()
+            return MarkPage(page, urls["lsr_mark"])
         else:
             raise ValueError(f"Неизвестный тип застройщика: {developer_type}")
 
