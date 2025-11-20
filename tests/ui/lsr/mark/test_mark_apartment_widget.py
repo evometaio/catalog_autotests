@@ -1,4 +1,4 @@
-"""Тест виджета апартамента для проекта MARK."""
+import os
 
 import allure
 import pytest
@@ -9,6 +9,10 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
+@pytest.mark.skipif(
+    os.getenv("TEST_ENVIRONMENT", "prod") != "dev",
+    reason="Тест запускается только на dev окружении",
+)
 def test_mark_apartment_widget_full_functionality(mark_page):
     """Тест полного функционала виджета апартамента MARK."""
     with allure.step("Открываем главную страницу MARK"):

@@ -1,5 +1,3 @@
-"""Мобильный тест 360 Area Tour для проекта MARK."""
-
 import allure
 import pytest
 

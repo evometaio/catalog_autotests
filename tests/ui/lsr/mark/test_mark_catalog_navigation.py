@@ -1,4 +1,4 @@
-"""Тест навигации в каталог для проекта MARK."""
+import os
 
 import allure
 import pytest
@@ -9,6 +9,10 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
+@pytest.mark.skipif(
+    os.getenv("TEST_ENVIRONMENT", "prod") != "dev",
+    reason="Тест запускается только на dev окружении",
+)
 def test_mark_catalog_navigation(mark_page):
     """Тест перехода в каталог квартир для проекта MARK."""
     with allure.step("Открываем главную страницу MARK"):
