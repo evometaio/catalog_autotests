@@ -35,7 +35,7 @@ class AreaTour360Component:
     def click_360_menu_item(self, menu_item: str = "yard"):
         """
         Кликнуть на пункт меню панорам (для MARK и других проектов с меню выбора).
-        
+
         Args:
             menu_item: Тип панорамы - "rotation", "yard", "lobby-k1", "lobby-k2", "lobby-k3"
         """
@@ -44,13 +44,23 @@ class AreaTour360Component:
             if hasattr(self.locators, "AREA_TOUR_360_MENU_TOUR_YARD"):
                 # MARK имеет меню выбора
                 menu_selectors = {
-                    "rotation": getattr(self.locators, "AREA_TOUR_360_MENU_ROTATION", None),
-                    "yard": getattr(self.locators, "AREA_TOUR_360_MENU_TOUR_YARD", None),
-                    "lobby-k1": getattr(self.locators, "AREA_TOUR_360_MENU_TOUR_LOBBY_K1", None),
-                    "lobby-k2": getattr(self.locators, "AREA_TOUR_360_MENU_TOUR_LOBBY_K2", None),
-                    "lobby-k3": getattr(self.locators, "AREA_TOUR_360_MENU_TOUR_LOBBY_K3", None),
+                    "rotation": getattr(
+                        self.locators, "AREA_TOUR_360_MENU_ROTATION", None
+                    ),
+                    "yard": getattr(
+                        self.locators, "AREA_TOUR_360_MENU_TOUR_YARD", None
+                    ),
+                    "lobby-k1": getattr(
+                        self.locators, "AREA_TOUR_360_MENU_TOUR_LOBBY_K1", None
+                    ),
+                    "lobby-k2": getattr(
+                        self.locators, "AREA_TOUR_360_MENU_TOUR_LOBBY_K2", None
+                    ),
+                    "lobby-k3": getattr(
+                        self.locators, "AREA_TOUR_360_MENU_TOUR_LOBBY_K3", None
+                    ),
                 }
-                
+
                 selector = menu_selectors.get(menu_item)
                 if selector:
                     menu_item_element = self.page.locator(selector)
@@ -67,7 +77,9 @@ class AreaTour360Component:
         with allure.step("Проверяем отображение модального окна 360 Area Tour"):
             modal = self.page.locator(self.locators.AREA_TOUR_360_MODAL)
             modal.first.wait_for(state="visible", timeout=10000)
-            assert modal.first.is_visible(), "Модальное окно 360 Area Tour не отображается"
+            assert (
+                modal.first.is_visible()
+            ), "Модальное окно 360 Area Tour не отображается"
 
     def verify_content(self):
         """Проверить наличие контента в модальном окне 360 Area Tour."""

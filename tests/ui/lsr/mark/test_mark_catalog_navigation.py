@@ -24,4 +24,3 @@ def test_mark_catalog_navigation(mark_page):
         # Ждем появления хотя бы одной кнопки (может быть скрыта, но должна быть в DOM)
         property_buttons.first.wait_for(state="attached", timeout=10000)
         assert property_buttons.count() > 0, "Не найдено кнопок квартир в каталоге"
-

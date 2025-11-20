@@ -46,8 +46,10 @@ class ApartmentWidgetComponent:
         """Ожидать загрузки виджета."""
         with allure.step("Ожидаем загрузки виджета апартамента"):
             # Для MARK используем универсальный селектор iframe
-            iframe_selector = "iframe" if self.project_name == "mark" else "iframe[class*='_iframe_']"
-            
+            iframe_selector = (
+                "iframe" if self.project_name == "mark" else "iframe[class*='_iframe_']"
+            )
+
             # Ждем появления iframe
             self.page.wait_for_selector(iframe_selector, timeout=15000)
 

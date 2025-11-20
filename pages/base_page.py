@@ -58,11 +58,11 @@ class BasePage:
         # Композиция компонентов
         self.browser = BrowserActions(page)
         self.assertions = Assertions(page)
-        
+
         # MapComponent создаем только если есть /map роут
         if self.has_map:
             self.map = MapComponent(page, self.project_locators)
-        
+
         self.amenities = AmenitiesComponent(page, self.project_locators)
 
     def open(self, path: str = "", route_type: str = None):
@@ -71,7 +71,7 @@ class BasePage:
 
         Args:
             path: Дополнительный путь к базовому URL
-            route_type: Тип роута - "client", "agent" или "map". 
+            route_type: Тип роута - "client", "agent" или "map".
                        Если указан, изменяет URL соответственно.
                        Игнорируется для проектов без /map роута.
         """

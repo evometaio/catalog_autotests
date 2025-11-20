@@ -94,4 +94,3 @@ def test_mark_apartment_widget_full_functionality(mark_page):
             name="Final Widget State",
             attachment_type=allure.attachment_type.PNG,
         )
-

@@ -246,7 +246,8 @@ def _get_urls_by_environment() -> dict:
             ),
             # LSR проект (MARK)
             "lsr_mark": os.getenv(
-                "DEV_LSR_MARK_BASE_URL", "https://catalog-ru-dev.evometa.io/lsr/project/mark/area"
+                "DEV_LSR_MARK_BASE_URL",
+                "https://catalog-ru-dev.evometa.io/lsr/project/mark/area",
             ),
         }
     else:
@@ -269,7 +270,8 @@ def _get_urls_by_environment() -> dict:
             ),
             # LSR проект (MARK) - PROD
             "lsr_mark": os.getenv(
-                "LSR_MARK_PROD_BASE_URL", "https://catalog-ru.evometa.io/lsr/project/mark/area"
+                "LSR_MARK_PROD_BASE_URL",
+                "https://catalog-ru.evometa.io/lsr/project/mark/area",
             ),
         }
 

@@ -39,9 +39,7 @@ class MarkPage(BasePage):
         self.amenities = AmenitiesComponent(page, self.project_locators)
         self.area_tour_360 = AreaTour360Component(page, self.project_locators)
         self.navigation = NavigationComponent(page, self.project_locators)
-        self.apartment_widget = ApartmentWidgetComponent(
-            page, MarkLocators, "mark"
-        )
+        self.apartment_widget = ApartmentWidgetComponent(page, MarkLocators, "mark")
 
         # Устанавливаем название проекта
         self.project_name = "mark"
@@ -58,7 +56,7 @@ class MarkPage(BasePage):
     def click_360_panorama_menu_item(self, menu_item: str = "yard"):
         """
         Кликнуть на пункт меню панорам.
-        
+
         Args:
             menu_item: Тип панорамы - "rotation", "yard", "lobby-k1", "lobby-k2", "lobby-k3"
         """
@@ -69,11 +67,11 @@ class MarkPage(BasePage):
             "lobby-k2": self.project_locators.AREA_TOUR_360_MENU_TOUR_LOBBY_K2,
             "lobby-k3": self.project_locators.AREA_TOUR_360_MENU_TOUR_LOBBY_K3,
         }
-        
+
         selector = menu_selectors.get(menu_item)
         if not selector:
             raise ValueError(f"Неизвестный пункт меню: {menu_item}")
-        
+
         self.browser.click(selector)
 
     def open(self, path: str = "", route_type: str = None):
@@ -97,4 +95,3 @@ class MarkPage(BasePage):
         # Принудительно сбрасываем масштаб страницы
         self.page.evaluate("document.body.style.zoom = '1'")
         self.page.evaluate("document.documentElement.style.zoom = '1'")
-
