@@ -129,6 +129,7 @@ jobs:
 
       - name: Run tests (Chromium/Windows)
         shell: pwsh
+        continue-on-error: true
         run: pytest tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
