@@ -76,7 +76,7 @@ def test_arisha_apartment_widget_full_functionality(arisha_page, route_type):
         arisha_page.assertions.assert_that(button_active, "Кнопка 3D не стала активной")
 
     with allure.step("Кликаем на кнопку зума 0.5x"):
-        speed_clicked = arisha_page.apartment_widget.click_speed_button()
+        speed_clicked = arisha_page.apartment_widget.click_zoom_button()
 
         if speed_clicked:
             allure.attach(

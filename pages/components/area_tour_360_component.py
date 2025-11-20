@@ -28,9 +28,19 @@ class AreaTour360Component:
     def click_360_button(self):
         """Кликнуть на кнопку 360 Area Tour."""
         with allure.step("Кликаем на кнопку 360 Area Tour"):
-            button = self.page.locator(self.locators.AREA_TOUR_360_BUTTON)
-            button.wait_for(state="visible", timeout=10000)
-            button.click()
+            locator = self.page.locator(self.locators.AREA_TOUR_360_BUTTON)
+
+            # Для MARK на мобилке есть две одинаковые кнопки, и Playwright ругается
+            # strict mode violation. В headless/mobile видимость может быть некорректной,
+            # поэтому для MARK явно берем второй элемент и кликаем с force=True.
+            project_name = getattr(self.locators, "PROJECT_NAME", "").lower()
+            if project_name == "mark" and locator.count() > 1:
+                button = locator.nth(1)
+                button.click(force=True)
+            else:
+                button = locator.first
+                button.wait_for(state="visible", timeout=10000)
+                button.click()
 
     def click_360_menu_item(self, menu_item: str = "yard"):
         """
