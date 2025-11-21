@@ -28,19 +28,42 @@ class AreaTour360Component:
     def click_360_button(self):
         """Кликнуть на кнопку 360 Area Tour."""
         with allure.step("Кликаем на кнопку 360 Area Tour"):
-            locator = self.page.locator(self.locators.AREA_TOUR_360_BUTTON)
-
-            # Для MARK на мобилке есть две одинаковые кнопки, и Playwright ругается
-            # strict mode violation. В headless/mobile видимость может быть некорректной,
-            # поэтому для MARK явно берем второй элемент и кликаем с force=True.
             project_name = getattr(self.locators, "PROJECT_NAME", "").lower()
-            if project_name == "mark" and locator.count() > 1:
-                button = locator.nth(1)
-                button.click(force=True)
-            else:
-                button = locator.first
+            import os
+
+            device = os.getenv("MOBILE_DEVICE", "desktop")
+
+            # Для MARK на мобилке используем XPath локатор
+            if project_name == "mark" and device != "desktop":
+                button = self.page.locator(
+                    'xpath=(//button[@data-test-id="nav-rotation-view-controls-button"])[2]'
+                )
                 button.wait_for(state="visible", timeout=10000)
                 button.click()
+            else:
+                # Десктопный или другой проект
+                locator = self.page.locator(self.locators.AREA_TOUR_360_BUTTON)
+                if project_name == "mark" and locator.count() > 1:
+                    # Ищем первую видимую кнопку
+                    button = None
+                    for idx in range(locator.count()):
+                        candidate = locator.nth(idx)
+                        try:
+                            if candidate.is_visible():
+                                button = candidate
+                                break
+                        except Exception:
+                            continue
+
+                    # Если видимая не найдена, берём последнюю
+                    if button is None:
+                        button = locator.last
+
+                    button.click(force=True)
+                else:
+                    button = locator.first
+                    button.wait_for(state="visible", timeout=10000)
+                    button.click()
 
     def click_360_menu_item(self, menu_item: str = "yard"):
         """
@@ -50,28 +73,47 @@ class AreaTour360Component:
             menu_item: Тип панорамы - "rotation", "yard", "lobby-k1", "lobby-k2", "lobby-k3"
         """
         with allure.step(f"Кликаем на пункт меню панорам: {menu_item}"):
+            import os
+
+            device = os.getenv("MOBILE_DEVICE", "desktop")
+            project_name = getattr(self.locators, "PROJECT_NAME", "").lower()
+
             # Проверяем, есть ли специальные локаторы для меню
             if hasattr(self.locators, "AREA_TOUR_360_MENU_TOUR_YARD"):
                 # MARK имеет меню выбора
-                menu_selectors = {
-                    "rotation": getattr(
-                        self.locators, "AREA_TOUR_360_MENU_ROTATION", None
-                    ),
-                    "yard": getattr(
-                        self.locators, "AREA_TOUR_360_MENU_TOUR_YARD", None
-                    ),
-                    "lobby-k1": getattr(
-                        self.locators, "AREA_TOUR_360_MENU_TOUR_LOBBY_K1", None
-                    ),
-                    "lobby-k2": getattr(
-                        self.locators, "AREA_TOUR_360_MENU_TOUR_LOBBY_K2", None
-                    ),
-                    "lobby-k3": getattr(
-                        self.locators, "AREA_TOUR_360_MENU_TOUR_LOBBY_K3", None
-                    ),
-                }
+                # На мобилке используется формат nav-rotation-view-controls-list-tour-*
+                # На десктопе используется формат nav-rotation-view-controls-menu-*
+                if project_name == "mark" and device != "desktop":
+                    # Мобильные локаторы
+                    mobile_menu_selectors = {
+                        "rotation": '[data-test-id="nav-rotation-view-controls-list-tour-rotation"]',
+                        "yard": '[data-test-id="nav-rotation-view-controls-list-tour-yard"]',
+                        "lobby-k1": '[data-test-id="nav-rotation-view-controls-list-tour-lobby-k1"]',
+                        "lobby-k2": '[data-test-id="nav-rotation-view-controls-list-tour-lobby-k2"]',
+                        "lobby-k3": '[data-test-id="nav-rotation-view-controls-list-tour-lobby-k3"]',
+                    }
+                    selector = mobile_menu_selectors.get(menu_item)
+                else:
+                    # Десктопные локаторы
+                    menu_selectors = {
+                        "rotation": getattr(
+                            self.locators, "AREA_TOUR_360_MENU_ROTATION", None
+                        ),
+                        "yard": getattr(
+                            self.locators, "AREA_TOUR_360_MENU_TOUR_YARD", None
+                        ),
+                        "lobby-k1": getattr(
+                            self.locators, "AREA_TOUR_360_MENU_TOUR_LOBBY_K1", None
+                        ),
+                        "lobby-k2": getattr(
+                            self.locators, "AREA_TOUR_360_MENU_TOUR_LOBBY_K2", None
+                        ),
+                        "lobby-k3": getattr(
+                            self.locators, "AREA_TOUR_360_MENU_TOUR_LOBBY_K3", None
+                        ),
+                    }
+                    selector = menu_selectors.get(menu_item)
 
-                selector = menu_selectors.get(menu_item)
                 if selector:
                     menu_item_element = self.page.locator(selector)
                     menu_item_element.wait_for(state="visible", timeout=10000)

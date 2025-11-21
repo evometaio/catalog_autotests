@@ -1,3 +1,6 @@
+import os
+import time
+
 import allure
 import pytest
 
@@ -7,8 +10,9 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
-@pytest.mark.skip(
-    reason="Мобильный 360 тест для MARK ещё не оптимизирован, временно пропускаем"
+@pytest.mark.skipif(
+    os.getenv("TEST_ENVIRONMENT", "prod") != "dev",
+    reason="Тест запускается только на dev окружении",
 )
 @pytest.mark.parametrize(
     "panorama_type",
@@ -19,19 +23,9 @@ def test_mark_mobile_360_area_tour(mark_page, panorama_type):
     with allure.step("Открываем главную страницу MARK (mobile)"):
         mark_page.open()
 
-    with allure.step("Кликаем на кнопку 360 Area Tour (Панорамы)"):
-        # На мобилке MARK на странице есть две кнопки Панорамы,
-        # поэтому выбираем второй видимый элемент и кликаем с force=True.
-        buttons = mark_page.page.locator(
-            mark_page.project_locators.AREA_TOUR_360_BUTTON
-        )
-        count = buttons.count()
-        if count == 0:
-            pytest.fail("Кнопка 360 Area Tour не найдена на мобильной версии MARK")
-
-        # Берем второй, если он есть, иначе первый
-        button = buttons.nth(1) if count > 1 else buttons.first
-        button.click(force=True)
+    with allure.step("Кликаем на кнопку 360 Area Tour (Панорамы, mobile)"):
+        # Используем общий компонент, который уже учитывает особенности MARK на мобилке
+        mark_page.area_tour_360.click_360_button()
 
     if panorama_type == "rotation":
         with allure.step("Проверяем 360-панораму rotation (модальное окно)"):
