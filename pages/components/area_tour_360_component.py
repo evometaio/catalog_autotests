@@ -30,11 +30,14 @@ class AreaTour360Component:
         with allure.step("Кликаем на кнопку 360 Area Tour"):
             project_name = getattr(self.locators, "PROJECT_NAME", "").lower()
             import os
+
             device = os.getenv("MOBILE_DEVICE", "desktop")
-            
+
             # Для MARK на мобилке используем XPath локатор
             if project_name == "mark" and device != "desktop":
-                button = self.page.locator('xpath=(//button[@data-test-id="nav-rotation-view-controls-button"])[2]')
+                button = self.page.locator(
+                    'xpath=(//button[@data-test-id="nav-rotation-view-controls-button"])[2]'
+                )
                 button.wait_for(state="visible", timeout=10000)
                 button.click()
             else:
@@ -51,11 +54,11 @@ class AreaTour360Component:
                                 break
                         except Exception:
                             continue
-                    
+
                     # Если видимая не найдена, берём последнюю
                     if button is None:
                         button = locator.last
-                    
+
                     button.click(force=True)
                 else:
                     button = locator.first
@@ -71,9 +74,10 @@ class AreaTour360Component:
         """
         with allure.step(f"Кликаем на пункт меню панорам: {menu_item}"):
             import os
+
             device = os.getenv("MOBILE_DEVICE", "desktop")
             project_name = getattr(self.locators, "PROJECT_NAME", "").lower()
-            
+
             # Проверяем, есть ли специальные локаторы для меню
             if hasattr(self.locators, "AREA_TOUR_360_MENU_TOUR_YARD"):
                 # MARK имеет меню выбора
