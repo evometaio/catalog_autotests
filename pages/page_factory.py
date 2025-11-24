@@ -50,6 +50,11 @@ class PageFactory:
 
             urls = _get_urls_by_environment()
             return MarkPage(page, urls["lsr_mark"])
+        elif project_name_lower == "arsenal":
+            from pages.projects.vibe.arsenal_page import ArsenalPage
+
+            urls = _get_urls_by_environment()
+            return ArsenalPage(page, urls["vibe_arsenal"])
         else:
             raise ValueError(f"Неизвестный проект: {project_name}")
 
@@ -82,6 +87,11 @@ class PageFactory:
 
             urls = _get_urls_by_environment()
             return MarkPage(page, urls["lsr_mark"])
+        elif developer_type == "vibe":
+            from pages.projects.vibe.arsenal_page import ArsenalPage
+
+            urls = _get_urls_by_environment()
+            return ArsenalPage(page, urls["vibe_arsenal"])
         else:
             raise ValueError(f"Неизвестный тип застройщика: {developer_type}")
 

@@ -9,6 +9,8 @@ MOBILE_PROJECT_SELECTORS = {
     "arisha": 'div[aria-label="ARISHA TERRACES"]',
     "elire": 'div[aria-label="Elire"]',
     "cubix": 'div[aria-label="CUBIX RESIDENCE"], div[aria-label="CUBIX RESIDENCES"]',
+    "arsenal": 'div[aria-label="Vibe"], div[title="Vibe"], div[role="img"][aria-label="Vibe"]',
+    "vibe": 'div[aria-label="Vibe"], div[title="Vibe"], div[role="img"][aria-label="Vibe"]',
     "peylaa": 'div[aria-label="Peylaa"]',
     "tranquil": 'div[aria-label="Tranquil Wellness Tower"]',
 }
@@ -32,6 +34,9 @@ MOBILE_ALL_UNITS_BUTTON = "#catalog_2d"
 
 # Навигация по проекту Cubix
 MOBILE_CUBIX_MENU_BUTTON = 'button:has-text("cubix")'
+
+# Навигация по проекту Arsenal
+MOBILE_ARSENAL_MENU_BUTTON = 'button:has-text("arsenal")'
 
 # PDF функциональность
 MOBILE_PDF_BUTTON = 'span[aria-label="file-pdf"]'  # PDF кнопка через иконку

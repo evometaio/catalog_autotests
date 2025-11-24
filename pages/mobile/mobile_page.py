@@ -282,6 +282,14 @@ class MobilePage(BasePage):
                 # 5. Для Cubix клик на кнопку сразу переводит на страницу каталога
                 # Ждем перехода на страницу каталога
                 self.page.wait_for_url("**/catalog_2d", timeout=10000)
+            elif project_name.lower() == "arsenal":
+                arsenal_button = self.page.locator(MOBILE_ARSENAL_MENU_BUTTON)
+                arsenal_button.wait_for(state="visible", timeout=10000)
+                arsenal_button.click()
+
+                # 5. Для Arsenal клик на кнопку сразу переводит на страницу каталога (аналогично Cubix)
+                # Ждем перехода на страницу каталога
+                self.page.wait_for_url("**/catalog_2d", timeout=10000)
             else:
                 # Для других проектов может потребоваться другая логика
                 raise NotImplementedError(

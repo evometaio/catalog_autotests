@@ -15,6 +15,7 @@ from locators.lsr.mark_locators import MarkLocators
 from locators.qube.arisha_locators import ArishaLocators
 from locators.qube.cubix_locators import CubixLocators
 from locators.qube.elire_locators import ElireLocators
+from locators.vibe.arsenal_locators import ArsenalLocators
 from locators.wellcube.tranquil_locators import TranquilLocators
 from pages.base_page import BasePage
 
@@ -249,6 +250,11 @@ def _get_urls_by_environment() -> dict:
                 "DEV_LSR_MARK_BASE_URL",
                 "https://catalog-ru-dev.evometa.io/lsr/project/mark/area",
             ),
+            # Vibe проект (Arsenal)
+            "vibe_arsenal": os.getenv(
+                "DEV_VIBE_ARSENAL_BASE_URL",
+                "https://catalog-dev.evometa.io/arsenal-east/map",
+            ),
         }
     else:
         return {
@@ -272,6 +278,11 @@ def _get_urls_by_environment() -> dict:
             "lsr_mark": os.getenv(
                 "LSR_MARK_PROD_BASE_URL",
                 "https://catalog-ru.evometa.io/lsr/project/mark/area",
+            ),
+            # Vibe проект (Arsenal) - PROD
+            "vibe_arsenal": os.getenv(
+                "VIBE_ARSENAL_PROD_BASE_URL",
+                "https://catalog.evometa.io/arsenal-east/map",
             ),
         }
 
@@ -302,6 +313,8 @@ def _get_mobile_base_url(route_type: str = "map", project_type: str = "qube") ->
         return urls["capstone_map"]
     elif project_type == "wellcube":
         return urls["wellcube_map"]
+    elif project_type == "vibe":
+        return urls["vibe_arsenal"]
     else:  # qube
         if route_type == "agent":
             return urls["agent"]
@@ -354,6 +367,10 @@ def mobile_page(page, request):
         project_type = "qube"
         locators_class = CubixLocators
         project_name = "cubix"
+    elif "arsenal" in test_file or "vibe" in test_file:
+        project_type = "vibe"
+        locators_class = ArsenalLocators
+        project_name = "arsenal"
     else:
         project_type = "qube"
         locators_class = BaseLocators
@@ -426,3 +443,12 @@ def mark_page(page: Page):
 
     urls = _get_urls_by_environment()
     return MarkPage(page, urls["lsr_mark"])
+
+
+@pytest.fixture
+def arsenal_page(page: Page):
+    """Фикстура для страницы Arsenal с новой архитектурой."""
+    from pages.projects.vibe.arsenal_page import ArsenalPage
+
+    urls = _get_urls_by_environment()
+    return ArsenalPage(page, urls["vibe_arsenal"])
