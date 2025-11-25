@@ -8,18 +8,12 @@ import pytest
 @pytest.mark.regression
 @pytest.mark.ui
 def test_arsenal_explore_amenities(arsenal_page):
-    """Тест Explore Amenities для проекта Arsenal."""
+    """Тест Explore Amenities для проекта Arsenal (без routes, только map)."""
     with allure.step("Открываем страницу map"):
         arsenal_page.open(route_type="map")
 
-    with allure.step("Кликаем на проект Arsenal для перехода в каталог"):
-        # Для Arsenal клик на проект сразу ведет в каталог
-        project_button = arsenal_page.page.locator(
-            '[data-test-id="nav-desktop-project-vibe"]'
-        )
-        project_button.wait_for(state="visible", timeout=10000)
-        project_button.click()
-        arsenal_page.page.wait_for_url("**/catalog_2d", timeout=10000)
+    with allure.step("Кликаем на кнопку All units для перехода на catalog2d"):
+        arsenal_page.click_all_units_button()
 
     with allure.step("Проверяем наличие кнопки Explore Amenities"):
         arsenal_page.browser.expect_visible(

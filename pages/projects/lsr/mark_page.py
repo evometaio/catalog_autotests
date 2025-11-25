@@ -95,3 +95,107 @@ class MarkPage(BasePage):
         # Принудительно сбрасываем масштаб страницы
         self.page.evaluate("document.body.style.zoom = '1'")
         self.page.evaluate("document.documentElement.style.zoom = '1'")
+
+    def download_pdf_and_verify(self):
+        """
+        Скачать и проверить PDF для mark.
+
+        Процесс:
+        1. Кликаем на первую кнопку "Скачать PDF" в виджете апартамента
+        2. Ждем появления модального окна
+        3. Ждем загрузки PDF в модалке
+        4. Кликаем на вторую кнопку "Скачать PDF" в модалке
+        5. Скачиваем файл
+        """
+        import os
+        import time
+
+        import allure
+
+        with allure.step("Кликаем на первую кнопку Скачать PDF в виджете"):
+            # На мобильных устройствах сначала нужно открыть дополнительное меню
+            mobile_info_button = self.page.locator(
+                self.project_locators.MOBILE_INFO_MENU_BUTTON
+            )
+            is_mobile = (
+                mobile_info_button.count() > 0 and mobile_info_button.first.is_visible()
+            )
+
+            if is_mobile:
+                with allure.step("Открываем дополнительное меню на мобильном"):
+                    mobile_info_button.first.click()
+                # Для мобильной версии используем специфичный локатор из mark_locators
+                pdf_button = self.page.locator(
+                    self.project_locators.DOWNLOAD_PDF_BUTTON_MOBILE
+                )
+            else:
+                # Для desktop используем обычный локатор
+                pdf_button = self.page.locator(
+                    self.project_locators.DOWNLOAD_PDF_BUTTON
+                )
+
+            pdf_button.wait_for(state="visible", timeout=10000)
+            pdf_button.click()
+
+        with allure.step("Ждем, пока кнопка Скачать PDF в модалке станет активной"):
+            # Используем уникальный класс для поиска кнопки в модалке
+            modal_pdf_button = self.page.locator(
+                self.project_locators.DOWNLOAD_PDF_MODAL_BUTTON
+            )
+            # Ждем, пока кнопка станет видимой
+            modal_pdf_button.wait_for(state="visible", timeout=30000)
+            # Ждем, пока кнопка станет активной (исчезнет класс загрузки _loading_1atog_20)
+            self.page.wait_for_function(
+                """
+                () => {
+                    const button = document.querySelector('button.page_modalSalesOfferButton__Jw6OU');
+                    return button && button.offsetParent !== null && !button.classList.contains('_loading_1atog_20');
+                }
+                """,
+                timeout=60000,
+            )
+
+        with allure.step("Кликаем на кнопку Скачать PDF в модалке"):
+            with self.page.expect_download(timeout=60000) as download_info:
+                modal_pdf_button.click()
+
+                download = download_info.value
+                file_path = os.path.join("downloads", download.suggested_filename)
+                os.makedirs("downloads", exist_ok=True)
+                download.save_as(file_path)
+
+        allure.attach(
+            f"Файл сохранен: {file_path}",
+            name="Download Info",
+            attachment_type=allure.attachment_type.TEXT,
+        )
+
+        # Проверяем что файл существует
+        success = os.path.exists(file_path) and os.path.getsize(file_path) > 0
+        return success, file_path
+
+    def cleanup_pdf_after_test(self):
+        """Удалить скачанные PDF файлы после теста."""
+        import os
+        import shutil
+
+        if os.path.exists("downloads"):
+            shutil.rmtree("downloads")
+            print("Удалены скачанные файлы")
+
+    def click_mobile_pdf_button(self):
+        """Кликнуть по PDF кнопке на мобильном устройстве для mark."""
+        import allure
+
+        with allure.step("Ищем и кликаем по PDF кнопке"):
+            # Для mark используем специфичный локатор
+            pdf_button = self.page.locator(self.project_locators.DOWNLOAD_PDF_BUTTON)
+            pdf_button.wait_for(state="visible", timeout=10000)
+            pdf_button.click()
+            self.page.wait_for_timeout(1000)
+            return True
+
+    def check_mobile_viewport_adaptation(self):
+        """Проверка адаптивности на мобильном устройстве."""
+        # Базовая проверка - просто проверяем, что страница загружена
+        self.page.wait_for_load_state("domcontentloaded")

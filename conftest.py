@@ -256,6 +256,35 @@ def _get_urls_by_environment() -> dict:
                 "https://catalog-dev.evometa.io/arsenal-east/map",
             ),
         }
+    elif env == "stage":
+        return {
+            # Qube проекты (Arisha, Elire, Cubix) - STAGE использует prod URL
+            "map": os.getenv("PROD_BASE_URL", "https://virtualtours.qbd.ae/map"),
+            "agent": os.getenv(
+                "AGENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/agent/map"
+            ),
+            "client": os.getenv(
+                "CLIENT_PROD_BASE_URL", "https://virtualtours.qbd.ae/client/map"
+            ),
+            # Capstone проект (Peylaa) - STAGE использует prod URL
+            "capstone_map": os.getenv(
+                "CAPSTONE_PROD_BASE_URL", "https://3dtours.peylaa-phuket.com/map"
+            ),
+            # Wellcube проект (Tranquil) - STAGE использует prod URL
+            "wellcube_map": os.getenv(
+                "WELLCUBE_PROD_BASE_URL", "https://catalog.evometa.io/wellcube/map"
+            ),
+            # LSR проект (MARK) - STAGE (единственный проект со stage окружением)
+            "lsr_mark": os.getenv(
+                "STAGE_LSR_MARK_BASE_URL",
+                "https://catalog-ru-staging.evometa.io/lsr/project/mark/area",
+            ),
+            # Vibe проект (Arsenal) - STAGE использует prod URL
+            "vibe_arsenal": os.getenv(
+                "VIBE_ARSENAL_PROD_BASE_URL",
+                "https://catalog.evometa.io/arsenal-east/map",
+            ),
+        }
     else:
         return {
             # Qube проекты (Arisha, Elire, Cubix) - PROD

@@ -15,17 +15,14 @@ import pytest
 )
 def test_arsenal_catalog_navigation(arsenal_page):
     """Тест перехода в каталог квартир для проекта Arsenal."""
-    with allure.step("Открываем главную страницу Arsenal"):
-        arsenal_page.open()
+    with allure.step("Открываем страницу map"):
+        arsenal_page.open(route_type="map")
 
-    with allure.step("Кликаем на проект Arsenal для перехода в каталог"):
-        # Для Arsenal клик на проект сразу ведет в каталог
-        project_button = arsenal_page.page.locator(
-            '[data-test-id="nav-desktop-project-vibe"]'
+    with allure.step("Кликаем на кнопку All units для перехода на catalog2d"):
+        arsenal_page.click_all_units_button()
+        arsenal_page.assertions.assert_url_contains(
+            "catalog_2d", "Не перешли на страницу каталога"
         )
-        project_button.wait_for(state="visible", timeout=10000)
-        project_button.click()
-        arsenal_page.page.wait_for_url("**/catalog_2d", timeout=10000)
 
     with allure.step("Проверяем наличие кнопок квартир в каталоге"):
         property_buttons = arsenal_page.page.locator(

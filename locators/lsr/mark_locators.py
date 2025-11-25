@@ -70,6 +70,29 @@ class MarkLocators(BaseLocators):
     PROPERTY_INFO_PRIMARY_BUTTON = '[data-test-id^="property-info-primary-button-"]'
     PROPERTY_INFO_SECONDARY_BUTTON = '[data-test-id^="property-info-secondary-button-"]'
 
+    # Кнопка скачивания PDF (в виджете апартамента - первая кнопка)
+    DOWNLOAD_PDF_BUTTON = '[data-test-id="info-content-secondary-button"]'
+    # Кнопка скачивания PDF для мобильной версии (второй элемент)
+    DOWNLOAD_PDF_BUTTON_MOBILE = (
+        '(//button[@data-test-id="info-content-secondary-button"])[2]'
+    )
+    # Альтернативный локатор через текст
+    DOWNLOAD_PDF_BUTTON_TEXT = 'button:has-text("Скачать PDF")'
+
+    # Кнопка дополнительного меню на мобильном (info-circle)
+    MOBILE_INFO_MENU_BUTTON = (
+        "button._showOnMobiles_158xm_17, button:has(.anticon-info-circle)"
+    )
+
+    # Кнопка скачивания PDF в модальном окне (вторая кнопка после загрузки)
+    # Используем уникальный класс page_modalSalesOfferButton__Jw6OU для точного поиска
+    DOWNLOAD_PDF_MODAL_BUTTON = (
+        '//button[contains(@class, "page_modalSalesOfferButton__Jw6OU")]'
+    )
+
+    # Модальное окно с PDF
+    PDF_MODAL = '.ant-modal-content, [role="dialog"]'
+
     # Переопределяем базовые локаторы для MARK
     ALL_UNITS_BUTTON = NAV_DESKTOP_CATALOG2D_STANDALONE
     # Для MARK используем кнопки квартир вместо текста "VIEW APARTMENT"
