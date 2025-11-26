@@ -54,7 +54,6 @@ def test_mark_mobile_download_pdf(mark_page):
                 )
 
     finally:
-        # Очищаем скачанный файл в любом случае (успех или ошибка)
         if downloaded_file_path:
             with allure.step("Удаляем скачанный PDF файл"):
                 mark_page.cleanup_pdf_after_test()

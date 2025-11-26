@@ -18,6 +18,15 @@ def test_arsenal_catalog_navigation(arsenal_page):
     with allure.step("Открываем страницу map"):
         arsenal_page.open(route_type="map")
 
+    with allure.step("Кликаем на проект Vibe на карте"):
+        vibe_project = arsenal_page.page.locator('div[aria-label="Vibe"]')
+        vibe_project.wait_for(state="visible", timeout=10000)
+        vibe_project.click()
+        arsenal_page.page.wait_for_timeout(1000)
+
+    with allure.step("Кликаем на кнопку Explore Project"):
+        arsenal_page.map.click_explore_project("vibe")
+
     with allure.step("Кликаем на кнопку All units для перехода на catalog2d"):
         arsenal_page.click_all_units_button()
         arsenal_page.assertions.assert_url_contains(
@@ -28,6 +37,5 @@ def test_arsenal_catalog_navigation(arsenal_page):
         property_buttons = arsenal_page.page.locator(
             arsenal_page.project_locators.PROPERTY_INFO_PRIMARY_BUTTON
         )
-        # Ждем появления хотя бы одной кнопки (может быть скрыта, но должна быть в DOM)
         property_buttons.first.wait_for(state="attached", timeout=10000)
         assert property_buttons.count() > 0, "Не найдено кнопок квартир в каталоге"

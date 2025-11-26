@@ -250,8 +250,18 @@ class MobilePage(BasePage):
         with allure.step(
             f"Переходим на страницу каталога {project_name.upper()} через полную навигацию"
         ):
-            # 1. Переходим на карту агента
-            self.page.goto(self.agent_base_url)
+            # 1. Переходим на карту
+            # Для Arsenal используем специальный URL, для остальных - agent URL
+            if project_name.lower() == "arsenal":
+                # Для Arsenal используем прямой URL из conftest
+                from conftest import _get_urls_by_environment
+
+                urls = _get_urls_by_environment()
+                arsenal_url = urls.get("vibe_arsenal", urls.get("map"))
+                self.page.goto(arsenal_url)
+            else:
+                # Для остальных проектов используем agent URL
+                self.page.goto(self.agent_base_url)
             self.page.wait_for_load_state("domcontentloaded")
 
             # 2. Кликаем по проекту на карте
@@ -283,11 +293,22 @@ class MobilePage(BasePage):
                 # Ждем перехода на страницу каталога
                 self.page.wait_for_url("**/catalog_2d", timeout=10000)
             elif project_name.lower() == "arsenal":
-                arsenal_button = self.page.locator(MOBILE_ARSENAL_MENU_BUTTON)
-                arsenal_button.wait_for(state="visible", timeout=10000)
-                arsenal_button.click()
+                # Для Arsenal на мобильном нужно открыть меню, затем кликнуть на ALL UNITS
+                # 1. Кликаем на кнопку меню
+                menu_button = self.page.locator(
+                    '[data-test-id="nav-mobile-menu-toggle"]'
+                )
+                menu_button.wait_for(state="visible", timeout=10000)
+                menu_button.click()
+                self.page.wait_for_timeout(1000)  # Ждем открытия меню
 
-                # 5. Для Arsenal клик на кнопку сразу переводит на страницу каталога (аналогично Cubix)
+                # 2. Кликаем на ALL UNITS в меню
+                all_units_button = self.page.locator(
+                    '[data-test-id="nav-mobile-catalog2d"]'
+                )
+                all_units_button.wait_for(state="visible", timeout=10000)
+                all_units_button.click()
+
                 # Ждем перехода на страницу каталога
                 self.page.wait_for_url("**/catalog_2d", timeout=10000)
             else:

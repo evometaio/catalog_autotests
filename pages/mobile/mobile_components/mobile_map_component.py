@@ -86,7 +86,11 @@ class MobileMapComponent:
             explore_button.click()
 
             # Ждем перехода на страницу проекта
-            expected_url_pattern = f"**/{project_name.lower()}/**"
+            # Для Arsenal используется "vibe" в URL, а не "arsenal"
+            if project_name.lower() == "arsenal":
+                expected_url_pattern = "**/vibe/**"
+            else:
+                expected_url_pattern = f"**/{project_name.lower()}/**"
             self.page.wait_for_url(expected_url_pattern, timeout=10000)
 
     def navigate_to_project(self, project_name: str):
@@ -101,10 +105,15 @@ class MobileMapComponent:
             self.click_explore_project(project_name)
 
             # Проверяем успешность перехода
+            # Для Arsenal используется "vibe" в URL, а не "arsenal"
             current_url = self.page.url
+            if project_name.lower() == "arsenal":
+                expected_project_in_url = "vibe"
+            else:
+                expected_project_in_url = project_name.lower()
             assert (
-                f"/{project_name.lower()}/" in current_url
-            ), f"Не удалось перейти к проекту {project_name}"
+                f"/{expected_project_in_url}/" in current_url
+            ), f"Не удалось перейти к проекту {project_name}. Текущий URL: {current_url}"
 
     def close_project_modal(self):
         """Закрыть мобильное модальное окно."""

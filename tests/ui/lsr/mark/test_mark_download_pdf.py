@@ -13,7 +13,6 @@ import pytest
     os.getenv("TEST_ENVIRONMENT", "prod") not in ["dev", "stage"],
     reason="Тест запускается только на dev и stage окружениях",
 )
-# @pytest.mark.flaky(reruns=2, reruns_delay=2)
 def test_mark_download_pdf(mark_page):
     """Тест скачивания PDF для проекта MARK."""
     downloaded_file_path = ""
@@ -45,7 +44,6 @@ def test_mark_download_pdf(mark_page):
                 )
 
     finally:
-        # Очищаем скачанный файл в любом случае (успех или ошибка)
         if downloaded_file_path:
             with allure.step("Удаляем скачанный PDF файл"):
                 mark_page.cleanup_pdf_after_test()

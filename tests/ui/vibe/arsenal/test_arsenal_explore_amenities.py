@@ -12,6 +12,15 @@ def test_arsenal_explore_amenities(arsenal_page):
     with allure.step("Открываем страницу map"):
         arsenal_page.open(route_type="map")
 
+    with allure.step("Кликаем на проект Vibe на карте"):
+        vibe_project = arsenal_page.page.locator('div[aria-label="Vibe"]')
+        vibe_project.wait_for(state="visible", timeout=10000)
+        vibe_project.click()
+        arsenal_page.page.wait_for_timeout(1000)
+
+    with allure.step("Кликаем на кнопку Explore Project"):
+        arsenal_page.map.click_explore_project("vibe")
+
     with allure.step("Кликаем на кнопку All units для перехода на catalog2d"):
         arsenal_page.click_all_units_button()
 
@@ -48,16 +57,14 @@ def test_arsenal_explore_amenities(arsenal_page):
         )
 
     with allure.step("Тестируем навигацию по слайдеру - кликаем на индикатор 3"):
-        arsenal_page.amenities.click_indicator(2)  # Индекс 2 = третий слайд
-        # Ждем изменения слайда
+        arsenal_page.amenities.click_indicator(2)
         arsenal_page.page.wait_for_selector(
             f"{arsenal_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(3)[class*='active']",
             timeout=2000,
         )
 
     with allure.step("Тестируем навигацию по слайдеру - кликаем на индикатор 4"):
-        arsenal_page.amenities.click_indicator(3)  # Индекс 3 = четвертый слайд
-        # Ждем изменения слайда
+        arsenal_page.amenities.click_indicator(3)
         arsenal_page.page.wait_for_selector(
             f"{arsenal_page.project_locators.AMENITIES_SLIDER_INDICATORS}:nth-child(4)[class*='active']",
             timeout=2000,

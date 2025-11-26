@@ -12,12 +12,6 @@ def test_arsenal_mobile_catalog_navigation(mobile_page):
     with allure.step("Открываем страницу map"):
         mobile_page.open(route_type="map")
 
-    with allure.step("Кликаем на проект Arsenal на карте"):
-        mobile_page.mobile_map.click_project("arsenal")
-
-    with allure.step("Кликаем на Explore Project"):
-        mobile_page.mobile_map.click_explore_project("arsenal")
-
     with allure.step("Переходим в каталог через навигацию"):
         mobile_page.navigate_to_mobile_catalog_page("arsenal")
 
@@ -25,11 +19,8 @@ def test_arsenal_mobile_catalog_navigation(mobile_page):
         property_buttons = mobile_page.page.locator(
             '[data-test-id^="property-info-primary-button-"]'
         )
-        # Ждем, пока на странице появится хотя бы одна кнопка квартиры
         property_buttons.first.wait_for(state="attached", timeout=10000)
-        assert (
-            property_buttons.count() > 0
-        ), "Не найдено кнопок квартир в каталоге на мобилке"
+        assert property_buttons.count() > 0, "Не найдено кнопок квартир в каталоге"
 
     with allure.step("Проверяем адаптивность на мобильном устройстве"):
         mobile_page.check_mobile_viewport_adaptation()
