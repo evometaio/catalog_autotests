@@ -344,6 +344,8 @@ def _get_mobile_base_url(route_type: str = "map", project_type: str = "qube") ->
         return urls["wellcube_map"]
     elif project_type == "vibe":
         return urls["vibe_arsenal"]
+    elif project_type == "lsr":
+        return urls["lsr_mark"]
     else:  # qube
         if route_type == "agent":
             return urls["agent"]
@@ -400,6 +402,10 @@ def mobile_page(page, request):
         project_type = "vibe"
         locators_class = ArsenalLocators
         project_name = "arsenal"
+    elif "mark" in test_file or "lsr" in test_file:
+        project_type = "lsr"
+        locators_class = MarkLocators
+        project_name = "mark"
     else:
         project_type = "qube"
         locators_class = BaseLocators

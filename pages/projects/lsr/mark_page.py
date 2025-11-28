@@ -199,3 +199,67 @@ class MarkPage(BasePage):
         """Проверка адаптивности на мобильном устройстве."""
         # Базовая проверка - просто проверяем, что страница загружена
         self.page.wait_for_load_state("domcontentloaded")
+
+    def navigate_to_building(self, building_number: int):
+        """
+        Перейти к зданию для MARK.
+
+        Для MARK используется формат локатора: nav-desktop-building-mark-k{building_number}
+        """
+        import allure
+
+        with allure.step(f"Переходим к зданию {building_number}"):
+            # Кликаем на навигацию по зданиям
+            building_nav = self.page.locator(self.project_locators.BUILDING_NAV_BUTTON)
+            building_nav.click()
+
+            # Для MARK используется формат: nav-desktop-building-mark-k1, nav-desktop-building-mark-k2 и т.д.
+            building_button = (
+                f'[data-test-id="nav-desktop-building-mark-k{building_number}"]'
+            )
+
+            # Ждем появления и стабилизации дропдауна
+            self.page.wait_for_selector(building_button, state="visible", timeout=5000)
+            self.page.wait_for_timeout(500)  # Ждем завершения анимации
+
+            button = self.page.locator(building_button)
+            button.click()
+
+            # Ждем изменения URL (для MARK формат: /building/mark-k1, /building/mark-k2 и т.д.)
+            self.page.wait_for_url(
+                f"**/building/mark-k{building_number}", timeout=10000
+            )
+
+    def navigate_to_floor(self, floor_number: int):
+        """
+        Перейти к этажу для MARK.
+
+        Для MARK используется xpath локатор: //li[@data-test-id="nav-desktop-floor-{floor_number}"]
+        """
+        import allure
+
+        with allure.step(f"Переходим к этажу {floor_number}"):
+            # Кликаем на навигацию по этажам
+            floor_nav = self.page.locator(self.project_locators.FLOOR_NAV_BUTTON)
+            floor_nav.click()
+
+            # Для MARK используется xpath формат: //li[@data-test-id="nav-desktop-floor-{floor_number}"]
+            floor_button = f'//li[@data-test-id="nav-desktop-floor-{floor_number}"]'
+
+            # Ждем появления и стабилизации дропдауна
+            self.page.wait_for_selector(floor_button, state="visible", timeout=5000)
+            self.page.wait_for_timeout(500)  # Ждем завершения анимации
+
+            button = self.page.locator(floor_button)
+            button.click()
+
+            # Ждем изменения URL (для MARK формат: /floor/mark-k1/1, /floor/mark-k1/2 и т.д.)
+            # Нужно получить номер здания из текущего URL
+            current_url = self.page.url
+            building_part = "k1"  # По умолчанию k1, если не удалось определить
+            if "/building/mark-k" in current_url:
+                building_part = current_url.split("/building/mark-")[1].split("/")[0]
+
+            self.page.wait_for_url(
+                f"**/floor/mark-{building_part}/{floor_number}", timeout=10000
+            )

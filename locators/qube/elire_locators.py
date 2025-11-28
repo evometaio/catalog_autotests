@@ -18,6 +18,9 @@ class ElireLocators(BaseLocators):
     SUBMIT_BUTTON_FOR_REQUEST_VIEWING = "(//button[.//span[text()='SUBMIT']])[2]"
     SERVICES_AMENITIES_BUTTON = "//*[@id='PubliczonesPolygon']"
     START3DEXPREINCE_1BEDROOM_RESIDENCE = '(//button[@data-test-id="property-info-primary-button-1 BEDROOM RESIDENCE"])[2]'
+    START3DEXPREINCE_1BEDROOM_RESIDENCE_DEV = (
+        '//button[@data-test-id="property-info-primary-button-1 BEDROOM RESIDENCE"]'
+    )
 
     # Локаторы для полей формы Request Viewing
     FIRST_NAME_FIELD = "(//input[@id='first_name'])[2]"

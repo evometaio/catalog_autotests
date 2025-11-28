@@ -43,6 +43,10 @@ class NavigationComponent:
 
             # Формируем селектор кнопки здания
             building_button = f'[data-test-id="nav-desktop-building-{building_number}"]'
+
+            # Ждем появления и стабилизации дропдауна
+            self.page.wait_for_selector(building_button, state="visible", timeout=5000)
+
             button = self.page.locator(building_button)
             button.click()
 

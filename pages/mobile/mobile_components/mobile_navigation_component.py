@@ -311,6 +311,156 @@ class MobileNavigationComponent:
             )
             return False
 
+    def open_mobile_menu(self) -> bool:
+        """Открыть мобильное меню."""
+        try:
+            menu_toggle = self.page.locator('[data-test-id="nav-mobile-menu-toggle"]')
+            menu_toggle.wait_for(state="visible", timeout=10000)
+            menu_toggle.click()
+            self.page.wait_for_timeout(1000)
+            return True
+        except Exception as e:
+            allure.attach(
+                f"Ошибка при открытии мобильного меню: {str(e)}",
+                name="Mobile Menu Error",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+            return False
+
+    def click_mark_building_menu(self) -> bool:
+        """Кликнуть на 'Корпус' в мобильном меню для mark."""
+        try:
+            building_menu = self.page.locator('[data-test-id="nav-mobile-building"]')
+            building_menu.wait_for(state="visible", timeout=5000)
+            building_menu.click()
+            self.page.wait_for_timeout(1000)
+            return True
+        except Exception as e:
+            allure.attach(
+                f"Ошибка при клике на меню корпуса: {str(e)}",
+                name="Building Menu Error",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+            return False
+
+    def click_mark_building_item(self, building_number: int = 1) -> bool:
+        """Кликнуть на корпус в списке для mark."""
+        try:
+            building_item = self.page.locator(
+                f'[data-test-id="nav-mobile-building-item-mark-k{building_number}"]'
+            )
+            building_item.wait_for(state="visible", timeout=5000)
+            building_item.click()
+            self.page.wait_for_timeout(2000)
+
+            # Проверяем переход
+            self.page.wait_for_url(
+                f"**/building/mark-k{building_number}", timeout=10000
+            )
+            return True
+        except Exception as e:
+            allure.attach(
+                f"Ошибка при клике на корпус: {str(e)}",
+                name="Building Item Error",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+            return False
+
+    def click_mark_floor_item(self, floor_number: int) -> bool:
+        """Кликнуть на этаж внизу страницы для mark."""
+        try:
+            floor_item = self.page.locator(
+                f'xpath=//div[contains(@class, "_itemInner_17qm7_18") and text()="{floor_number}"]'
+            )
+            floor_item.wait_for(state="visible", timeout=10000)
+            floor_item.first.click()
+            self.page.wait_for_timeout(1000)
+            return True
+        except Exception as e:
+            allure.attach(
+                f"Ошибка при клике на этаж: {str(e)}",
+                name="Floor Item Error",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+            return False
+
+    def click_mark_view_floor_button(self, floor_number: int) -> bool:
+        """Кликнуть на кнопку 'Посмотреть этаж' для mark."""
+        try:
+            view_floor_button = self.page.locator(
+                f'button:has-text("Посмотреть этаж {floor_number}")'
+            )
+            view_floor_button.wait_for(state="visible", timeout=5000)
+            view_floor_button.click()
+            self.page.wait_for_timeout(2000)
+            return True
+        except Exception as e:
+            allure.attach(
+                f"Ошибка при клике на кнопку 'Посмотреть этаж': {str(e)}",
+                name="View Floor Button Error",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+            return False
+
+    def click_mark_apartment_item(self) -> str:
+        """Кликнуть на первый доступный апартамент внизу страницы для mark. Возвращает номер апартамента."""
+        try:
+            apartment_items = self.page.locator("div._itemInner_17qm7_18")
+            first_apartment = apartment_items.first
+            first_apartment.wait_for(state="visible", timeout=10000)
+
+            apartment_number = first_apartment.text_content()
+            first_apartment.click()
+            self.page.wait_for_timeout(2000)
+
+            return apartment_number
+        except Exception as e:
+            allure.attach(
+                f"Ошибка при клике на апартамент: {str(e)}",
+                name="Apartment Item Error",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+            return ""
+
+    def click_mark_view_apartment_button(self, apartment_number: str) -> bool:
+        """Кликнуть на кнопку 'Посмотреть квартиру' для mark."""
+        try:
+            view_apartment_button = self.page.locator(
+                f'button:has-text("Посмотреть квартиру {apartment_number}")'
+            )
+            view_apartment_button.wait_for(state="visible", timeout=10000)
+
+            # Скроллим к кнопке, чтобы она была видна
+            view_apartment_button.scroll_into_view_if_needed()
+            self.page.wait_for_timeout(500)
+
+            view_apartment_button.click()
+            self.page.wait_for_timeout(3000)
+            return True
+        except Exception as e:
+            allure.attach(
+                f"Ошибка при клике на кнопку 'Посмотреть квартиру': {str(e)}",
+                name="View Apartment Button Error",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+            return False
+
+    def click_mark_view_3d_button(self) -> bool:
+        """Кликнуть на кнопку 'Посмотреть 3D Тур' для mark."""
+        try:
+            view_3d_button = self.page.get_by_role("button", name="Посмотреть 3D Тур")
+            view_3d_button.wait_for(state="visible", timeout=10000)
+            view_3d_button.first.click()
+            self.page.wait_for_timeout(3000)
+            return True
+        except Exception as e:
+            allure.attach(
+                f"Ошибка при клике на кнопку 'Посмотреть 3D Тур': {str(e)}",
+                name="View 3D Button Error",
+                attachment_type=allure.attachment_type.TEXT,
+            )
+            return False
+
     def find_and_click_available_apartment(self):
         """Найти и кликнуть на первый доступный apartment в каталоге."""
         with allure.step("Ищем свободный apartment"):
