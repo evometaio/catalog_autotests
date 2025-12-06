@@ -7,6 +7,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
+@pytest.mark.skip(reason="не поддерживаем клиента")
 def test_tranquil_explore_amenities(tranquil_page):
     """Тест Explore Amenities для проекта Tranquil."""
     with allure.step("Открываем карту Wellcube"):

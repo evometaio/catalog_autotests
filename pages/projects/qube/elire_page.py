@@ -36,7 +36,28 @@ class ElirePage(QubeBasePage):
     def open_request_viewing_form(self):
         """Открыть форму Request Viewing (специфично для Elire)."""
         with allure.step("Открываем форму Request Viewing"):
-            self.browser.click(self.project_locators.REQUEST_VIEWING_BUTTON)
+            # На проде нужен [2], на деве - первый видимый. Ищем видимую кнопку
+            buttons = self.page.locator(self.project_locators.REQUEST_VIEWING_BUTTON)
+            button_count = buttons.count()
+
+            # Пробуем найти видимую кнопку
+            visible_button = None
+            for i in range(button_count):
+                button = buttons.nth(i)
+                if button.is_visible(timeout=1000):
+                    visible_button = button
+                    break
+
+            # Если видимая не найдена, пробуем второй элемент (для прода)
+            if visible_button is None and button_count >= 2:
+                visible_button = buttons.nth(1)
+
+            # Если все еще не найдена, используем первый
+            if visible_button is None:
+                visible_button = buttons.first
+
+            visible_button.wait_for(state="visible", timeout=10000)
+            visible_button.click()
 
     def fill_request_viewing_form(self, fake):
         """

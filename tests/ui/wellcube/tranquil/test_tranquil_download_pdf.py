@@ -9,10 +9,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.skipif(
-    os.getenv("OS_PLATFORM") == "ubuntu-latest",
-    reason="Тест нестабилен на Firefox в CI",
-)
+@pytest.mark.skip(reason="не поддерживаем клиента")
 def test_tranquil_download_ownership_offer(tranquil_page):
     """Тест скачивания PDF на проекте Tranquil."""
 

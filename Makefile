@@ -97,11 +97,11 @@ test-api: ## Запустить все API тесты
 regress-dev: ## Полное регрессионное тестирование на dev (все браузеры)
 	@echo "$(GREEN)🚀 Запуск полного регрессионного тестирования на DEV...$(NC)"
 	@echo "$(YELLOW)🖥️ Тестирование в Chromium...$(NC)"
-	TEST_ENVIRONMENT=dev HEADLESS=true $(PYTEST) tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr -sv --browser=chromium --alluredir=reports/allure-results || true
+	TEST_ENVIRONMENT=dev HEADLESS=true $(PYTEST) tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr tests/ui/vibe -sv --browser=chromium --alluredir=reports/allure-results || true
 	@echo "$(YELLOW)🖥️ Тестирование в Firefox...$(NC)"
-	TEST_ENVIRONMENT=dev HEADLESS=true $(PYTEST) tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr -sv --browser=firefox --alluredir=reports/allure-results || true
+	TEST_ENVIRONMENT=dev HEADLESS=true $(PYTEST) tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr tests/ui/vibe -sv --browser=firefox --alluredir=reports/allure-results || true
 	@echo "$(YELLOW)🖥️ Тестирование в WebKit...$(NC)"
-	TEST_ENVIRONMENT=dev HEADLESS=true $(PYTEST) tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr -sv --browser=webkit --alluredir=reports/allure-results || true
+	TEST_ENVIRONMENT=dev HEADLESS=true $(PYTEST) tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr tests/ui/vibe -sv --browser=webkit --alluredir=reports/allure-results || true
 	@echo "$(GREEN)✅ Тестирование на mobile!$(NC)"
 	TEST_ENVIRONMENT=dev HEADLESS=true MOBILE_DEVICE="iphone_13" $(PYTEST) tests/ui/mobile/ -sv --browser=chromium --alluredir=reports/allure-results || true
 	@echo "$(GREEN)✅ Регрессионное тестирование на DEV завершено!$(NC)"
@@ -112,13 +112,13 @@ regress-dev: ## Полное регрессионное тестирование
 regress-prod: ## Полное регрессионное тестирование на prod (все браузеры)
 	@echo "$(GREEN)🚀 Запуск полного регрессионного тестирования на PROD...$(NC)"
 	@echo "$(YELLOW)🖥️ Тестирование в Chromium...$(NC)"
-	TEST_ENVIRONMENT=prod HEADLESS=true $(PYTEST) tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr -sv --browser=chromium --alluredir=reports/allure-results || true
+	TEST_ENVIRONMENT=prod HEADLESS=true $(PYTEST) tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/vibe tests/ui/lsr -sv --browser=chromium --alluredir=reports/allure-results || true
 	@echo "$(YELLOW)🖥️ Тестирование в Firefox...$(NC)"
-	TEST_ENVIRONMENT=prod HEADLESS=true $(PYTEST) tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr -sv --browser=firefox --alluredir=reports/allure-results || true
+	TEST_ENVIRONMENT=prod HEADLESS=true $(PYTEST) tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/vibe tests/ui/lsr -sv --browser=firefox --alluredir=reports/allure-results || true
 	@echo "$(YELLOW)🖥️ Тестирование в WebKit...$(NC)"
-	TEST_ENVIRONMENT=prod HEADLESS=true $(PYTEST) tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr -sv --browser=webkit --alluredir=reports/allure-results || true
+	TEST_ENVIRONMENT=prod HEADLESS=true $(PYTEST) tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/vibe tests/ui/lsr -sv --browser=webkit --alluredir=reports/allure-results || true
 	@echo "$(GREEN)✅ Тестирование на mobile!$(NC)"
-	TEST_ENVIRONMENT=dev HEADLESS=true MOBILE_DEVICE="iphone_13" $(PYTEST) tests/ui/mobile/ -sv --browser=chromium --alluredir=reports/allure-results || true
+	TEST_ENVIRONMENT=prod HEADLESS=true MOBILE_DEVICE="iphone_13" $(PYTEST) tests/ui/mobile/capstone tests/ui/mobile/qube tests/ui/mobile/vibe tests/ui/mobile/wellcube tests/ui/mobile/lsr -sv --browser=chromium --alluredir=reports/allure-results || true
 	@echo "$(GREEN)✅ Регрессионное тестирование на PROD завершено!$(NC)"
 	@echo "$(YELLOW)📊 Генерация итогового отчета...$(NC)"
 	$(ALLURE) generate reports/allure-results -o reports/allure-report --clean || true

@@ -108,7 +108,8 @@ class ApartmentWidgetComponent:
 
             # Ждем появления стрелочек навигации в режиме 2D (только для проектов, где стрелки есть в 2D)
             # В MARK стрелки появляются только в 3D режиме
-            if self.project_name != "mark":
+            # Для Arisha стрелки могут появляться с задержкой, проверка есть в тесте
+            if self.project_name not in ["mark", "arisha"]:
                 next_arrow = frame_locator.locator(self.locators.NEXT_ARROW).first
                 next_arrow.wait_for(state="visible", timeout=10000)
 
@@ -183,7 +184,9 @@ class ApartmentWidgetComponent:
 
             for i in range(count):
                 if next_arrows.count() > 0:
+                    # Для Arisha XPath локаторы уже находят видимые стрелки
                     next_arrow = next_arrows.first
+
                     if next_arrow.is_visible():
                         # Используем JavaScript клик
                         next_arrow.evaluate("element => element.click()")
@@ -193,14 +196,25 @@ class ApartmentWidgetComponent:
 
                         # Ждем изменения сцены
                         if scene_indicator.count() > 0:
-                            scene_indicator.first.wait_for(
-                                state="visible", timeout=2000
-                            )
-
-                        # Получаем текущую сцену
-                        if scene_indicator.count() > 0:
-                            current_scene = scene_indicator.first.text_content()
-                            scenes.append(current_scene)
+                            # Для Arisha ищем видимый индикатор
+                            if self.project_name == "arisha":
+                                for j in range(scene_indicator.count()):
+                                    if scene_indicator.nth(j).is_visible():
+                                        scene_indicator.nth(j).wait_for(
+                                            state="visible", timeout=2000
+                                        )
+                                        current_scene = scene_indicator.nth(
+                                            j
+                                        ).text_content()
+                                        scenes.append(current_scene)
+                                        break
+                            else:
+                                scene_indicator.first.wait_for(
+                                    state="visible", timeout=2000
+                                )
+                                if scene_indicator.count() > 0:
+                                    current_scene = scene_indicator.first.text_content()
+                                    scenes.append(current_scene)
 
             return scenes
 
@@ -218,8 +232,14 @@ class ApartmentWidgetComponent:
         scene_indicator = frame_locator.locator(self.locators.SCENE_INDICATOR)
 
         if scene_indicator.count() > 0:
-            current_scene = scene_indicator.first.text_content()
-            return current_scene
+            # Для Arisha нужно найти видимый индикатор
+            if self.project_name == "arisha":
+                for i in range(scene_indicator.count()):
+                    if scene_indicator.nth(i).is_visible():
+                        return scene_indicator.nth(i).text_content()
+            else:
+                current_scene = scene_indicator.first.text_content()
+                return current_scene
         return None
 
     def check_navigation_arrows_visible(self) -> bool:
@@ -243,6 +263,19 @@ class ApartmentWidgetComponent:
             prev_visible = prev_arrows.count() > 0 and prev_arrows.is_visible()
             next_visible = next_arrows.count() > 0 and next_arrows.is_visible()
             return prev_visible and next_visible
+        elif self.project_name == "arisha":
+            # Для Arisha используем XPath локаторы, которые уже находят видимые стрелки
+            try:
+                # XPath локаторы уже находят правильные видимые элементы
+                prev_visible = (
+                    prev_arrows.count() > 0 and prev_arrows.first.is_visible()
+                )
+                next_visible = (
+                    next_arrows.count() > 0 and next_arrows.first.is_visible()
+                )
+                return prev_visible and next_visible
+            except Exception:
+                return False
         else:
             prev_visible = prev_arrows.count() > 0 and prev_arrows.first.is_visible()
             next_visible = next_arrows.count() > 0 and next_arrows.first.is_visible()

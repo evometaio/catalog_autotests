@@ -1,5 +1,3 @@
-import os
-
 import allure
 import pytest
 
@@ -9,10 +7,6 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.skipif(
-    os.getenv("TEST_ENVIRONMENT", "prod") != "dev",
-    reason="Тест запускается только на dev окружении",
-)
 @pytest.mark.parametrize(
     "panorama_type", ["rotation", "yard", "lobby-k1", "lobby-k2", "lobby-k3"]
 )

@@ -1,5 +1,3 @@
-import os
-
 import allure
 import pytest
 
@@ -9,10 +7,6 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
-@pytest.mark.skipif(
-    os.getenv("TEST_ENVIRONMENT", "prod") not in ["dev", "stage"],
-    reason="Тест запускается только на dev и stage окружениях",
-)
 def test_mark_mobile_download_pdf(mark_page):
     """Тест скачивания PDF для проекта MARK на мобильном устройстве."""
     downloaded_file_path = ""

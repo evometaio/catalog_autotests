@@ -16,18 +16,16 @@ class ArishaLocators(BaseLocators):
         """Локаторы для виджета апартамента Arisha."""
 
         # Кнопки режимов просмотра
-        VIEW_2D_BUTTON = 'button:has-text("2D")'
-        VIEW_3D_BUTTON = 'button:has-text("3D")'
+        VIEW_2D_BUTTON = 'xpath=//button[contains(@class, "widget-control-button") and contains(@class, "control-2d")]'
+        VIEW_3D_BUTTON = 'xpath=//button[contains(@class, "widget-control-button") and contains(@class, "control-360")]'
 
         # Кнопки навигации по сценам
-        PREV_ARROW = ".widget-tab__isometry-arrow--prev"
-        NEXT_ARROW = ".widget-tab__isometry-arrow--next"
+        # Используем XPath для поиска видимых стрелок в контейнере arrow-controls-plan (второй элемент)
+        PREV_ARROW = 'xpath=(//div[contains(@class, "widget-arrow-controls") and contains(@class, "arrow-controls-plan")]//button[contains(@class, "arrow-button") and not(contains(@class, "arrow-button--reverse"))])[2]'
+        NEXT_ARROW = 'xpath=(//div[contains(@class, "widget-arrow-controls") and contains(@class, "arrow-controls-plan")]//button[contains(@class, "arrow-button") and contains(@class, "arrow-button--reverse")])[2]'
 
         # Индикатор сцен
-        SCENE_INDICATOR = '[class*="arrow"]:has-text("/")'
-
-        # Кнопка скорости
-        SPEED_BUTTON = 'button:has-text("0.5x")'
+        SCENE_INDICATOR = 'xpath=//div[contains(@class, "widget-arrow-controls") and contains(@class, "arrow-controls-plan")]//div[contains(@class, "widget-arrow-controls__text")]'
 
     # Локаторы для информации об апартаменте
     class ApartmentInfo:

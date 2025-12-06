@@ -7,6 +7,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
+@pytest.mark.skip(reason="не поддерживаем клиента")
 def test_tranquil_mobile_download_ownership_offer(mobile_page):
     """Тест скачивания PDF на проекте Tranquil на мобильном устройстве."""
 

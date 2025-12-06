@@ -13,7 +13,8 @@ class ElireLocators(BaseLocators):
 
     # Специфичные кнопки Elire
     RESIDENCES_BUTTON = '[data-test-id="nav-desktop-catalog2d"]'
-    REQUEST_VIEWING_BUTTON = "(//button[@data-test-id='property-info-secondary-button-1 BEDROOM RESIDENCE'])[2]"
+    # На проде нужен [2], на деве - без [2]. Базовый локатор, видимую кнопку найдем в методе
+    REQUEST_VIEWING_BUTTON = "xpath=//button[@data-test-id='property-info-secondary-button-1 BEDROOM RESIDENCE']"
     START_3D_EXPANSION_BUTTON = "//button[contains(text(), 'Start 3D Experience')]"
     SUBMIT_BUTTON_FOR_REQUEST_VIEWING = "(//button[.//span[text()='SUBMIT']])[2]"
     SERVICES_AMENITIES_BUTTON = "//*[@id='PubliczonesPolygon']"
