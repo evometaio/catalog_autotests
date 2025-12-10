@@ -34,15 +34,10 @@ def test_elire_building_floor_apartment_navigation(elire_page, route_type):
             elire_page.handle_auth_modal_if_present()
 
     with allure.step("Кликаем на Start 3D Experience"):
-        # Для dev используем локатор без [2], для prod - с [2]
-        if env == "dev":
-            start_3d_button = (
-                elire_page.project_locators.START3DEXPREINCE_1BEDROOM_RESIDENCE_DEV
-            )
-        else:
-            start_3d_button = (
-                elire_page.project_locators.START3DEXPREINCE_1BEDROOM_RESIDENCE
-            )
+        # Используем локатор с [2] для обоих окружений
+        start_3d_button = (
+            elire_page.project_locators.START3DEXPREINCE_1BEDROOM_RESIDENCE
+        )
 
         # Умное ожидание появления кнопки (на PROD может потребоваться больше времени из-за авторизации)
         timeout = 20000 if env == "prod" else 10000

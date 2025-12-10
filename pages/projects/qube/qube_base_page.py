@@ -89,7 +89,8 @@ class QubeBasePage(BasePage):
         import allure
 
         with self.page.expect_download() as download_info:
-            self.browser.click(self.project_locators.DOWNLOAD_PDF_BUTTON)
+            # Увеличенный таймаут для ожидания кнопки Download PDF (особенно важно для Firefox в CI)
+            self.browser.click(self.project_locators.DOWNLOAD_PDF_BUTTON, timeout=25000)
 
         download = download_info.value
         file_path = os.path.join("downloads", download.suggested_filename)

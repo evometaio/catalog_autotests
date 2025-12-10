@@ -220,6 +220,14 @@ class NavigationComponent:
 
             # Ищем все апартаменты
             apartment_titles = self.page.locator(self.locators.ALL_APARTMENT_TITLES)
+
+            # Явно ждем появления хотя бы одного апартамента (важно для CI)
+            try:
+                apartment_titles.first.wait_for(state="attached", timeout=15000)
+            except Exception:
+                # Если не дождались, пробуем еще раз с небольшим ожиданием
+                self.page.wait_for_timeout(2000)
+
             apartment_count = apartment_titles.count()
 
             # Проверяем, что апартаменты найдены на странице
