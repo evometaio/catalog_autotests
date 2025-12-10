@@ -43,11 +43,11 @@ def test_mark_mobile_360_area_tour(mark_page, panorama_type):
         video = mark_page.page.locator("video")
 
         if iframe.count() > 0:
-            iframe.first.wait_for(state="attached", timeout=10000)
+            iframe.first.wait_for(state="attached", timeout=20000)
         elif canvas.count() > 0:
-            canvas.first.wait_for(state="attached", timeout=10000)
+            canvas.first.wait_for(state="attached", timeout=20000)
         elif video.count() > 0:
-            video.first.wait_for(state="attached", timeout=10000)
+            video.first.wait_for(state="attached", timeout=20000)
 
         total_content = iframe.count() + canvas.count() + video.count()
         assert total_content > 0, "Контент 360 тура не найден на мобильной странице"

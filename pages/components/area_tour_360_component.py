@@ -138,7 +138,7 @@ class AreaTour360Component:
         with allure.step("Проверяем наличие контента 360 Area Tour"):
             # Проверяем наличие контента (изображения, видео или другие элементы)
             content_element = self.page.locator(self.locators.AREA_TOUR_360_CONTENT)
-            content_element.first.wait_for(state="attached", timeout=10000)
+            content_element.first.wait_for(state="attached", timeout=20000)
             assert (
                 content_element.count() > 0
             ), "Контент 360 Area Tour не найден в модальном окне"

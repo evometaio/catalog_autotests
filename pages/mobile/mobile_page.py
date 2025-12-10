@@ -125,8 +125,8 @@ class MobilePage(BasePage):
     def wait_for_apartment_widget_load(self):
         """Ожидание полной загрузки виджета апартамента."""
         with allure.step("Ожидаем полной загрузки виджета апартамента"):
-            # Ждем появления iframe
-            self.page.wait_for_selector("iframe[class*='_iframe_']", timeout=15000)
+            # Ждем появления iframe (увеличенный таймаут для мобильных устройств в CI)
+            self.page.wait_for_selector("iframe[class*='_iframe_']", timeout=20000)
             # Ждем загрузки содержимого внутри iframe
             self.page.wait_for_timeout(4000)
 

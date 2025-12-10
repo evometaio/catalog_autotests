@@ -1,5 +1,3 @@
-import os
-
 import allure
 import pytest
 
@@ -9,10 +7,6 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.ui
-@pytest.mark.skipif(
-    os.getenv("TEST_ENVIRONMENT", "prod") != "dev",
-    reason="Тест запускается только на dev окружении",
-)
 def test_arsenal_catalog_navigation(arsenal_page):
     """Тест перехода в каталог квартир для проекта Arsenal."""
     with allure.step("Открываем страницу map"):

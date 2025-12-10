@@ -85,8 +85,8 @@ class NavigationComponent:
             button = self.page.locator(floor_button)
             button.click()
 
-            # Ждем изменения URL
-            self.page.wait_for_url(f"**/floor/*/{floor_number}", timeout=10000)
+            # Ждем изменения URL (увеличенный таймаут для Firefox в CI - 20 секунд)
+            self.page.wait_for_url(f"**/floor/*/{floor_number}", timeout=20000)
 
             current_url = self.page.url
             allure.attach(

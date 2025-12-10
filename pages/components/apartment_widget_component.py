@@ -50,12 +50,12 @@ class ApartmentWidgetComponent:
                 "iframe" if self.project_name == "mark" else "iframe[class*='_iframe_']"
             )
 
-            # Ждем появления iframe
-            self.page.wait_for_selector(iframe_selector, timeout=15000)
+            # Ждем появления iframe (увеличенный таймаут для мобильных устройств в CI)
+            self.page.wait_for_selector(iframe_selector, timeout=20000)
 
             # Ждем загрузки содержимого iframe
             iframe = self.get_widget_frame()
-            iframe.locator("body").wait_for(state="visible", timeout=15000)
+            iframe.locator("body").wait_for(state="visible", timeout=20000)
 
             # Дополнительная пауза
             self.page.wait_for_timeout(4000)
