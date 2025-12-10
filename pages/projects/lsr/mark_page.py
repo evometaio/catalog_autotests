@@ -47,7 +47,8 @@ class MarkPage(BasePage):
     def click_all_units_button(self):
         """Кликнуть на кнопку Все квартиры (переход в каталог)."""
         self.browser.click(self.project_locators.NAV_DESKTOP_CATALOG2D_STANDALONE)
-        self.page.wait_for_url("**/catalog_2d", timeout=10000)
+        # Увеличенный таймаут для ожидания навигации (особенно важно для Firefox в CI)
+        self.page.wait_for_url("**/catalog_2d", timeout=20000)
 
     def click_contact_button(self):
         """Кликнуть на кнопку Оставить заявку."""

@@ -282,16 +282,16 @@ class MobilePage(BasePage):
                 all_units_button.wait_for(state="visible", timeout=10000)
                 all_units_button.click()
 
-                # 6. Ждем перехода на страницу каталога
-                self.page.wait_for_url("**/catalog_2d", timeout=10000)
+                # 6. Ждем перехода на страницу каталога (увеличенный таймаут для мобильных устройств в CI)
+                self.page.wait_for_url("**/catalog_2d", timeout=20000)
             elif project_name.lower() == "cubix":
                 cubix_button = self.page.locator(MOBILE_CUBIX_MENU_BUTTON)
                 cubix_button.wait_for(state="visible", timeout=10000)
                 cubix_button.click()
 
                 # 5. Для Cubix клик на кнопку сразу переводит на страницу каталога
-                # Ждем перехода на страницу каталога
-                self.page.wait_for_url("**/catalog_2d", timeout=10000)
+                # Ждем перехода на страницу каталога (увеличенный таймаут для мобильных устройств в CI)
+                self.page.wait_for_url("**/catalog_2d", timeout=20000)
             elif project_name.lower() == "arsenal":
                 # Для Arsenal на мобильном нужно открыть меню, затем кликнуть на ALL UNITS
                 # 1. Кликаем на кнопку меню
@@ -309,8 +309,8 @@ class MobilePage(BasePage):
                 all_units_button.wait_for(state="visible", timeout=10000)
                 all_units_button.click()
 
-                # Ждем перехода на страницу каталога
-                self.page.wait_for_url("**/catalog_2d", timeout=10000)
+                # Ждем перехода на страницу каталога (увеличенный таймаут для мобильных устройств в CI)
+                self.page.wait_for_url("**/catalog_2d", timeout=20000)
             else:
                 # Для других проектов может потребоваться другая логика
                 raise NotImplementedError(

@@ -47,9 +47,9 @@ class MobileMapComponent:
             # Получаем мобильный селектор
             selector = self.get_mobile_project_selector(project_name)
 
-            # Ждем появления проекта на карте
+            # Ждем появления проекта на карте (увеличенный таймаут для мобильных устройств в CI)
             project_element = self.page.locator(selector)
-            project_element.wait_for(state="visible", timeout=10000)
+            project_element.wait_for(state="visible", timeout=20000)
 
             # Кликаем по проекту
             project_element.click()

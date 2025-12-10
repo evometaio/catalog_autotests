@@ -68,7 +68,8 @@ class QubeBasePage(BasePage):
     def click_all_units_button(self):
         """Кликнуть на кнопку All Units (общее для всех Qube проектов)."""
         self.browser.click(self.project_locators.ALL_UNITS_BUTTON)
-        self.page.wait_for_url("**/catalog_2d", timeout=10000)
+        # Увеличенный таймаут для ожидания навигации (особенно важно для Firefox в CI)
+        self.page.wait_for_url("**/catalog_2d", timeout=20000)
 
     def click_sales_offer_button(self):
         """Кликнуть на кнопку Sales Offer (для агентских страниц, общее для всех Qube)."""

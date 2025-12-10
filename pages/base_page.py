@@ -114,8 +114,28 @@ class BasePage:
 
     def return_to_map(self):
         """Вернуться на карту через кнопку навигации."""
-        # Используем .last т.к. на некоторых страницах (Cubix) может быть несколько элементов с этим локатором
-        self.page.locator(self.project_locators.NAV_MAP_BUTTON).last.click()
+        # Ищем видимую кнопку, т.к. на некоторых страницах (Cubix) может быть несколько элементов с этим локатором
+        map_buttons = self.page.locator(self.project_locators.NAV_MAP_BUTTON)
+        button_count = map_buttons.count()
+
+        # Пробуем найти видимую кнопку
+        visible_button = None
+        for i in range(button_count):
+            button = map_buttons.nth(i)
+            try:
+                if button.is_visible(timeout=1000):
+                    visible_button = button
+                    break
+            except Exception:
+                continue
+
+        # Если видимая не найдена, используем последнюю (для обратной совместимости)
+        if visible_button is None:
+            visible_button = map_buttons.last
+
+        # Ждем видимости и кликаем
+        visible_button.wait_for(state="visible", timeout=10000)
+        visible_button.click()
         self.page.wait_for_timeout(2000)
 
     def get_project_url(self, project_name: str, page_type: str = "catalog_2d"):
