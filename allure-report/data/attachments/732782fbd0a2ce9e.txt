@@ -1,0 +1,26 @@
+Ошибка при клике на апартамент: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("div._itemInner_17qm7_18").first
+    - locator resolved to <div class="_itemInner_17qm7_18 _active_17qm7_41">6</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="Loader_loadingWrapper__U3UOh">…</div> from <div class="_fadeEnterActive_zno1h_5 _fadeEnter_zno1h_1 _fadeEnterDurationProps_zno1h_22">…</div> subtree intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div class="Loader_loadingWrapper__U3UOh">…</div> from <div class="_fadeEnterActive_zno1h_5 _fadeEnter_zno1h_1 _fadeEnterDurationProps_zno1h_22">…</div> subtree intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    56 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="Loader_loadingWrapper__U3UOh">…</div> from <div class="_fadeEnterActive_zno1h_5 _fadeEnter_zno1h_1 _fadeEnterDurationProps_zno1h_22">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
