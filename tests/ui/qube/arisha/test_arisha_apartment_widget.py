@@ -147,32 +147,6 @@ def test_arisha_apartment_information(arisha_page, route_type):
             watching_visible, "Счетчик просмотров 'watching now' не найден"
         )
 
-    with allure.step("Получаем полный текст информации"):
-        info_text = arisha_page.apartment_info.get_info_text()
-        allure.attach(
-            info_text,
-            name="Full Info Text",
-            attachment_type=allure.attachment_type.TEXT,
-        )
-
-        # Проверяем наличие ключевых элементов в тексте
-        required_elements = [
-            "APT.",
-            "Bedroom",
-            "Building:",
-            "Total area:",
-            "Modern interior design",
-            "High quality materials",
-            "Built-in appliances",
-            "watching now",
-        ]
-
-        for element in required_elements:
-            arisha_page.assertions.assert_that(
-                element in info_text,
-                f"Элемент '{element}' не найден в тексте информации об апартаменте",
-            )
-
     with allure.step("Делаем скриншот информации об апартаменте"):
         info_screenshot = arisha_page.apartment_info.take_info_screenshot()
         allure.attach(

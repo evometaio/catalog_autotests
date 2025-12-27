@@ -13,6 +13,8 @@ MOBILE_PROJECT_SELECTORS = {
     "vibe": 'div[aria-label="Vibe"], div[title="Vibe"], div[role="img"][aria-label="Vibe"]',
     "peylaa": 'div[aria-label="Peylaa"]',
     "tranquil": 'div[aria-label="Tranquil Wellness Tower"]',
+    "edgewater": 'div[aria-label*="Edgewater Residences"]',
+    "willows_residences": 'div[aria-label="Willows Residences"]',
 }
 
 # ==================== МОБИЛЬНЫЕ ЛОКАТОРЫ КАРТЫ ====================

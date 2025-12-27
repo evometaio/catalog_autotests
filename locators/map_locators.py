@@ -16,7 +16,9 @@ class MapLocators:
         'div[aria-label*="ARISHA"], '
         'div[aria-label*="CUBIX"], '
         'div[aria-label*="Peylaa"], '
-        'div[aria-label*="Tranquil"]'
+        'div[aria-label*="Tranquil"], '
+        'div[aria-label*="Edgewater Residences"], '
+        'div[aria-label="Willows Residences"]'
     )
 
     # Информационные окна проектов

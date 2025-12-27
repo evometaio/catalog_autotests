@@ -238,12 +238,10 @@ class MobilePage(BasePage):
 
             if agent_link:
                 agent_link.click()
-                self.page.wait_for_load_state("domcontentloaded")
             else:
                 # Если нет прямой ссылки, переходим по правильному URL агента
                 agent_url = f"{self.agent_base_url}/{project_name.lower()}/"
                 self.page.goto(agent_url)
-                self.page.wait_for_load_state("domcontentloaded")
 
     def navigate_to_mobile_catalog_page(self, project_name: str):
         """Переход на страницу каталога через полную навигацию для мобильных устройств."""
@@ -262,7 +260,6 @@ class MobilePage(BasePage):
             else:
                 # Для остальных проектов используем agent URL
                 self.page.goto(self.agent_base_url)
-            self.page.wait_for_load_state("domcontentloaded")
 
             # 2. Кликаем по проекту на карте
             self.click_mobile_project_on_map(project_name)

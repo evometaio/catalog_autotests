@@ -216,17 +216,15 @@ class NavigationComponent:
             project_name: Название проекта (используется только для логирования)
         """
         with allure.step("Ищем доступный апартамент в каталоге"):
-            self.page.wait_for_timeout(3500)
-
             # Ищем все апартаменты
             apartment_titles = self.page.locator(self.locators.ALL_APARTMENT_TITLES)
 
             # Явно ждем появления хотя бы одного апартамента (важно для CI)
             try:
-                apartment_titles.first.wait_for(state="attached", timeout=15000)
+                apartment_titles.first.wait_for(state="attached", timeout=10000)
             except Exception:
                 # Если не дождались, пробуем еще раз с небольшим ожиданием
-                self.page.wait_for_timeout(2000)
+                self.page.wait_for_timeout(1000)
 
             apartment_count = apartment_titles.count()
 
@@ -236,28 +234,93 @@ class NavigationComponent:
             ), f"Апартаменты не найдены на странице - {project_name or 'неизвестный'}"
 
             # Ищем первый доступный апартамент (без замка)
-            for i in range(apartment_count):
+            # Проверяем первые 6 апартаментов по порядку, пока не найдем доступный
+            max_to_check = min(6, apartment_count)
+            for i in range(max_to_check):
                 apartment_title = apartment_titles.nth(i)
 
-                # Сразу проверяем видимость без ожидания
-                if not apartment_title.is_visible():
+                # Получаем button_id и проверяем замок (ТОЧНО как в скрипте)
+                try:
+                    # Используем точно такую же логику, как в скрипте (включая проверку родительского section)
+                    info = apartment_title.evaluate(
+                        """
+                        (el) => {
+                            // Элемент находится в кнопке
+                            const button = el.closest('button');
+                            if (!button) return {error: 'no button'};
+                            
+                            // Находим родительский section этой кнопки
+                            const section = button.closest('section');
+                            if (!section) return {error: 'no section'};
+                            
+                            // Ищем замок ТОЛЬКО внутри этого section
+                            // Замок: <span role="img" aria-label="lock" class="anticon anticon-lock">
+                            const locks = section.querySelectorAll('span[aria-label="lock"], span.anticon-lock');
+                            
+                            // Также проверяем родительский элемент section (если есть) - как в скрипте
+                            let parentSection = section.parentElement;
+                            let lockInParent = null;
+                            if (parentSection) {
+                                const parentLocks = parentSection.querySelectorAll('span[aria-label="lock"], span.anticon-lock');
+                                if (parentLocks.length > 0) {
+                                    // Проверяем, что замок относится к этому section
+                                    for (let lock of parentLocks) {
+                                        // Если замок находится перед или после нашего section в том же контейнере
+                                        if (lock.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING ||
+                                            lock.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_PRECEDING) {
+                                            lockInParent = lock;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            const hasLock = locks.length > 0 || lockInParent !== null;
+                            
+                            return {
+                                hasLock: hasLock,
+                                buttonId: button.getAttribute('data-test-id'),
+                                lockCount: locks.length + (lockInParent ? 1 : 0)
+                            };
+                        }
+                    """
+                    )
+
+                    if "error" in info:
+                        continue
+
+                    has_lock = info.get("hasLock", True)
+                    button_id = info.get("buttonId")
+
+                except Exception:
+                    # Если ошибка, пропускаем
                     continue
 
-                # Проверяем, есть ли замок у этого апартамента
-                lock_icon = apartment_title.locator(
-                    "xpath=.//span[@role='img' and @aria-label='lock']"
-                )
-                has_lock = lock_icon.count() > 0
+                # Если есть замок - пропускаем и ищем дальше
+                if has_lock:
+                    continue
 
-                apartment_text = apartment_title.text_content()
-
-                if not has_lock:
-                    apartment_title.click(force=True)
+                # Если замка нет - это доступный апартамент, кликаем на него (как в скрипте)
+                try:
+                    # Используем evaluate для клика на кнопку (как в скрипте)
+                    apartment_text = apartment_title.text_content()
+                    apartment_title.evaluate(
+                        """
+                        (el) => {
+                            const button = el.closest('button');
+                            if (button) {
+                                button.click();
+                            }
+                        }
+                    """
+                    )
                     allure.attach(
-                        f"Выбран апартамент: {apartment_text}",
+                        f"Выбран доступный апартамент: {apartment_text}, button_id={button_id}",
                         name="Selected Apartment",
                     )
                     return apartment_text
+                except Exception:
+                    continue
 
             # Если не найден ни один доступный апартамент
             raise AssertionError(
