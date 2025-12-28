@@ -1,6 +1,7 @@
 """Кастомные assertions с понятными сообщениями об ошибках."""
 
 from playwright.sync_api import Page
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
 class Assertions:
@@ -118,7 +119,12 @@ class Assertions:
             timeout: Таймаут ожидания
         """
         element = self.page.locator(selector)
-        element.wait_for(state="visible", timeout=timeout)
+        try:
+            element.wait_for(state="visible", timeout=timeout)
+        except PlaywrightTimeoutError:
+            raise AssertionError(
+                f"❌ {error_message}\n   Элемент '{selector}' не найден за {timeout}ms."
+            )
         actual_text = element.text_content()
 
         assert actual_text == expected_text, (
@@ -144,7 +150,12 @@ class Assertions:
             timeout: Таймаут ожидания
         """
         element = self.page.locator(selector)
-        element.wait_for(state="visible", timeout=timeout)
+        try:
+            element.wait_for(state="visible", timeout=timeout)
+        except PlaywrightTimeoutError:
+            raise AssertionError(
+                f"❌ {error_message}\n   Элемент '{selector}' не найден за {timeout}ms."
+            )
         actual_text = element.text_content()
 
         assert expected_substring in actual_text, (

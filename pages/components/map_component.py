@@ -2,6 +2,7 @@
 
 import allure
 from playwright.sync_api import Page
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from locators.map_locators import MapLocators
 
@@ -56,7 +57,10 @@ class MapComponent:
     def check_map_loaded(self):
         """Проверить что карта загружена."""
         element = self.page.locator(self.locators.MAP_CONTAINER)
-        element.wait_for(state="visible", timeout=self.MAP_LOAD_TIMEOUT)
+        try:
+            element.wait_for(state="visible", timeout=self.MAP_LOAD_TIMEOUT)
+        except PlaywrightTimeoutError:
+            raise AssertionError(f"Карта не загружена за {self.MAP_LOAD_TIMEOUT}ms.")
         assert element.is_visible(), "Карта не загружена"
 
     def click_project(self, project_name: str):
@@ -70,11 +74,20 @@ class MapComponent:
             selector = self._get_project_selector(project_name)
 
             # Ждем появления проекта
-            self.page.wait_for_selector(selector, state="visible", timeout=10000)
+            try:
+                self.page.wait_for_selector(selector, state="visible", timeout=10000)
+            except PlaywrightTimeoutError:
+                raise AssertionError(
+                    f"Проект '{project_name}' не найден на карте за 10000ms."
+                )
 
             # Для изображений на карте используем force_click
             if project_name.lower() == "peylaa" and "img" in selector:
                 element = self.page.locator(selector)
+                element.click(force=True)
+            elif project_name.lower() == "edgewater":
+                # Для edgewater используем force_click, так как на карте могут быть проблемы с кликом
+                element = self.page.locator(selector).first
                 element.click(force=True)
             else:
                 element = self.page.locator(selector)
@@ -89,16 +102,26 @@ class MapComponent:
         """
         with allure.step(f"Кликаем на Explore Project для {project_name.upper()}"):
             # Ждем информационного окна
-            self.page.wait_for_selector(
-                self.locators.PROJECT_INFO_WINDOW, state="visible", timeout=10000
-            )
+            try:
+                self.page.wait_for_selector(
+                    self.locators.PROJECT_INFO_WINDOW, state="visible", timeout=10000
+                )
+            except PlaywrightTimeoutError:
+                raise AssertionError(
+                    f"Информационное окно проекта {project_name} не появилось за 10000ms."
+                )
 
             # Получаем селектор кнопки
             button_selector = self._get_explore_button_selector(project_name)
 
             # Ждем появления кнопки и проверяем её готовность
             button = self.page.locator(button_selector)
-            button.wait_for(state="visible", timeout=10000)
+            try:
+                button.wait_for(state="visible", timeout=10000)
+            except PlaywrightTimeoutError:
+                raise AssertionError(
+                    f"Кнопка Explore Project для {project_name} не найдена за 10000ms."
+                )
 
             assert (
                 button.is_enabled()
@@ -107,11 +130,16 @@ class MapComponent:
             button.click()
 
             # Ждем перехода на страницу проекта
-            self.page.wait_for_url(
-                self.project_locators.PROJECT_URL_PATTERN,
-                wait_until="domcontentloaded",
-                timeout=10000,
-            )
+            try:
+                self.page.wait_for_url(
+                    self.project_locators.PROJECT_URL_PATTERN,
+                    wait_until="domcontentloaded",
+                    timeout=10000,
+                )
+            except PlaywrightTimeoutError:
+                raise AssertionError(
+                    f"Не перешли на страницу проекта {project_name} за 10000ms. Текущий URL: {self.page.url}"
+                )
 
     def click_on_custom_poi(self):
         """Кликнуть на кастомную POI."""
@@ -137,7 +165,12 @@ class MapComponent:
             project_name: Название проекта
         """
         element = self.page.locator(self.locators.PROJECT_INFO_WINDOW)
-        element.wait_for(state="visible", timeout=10000)
+        try:
+            element.wait_for(state="visible", timeout=10000)
+        except PlaywrightTimeoutError:
+            raise AssertionError(
+                f"Информационное окно проекта {project_name} не отображается за 10000ms."
+            )
         assert (
             element.is_visible()
         ), f"Информационное окно проекта {project_name} не отображается"
@@ -187,6 +220,8 @@ class MapComponent:
                 "cubix": 'div[aria-label="CUBIX RESIDENCE"], div[aria-label="CUBIX RESIDENCES"]',
                 "tranquil": 'div[aria-label="Tranquil Wellness Tower"]',
                 "peylaa": 'div[aria-label="Peylaa"]',
+                "edgewater": 'div[aria-label*="Edgewater Residences"]',
+                "willows_residences": 'div[aria-label="Willows Residences"]',
             }
         else:
             # Десктопные селекторы
@@ -196,6 +231,8 @@ class MapComponent:
                 "cubix": 'div[aria-label="CUBIX RESIDENCE"], div[aria-label="CUBIX RESIDENCES"]',
                 "tranquil": 'div[aria-label="Tranquil Wellness Tower"]',
                 "peylaa": 'div[aria-label="Peylaa"]',
+                "edgewater": 'div[aria-label*="Edgewater Residences"]',
+                "willows_residences": 'div[aria-label="Willows Residences"]',
             }
 
         return selectors.get(
@@ -208,6 +245,20 @@ class MapComponent:
 
         project_name_lower = project_name.lower()
         device = os.getenv("MOBILE_DEVICE", "desktop")
+
+        # Специальная обработка для edgewater (на карте есть несколько проектов: edgewater-residences-1, 2, 3)
+        if project_name_lower == "edgewater":
+            if device != "desktop":
+                return '[data-test-id*="map-project-point-button-mobile-edgewater"]'
+            else:
+                return '[data-test-id*="map-project-point-button-desktop-edgewater"]'
+
+        # Специальная обработка для willows_residences (используется "willows" в data-test-id)
+        if project_name_lower == "willows_residences":
+            if device != "desktop":
+                return '[data-test-id*="map-project-point-button-mobile-willows"]'
+            else:
+                return '[data-test-id*="map-project-point-button-desktop-willows"]'
 
         if device != "desktop":
             return (

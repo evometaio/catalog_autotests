@@ -9,9 +9,11 @@ from playwright.sync_api import Page
 # Загружаем переменные из .env файла
 load_dotenv()
 
+from locators.abra.willows_residences_locators import WillowsResidencesLocators
 from locators.base_locators import BaseLocators
 from locators.capstone.peylaa_locators import PeylaaLocators
 from locators.lsr.mark_locators import MarkLocators
+from locators.msg.edgewater_locators import EdgewaterLocators
 from locators.qube.arisha_locators import ArishaLocators
 from locators.qube.cubix_locators import CubixLocators
 from locators.qube.elire_locators import ElireLocators
@@ -255,6 +257,16 @@ def _get_urls_by_environment() -> dict:
                 "DEV_VIBE_ARSENAL_BASE_URL",
                 "https://catalog-dev.evometa.io/arsenal-east/map",
             ),
+            # Abra проект (Willows Residences)
+            "abra_willows_residences": os.getenv(
+                "DEV_ABRA_WILLOWS_RESIDENCES_BASE_URL",
+                "https://catalog-dev.evometa.io/abra/map",
+            ),
+            # MSG проект (Edgewater)
+            "msg_edgewater": os.getenv(
+                "DEV_MSG_EDGEWATER_BASE_URL",
+                "https://catalog-dev.evometa.io/mgs-development/map",
+            ),
         }
     elif env == "stage":
         return {
@@ -284,6 +296,16 @@ def _get_urls_by_environment() -> dict:
                 "VIBE_ARSENAL_PROD_BASE_URL",
                 "https://catalog.evometa.io/arsenal-east/map",
             ),
+            # Abra проект (Willows Residences) - STAGE использует prod URL
+            "abra_willows_residences": os.getenv(
+                "ABRA_WILLOWS_RESIDENCES_PROD_BASE_URL",
+                "https://catalog.evometa.io/abra/map",
+            ),
+            # MSG проект (Edgewater) - STAGE использует prod URL
+            "msg_edgewater": os.getenv(
+                "MSG_EDGEWATER_PROD_BASE_URL",
+                "https://catalog.evometa.io/mgs-development/map",
+            ),
         }
     else:
         return {
@@ -312,6 +334,16 @@ def _get_urls_by_environment() -> dict:
             "vibe_arsenal": os.getenv(
                 "VIBE_ARSENAL_PROD_BASE_URL",
                 "https://catalog.evometa.io/arsenal-east/map",
+            ),
+            # Abra проект (Willows Residences) - PROD
+            "abra_willows_residences": os.getenv(
+                "ABRA_WILLOWS_RESIDENCES_PROD_BASE_URL",
+                "https://catalog.evometa.io/abra/map",
+            ),
+            # MSG проект (Edgewater) - PROD
+            "msg_edgewater": os.getenv(
+                "MSG_EDGEWATER_PROD_BASE_URL",
+                "https://catalog.evometa.io/mgs-development/map",
             ),
         }
 
@@ -346,6 +378,10 @@ def _get_mobile_base_url(route_type: str = "map", project_type: str = "qube") ->
         return urls["vibe_arsenal"]
     elif project_type == "lsr":
         return urls["lsr_mark"]
+    elif project_type == "abra":
+        return urls["abra_willows_residences"]
+    elif project_type == "msg":
+        return urls["msg_edgewater"]
     else:  # qube
         if route_type == "agent":
             return urls["agent"]
@@ -406,6 +442,14 @@ def mobile_page(page, request):
         project_type = "lsr"
         locators_class = MarkLocators
         project_name = "mark"
+    elif "willows" in test_file or "abra" in test_file:
+        project_type = "abra"
+        locators_class = WillowsResidencesLocators
+        project_name = "willows_residences"
+    elif "edgewater" in test_file or "msg" in test_file:
+        project_type = "msg"
+        locators_class = EdgewaterLocators
+        project_name = "edgewater"
     else:
         project_type = "qube"
         locators_class = BaseLocators
@@ -487,3 +531,21 @@ def arsenal_page(page: Page):
 
     urls = _get_urls_by_environment()
     return ArsenalPage(page, urls["vibe_arsenal"])
+
+
+@pytest.fixture
+def willows_residences_page(page: Page):
+    """Фикстура для страницы Willows Residences с новой архитектурой."""
+    from pages.projects.abra.willows_residences_page import WillowsResidencesPage
+
+    urls = _get_urls_by_environment()
+    return WillowsResidencesPage(page, urls["abra_willows_residences"])
+
+
+@pytest.fixture
+def edgewater_page(page: Page):
+    """Фикстура для страницы Edgewater с новой архитектурой."""
+    from pages.projects.msg.edgewater_page import EdgewaterPage
+
+    urls = _get_urls_by_environment()
+    return EdgewaterPage(page, urls["msg_edgewater"])

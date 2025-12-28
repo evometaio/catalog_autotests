@@ -1,6 +1,7 @@
 """Обёртки над Playwright API для взаимодействия с браузером."""
 
 from playwright.sync_api import Locator, Page
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
 class BrowserActions:
@@ -46,7 +47,7 @@ class BrowserActions:
         try:
             element.wait_for(state="visible", timeout=timeout)
             return element
-        except TimeoutError:
+        except PlaywrightTimeoutError:
             raise AssertionError(f"Элемент '{selector}' не найден за {timeout}ms.")
 
     def click(self, selector: str, timeout: int = None, **kwargs):
@@ -147,9 +148,15 @@ class BrowserActions:
 
         Returns:
             Список элементов
+
+        Raises:
+            AssertionError: Если элемент не найден
         """
         if timeout is None:
             timeout = self.DEFAULT_TIMEOUT
         # Ждем появления хотя бы одного элемента
-        self.page.wait_for_selector(selector, timeout=timeout)
-        return self.page.query_selector_all(selector)
+        try:
+            self.page.wait_for_selector(selector, timeout=timeout)
+            return self.page.query_selector_all(selector)
+        except PlaywrightTimeoutError:
+            raise AssertionError(f"Элемент '{selector}' не найден за {timeout}ms.")

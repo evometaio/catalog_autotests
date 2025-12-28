@@ -194,9 +194,16 @@ class BasePage:
                 self.browser.click("button[data-test-id='modal-form-primary-button']")
 
                 try:
-                    self.page.wait_for_selector(
-                        ".ant-modal-content", state="hidden", timeout=15000
-                    )
+                    try:
+                        self.page.wait_for_selector(
+                            ".ant-modal-content", state="hidden", timeout=15000
+                        )
+                    except PlaywrightTimeoutError:
+                        raise AssertionError(
+                            "Модальное окно авторизации не закрылось за 15000ms."
+                        )
+                except AssertionError:
+                    raise
                 except:
                     error_elements = self.page.locator(
                         ".ant-message-error, .ant-form-item-explain-error"
