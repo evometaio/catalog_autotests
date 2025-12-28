@@ -94,7 +94,12 @@ class ApartmentWidgetComponent:
             frame_locator = self.get_widget_frame()
 
             view_2d_button = frame_locator.locator(self.locators.VIEW_2D_BUTTON)
-            view_2d_button.wait_for(state="visible", timeout=15000)
+            try:
+                view_2d_button.wait_for(state="visible", timeout=15000)
+            except PlaywrightTimeoutError:
+                raise AssertionError(
+                    "Кнопка переключения в режим 2D не найдена за 15000ms."
+                )
 
             # Проверяем, что кнопка 2D не активна
             button_class = view_2d_button.get_attribute("class")

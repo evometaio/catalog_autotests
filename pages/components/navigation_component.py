@@ -86,7 +86,12 @@ class NavigationComponent:
             button.click()
 
             # Ждем изменения URL (увеличенный таймаут для Firefox в CI - 20 секунд)
-            self.page.wait_for_url(f"**/floor/*/{floor_number}", timeout=20000)
+            try:
+                self.page.wait_for_url(f"**/floor/*/{floor_number}", timeout=20000)
+            except PlaywrightTimeoutError:
+                raise AssertionError(
+                    f"Не перешли к этажу {floor_number} за 20000ms. Текущий URL: {self.page.url}"
+                )
 
             current_url = self.page.url
             allure.attach(

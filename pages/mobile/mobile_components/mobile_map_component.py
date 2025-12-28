@@ -2,6 +2,7 @@
 
 import allure
 from playwright.sync_api import Page
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from locators.mobile_locators import (
     MOBILE_CLOSE_BUTTON,
@@ -48,17 +49,89 @@ class MobileMapComponent:
             selector = self.get_mobile_project_selector(project_name)
 
             # Ждем появления проекта на карте (увеличенный таймаут для мобильных устройств в CI)
-            # Для edgewater и willows_residences может быть несколько проектов, используем .first и force_click
-            # Для Arisha также используем force=True, чтобы избежать бесконечного скролла при прокрутке к элементу вне viewport
-            if project_name.lower() in ["edgewater", "willows_residences"]:
+            if project_name.lower() == "edgewater":
+                # Для edgewater нужен именно третий проект (residences-3), а не первый
+                project_element = self.page.locator(selector).nth(2)
+            elif project_name.lower() == "willows_residences":
                 project_element = self.page.locator(selector).first
-                project_element.wait_for(state="visible", timeout=20000)
-                # Используем force_click, так как элементы могут перекрываться
-                project_element.click(force=True)
             else:
                 project_element = self.page.locator(selector)
-                project_element.wait_for(state="visible", timeout=20000)
-                # Используем force=True для всех мобильных кликов, чтобы избежать проблем с viewport и бесконечным скроллом
+
+            project_element.wait_for(state="visible", timeout=20000)
+
+            # Панорамируем карту к элементу через JavaScript, чтобы он попал в viewport
+            # Это решает проблему, когда элемент находится левее и не виден на экране
+            try:
+                # Получаем координаты элемента на карте через JavaScript
+                element_info = project_element.evaluate(
+                    """
+                    (element) => {
+                        // Получаем координаты элемента
+                        const rect = element.getBoundingClientRect();
+                        const centerX = rect.left + rect.width / 2;
+                        const centerY = rect.top + rect.height / 2;
+                        
+                        return {
+                            centerX: centerX,
+                            centerY: centerY,
+                            viewportWidth: window.innerWidth,
+                            viewportHeight: window.innerHeight
+                        };
+                    }
+                """
+                )
+
+                # Если элемент находится вне viewport, панорамируем карту
+                if element_info:
+                    viewport_width = element_info.get("viewportWidth", 390)
+                    element_x = element_info.get("centerX", 0)
+
+                    # Если элемент находится левее (x < 0) или правее (x > viewport width)
+                    if element_x < 0 or element_x > viewport_width:
+                        # Панорамируем карту через скролл, используя сам элемент
+                        project_element.evaluate(
+                            """
+                            (element) => {
+                                const rect = element.getBoundingClientRect();
+                                const centerX = rect.left + rect.width / 2;
+                                const centerY = rect.top + rect.height / 2;
+                                
+                                // Панорамируем через скролл контейнера карты
+                                const mapContainer = element.closest('[class*="map"], [class*="leaflet"], [class*="mapbox"]') || 
+                                                     document.querySelector('[class*="map-container"], [class*="leaflet-container"]');
+                                if (mapContainer) {
+                                    // Вычисляем смещение для центрирования элемента
+                                    const viewportCenterX = window.innerWidth / 2;
+                                    const viewportCenterY = window.innerHeight / 2;
+                                    const offsetX = viewportCenterX - centerX;
+                                    const offsetY = viewportCenterY - centerY;
+                                    
+                                    // Скроллим контейнер карты
+                                    mapContainer.scrollBy({
+                                        left: offsetX,
+                                        top: offsetY,
+                                        behavior: 'smooth'
+                                    });
+                                }
+                            }
+                        """
+                        )
+                        # Ждем завершения анимации панорамирования
+                        self.page.wait_for_timeout(1000)
+            except Exception:
+                # Если не удалось панорамировать, пробуем просто скролл
+                try:
+                    project_element.scroll_into_view_if_needed()
+                    self.page.wait_for_timeout(500)
+                except Exception:
+                    pass  # Продолжаем без панорамирования
+
+            # Используем JavaScript клик напрямую, чтобы обойти проверку viewport
+            # Это более надежно для элементов на карте
+            try:
+                project_element.evaluate("element => element.click()")
+            except Exception:
+                # Если JavaScript клик не сработал, используем обычный клик с force
                 project_element.click(force=True)
 
             # Ждем появления мобильного модального окна
@@ -127,11 +200,16 @@ class MobileMapComponent:
             project_name: Название проекта
         """
         with allure.step(f"Кликаем на Explore Project для {project_name.upper()}"):
-            # Для willows_residences используем data-test-id вместо текста
+            # Для willows_residences и edgewater используем data-test-id вместо текста
             if project_name.lower() == "willows_residences":
                 # Используем частичное совпадение, так как может быть несколько вариантов
                 explore_button = self.page.locator(
                     '[data-test-id*="map-project-point-button-mobile-willows"]'
+                )
+            elif project_name.lower() == "edgewater":
+                # Для edgewater используем частичное совпадение, так как может быть несколько вариантов (edgewater-residences-1, 2, 3 и т.д.)
+                explore_button = self.page.locator(
+                    '[data-test-id*="map-project-point-button-mobile-edgewater"]'
                 )
             else:
                 # Для остальных проектов используем стандартный селектор
@@ -144,19 +222,25 @@ class MobileMapComponent:
                 explore_button.is_enabled()
             ), f"Кнопка Explore Project заблокирована для {project_name}"
 
-            # Кликаем
-            explore_button.click()
+            # Используем JavaScript клик напрямую, чтобы обойти проверку viewport
+            # Это более надежно для элементов на карте
+            try:
+                explore_button.evaluate("element => element.click()")
+            except Exception:
+                # Если JavaScript клик не сработал, используем обычный клик
+                explore_button.click()
 
+            # Ждем перехода на страницу проекта
             # Ждем перехода на страницу проекта
             if project_name.lower() == "arsenal":
                 expected_url_pattern = "**/vibe/**"
                 self.page.wait_for_url(expected_url_pattern, timeout=10000)
             elif project_name.lower() == "edgewater":
-                # Для edgewater просто проверяем что URL изменился
-                self.page.wait_for_url("**/edgewater**", timeout=10000)
+                # Для edgewater URL содержит edgewater-residences-3
+                self.page.wait_for_url("**/edgewater-residences-3/**", timeout=10000)
             elif project_name.lower() == "willows_residences":
-                # Для willows_residences просто проверяем что URL изменился
-                self.page.wait_for_url("**/willows**", timeout=10000)
+                # Для willows_residences URL содержит willows-residences
+                self.page.wait_for_url("**/willows-residences/**", timeout=10000)
             else:
                 expected_url_pattern = f"**/{project_name.lower()}/**"
                 self.page.wait_for_url(expected_url_pattern, timeout=10000)

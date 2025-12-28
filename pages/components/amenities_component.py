@@ -2,6 +2,7 @@
 
 import allure
 from playwright.sync_api import Page
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 
 class AmenitiesComponent:
@@ -36,7 +37,12 @@ class AmenitiesComponent:
         """Проверить отображение модального окна."""
         with allure.step("Проверяем отображение модального окна amenities"):
             modal = self.page.locator(self.locators.AMENITIES_MODAL)
-            modal.wait_for(state="visible", timeout=10000)
+            try:
+                modal.wait_for(state="visible", timeout=10000)
+            except PlaywrightTimeoutError:
+                raise AssertionError(
+                    "Модальное окно amenities не появилось за 10000ms."
+                )
             assert modal.is_visible(), "Модальное окно amenities не отображается"
 
     def verify_modal_title(self):
