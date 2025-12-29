@@ -77,7 +77,7 @@ jobs:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
       - name: Run tests (Firefox/Linux)
-        run: pytest tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr/ tests/ui/vibe/ --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr/ tests/ui/vibe/ tests/ui/abra/ tests/ui/msg/ --browser=firefox --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
           OS_NAME: ${{ runner.os }}
@@ -130,7 +130,7 @@ jobs:
       - name: Run tests (Chromium/Windows)
         shell: pwsh
         continue-on-error: true
-        run: pytest tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr/ tests/ui/vibe/ --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr/ tests/ui/vibe/ tests/ui/abra/ tests/ui/msg/ --browser=chromium --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
           OS_NAME: ${{ runner.os }}
@@ -195,7 +195,7 @@ jobs:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
 
       - name: Run tests (Webkit/macOS)
-        run: pytest tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr/ tests/ui/vibe/ --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
+        run: pytest tests/ui/qube/ tests/ui/wellcube/ tests/ui/capstone/ tests/ui/lsr/ tests/ui/vibe/ tests/ui/abra/ tests/ui/msg/ --browser=webkit --alluredir=${{ env.ALLURE_RESULTS_DIR }}
         env:
           TEST_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
           OS_NAME: ${{ runner.os }}
