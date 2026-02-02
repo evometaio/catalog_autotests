@@ -15,8 +15,14 @@ def test_edgewater_apartment_info(edgewater_page):
     with allure.step("Кликаем на проект Edgewater"):
         edgewater_page.map.navigate_to_project("edgewater")
 
+    with allure.step("Кликаем на кнопку All Units для перехода на catalog2d"):
+        edgewater_page.browser.expect_visible(
+            edgewater_page.project_locators.ALL_UNITS_BUTTON
+        )
+        edgewater_page.browser.click(edgewater_page.project_locators.ALL_UNITS_BUTTON)
+        edgewater_page.page.wait_for_url("**/catalog_2d", timeout=10000)
+
     with allure.step("Проверяем, что мы на странице catalog_2d после Explore Project"):
-        # После navigate_to_project мы уже на catalog_2d
         edgewater_page.page.wait_for_load_state("domcontentloaded")
         edgewater_page.page.wait_for_timeout(2000)
         edgewater_page.assertions.assert_url_contains(
@@ -27,8 +33,6 @@ def test_edgewater_apartment_info(edgewater_page):
         property_buttons = edgewater_page.page.locator(
             edgewater_page.project_locators.PROPERTY_INFO_PRIMARY_BUTTON
         )
-        property_buttons.first.wait_for(state="visible", timeout=10000)
-
         # Находим первую видимую кнопку
         visible_button = None
         for i in range(property_buttons.count()):

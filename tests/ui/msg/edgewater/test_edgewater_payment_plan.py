@@ -15,8 +15,14 @@ def test_edgewater_payment_plan(edgewater_page):
     with allure.step("Кликаем на проект Edgewater"):
         edgewater_page.map.navigate_to_project("edgewater")
 
+    with allure.step("Кликаем на кнопку All Units для перехода на catalog2d"):
+        edgewater_page.browser.expect_visible(
+            edgewater_page.project_locators.ALL_UNITS_BUTTON
+        )
+        edgewater_page.browser.click(edgewater_page.project_locators.ALL_UNITS_BUTTON)
+        edgewater_page.page.wait_for_url("**/catalog_2d", timeout=10000)
+
     with allure.step("Проверяем наличие кнопки Payment Plan"):
-        # Для desktop используем второй элемент (индекс 1)
         payment_plan_button = edgewater_page.page.locator(
             edgewater_page.project_locators.PAYMENT_PLAN_BUTTON
         ).nth(1)

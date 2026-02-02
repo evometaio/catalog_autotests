@@ -18,6 +18,21 @@ def test_edgewater_mobile_payment_plan(mobile_page):
     with allure.step("Кликаем на Explore Project"):
         mobile_page.mobile_map.click_explore_project("edgewater")
 
+    with allure.step("Открываем меню и переходим в All Units (catalog_2d)"):
+        menu_button = mobile_page.page.locator(
+            '[data-test-id="nav-mobile-menu-toggle"]'
+        )
+        menu_button.wait_for(state="visible", timeout=10000)
+        menu_button.click()
+        mobile_page.page.wait_for_timeout(1000)
+
+        all_units_button = mobile_page.page.locator(
+            '[data-test-id="nav-mobile-catalog2d"]'
+        )
+        all_units_button.wait_for(state="visible", timeout=10000)
+        all_units_button.click()
+        mobile_page.page.wait_for_url("**/catalog_2d", timeout=20000)
+
     with allure.step("Проверяем наличие кнопки Payment Plan"):
         # Для mobile используем первый элемент (индекс 0)
         payment_plan_button = mobile_page.page.locator(
