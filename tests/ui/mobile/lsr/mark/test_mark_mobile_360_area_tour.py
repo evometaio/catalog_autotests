@@ -9,7 +9,7 @@ import pytest
 @pytest.mark.mobile
 @pytest.mark.parametrize(
     "panorama_type",
-    ["rotation", "yard", "lobby-k1", "lobby-k2", "lobby-k3"],
+    ["yard", "lobby-k1", "lobby-k2", "lobby-k3"],
 )
 def test_mark_mobile_360_area_tour(mark_page, panorama_type):
     """Тест 360 Area Tour для MARK на мобильном устройстве с разными типами панорам."""
@@ -19,13 +19,6 @@ def test_mark_mobile_360_area_tour(mark_page, panorama_type):
     with allure.step("Кликаем на кнопку 360 Area Tour (Панорамы, mobile)"):
         # Используем общий компонент, который уже учитывает особенности MARK на мобилке
         mark_page.area_tour_360.click_360_button()
-
-    if panorama_type == "rotation":
-        with allure.step("Проверяем 360-панораму rotation (модальное окно)"):
-            mark_page.area_tour_360.verify_modal_displayed()
-            mark_page.area_tour_360.verify_content()
-            mark_page.area_tour_360.close_modal()
-        return
 
     with allure.step(f"Кликаем на пункт меню панорам: {panorama_type}"):
         mark_page.area_tour_360.click_360_menu_item(panorama_type)

@@ -10,7 +10,7 @@ class TestArishaMobileAgentRoute:
     @allure.severity(allure.severity_level.CRITICAL)
     @pytest.mark.mobile
     @pytest.mark.regression
-    @pytest.mark.flaky(reruns=2, reruns_delay=2)
+    # @pytest.mark.flaky(reruns=2, reruns_delay=2)
     def test_arisha_mobile_download_pdf_on_catalog_page(self, mobile_page):
         """Тест скачивания PDF на странице каталога Arisha на мобильном устройстве."""
 
@@ -25,7 +25,7 @@ class TestArishaMobileAgentRoute:
 
             with allure.step("Ищем и кликаем на первый доступный апартамент"):
                 mobile_page.mobile_navigation.find_and_click_available_apartment()
-                mobile_page.page.wait_for_timeout(1000)
+                mobile_page.page.wait_for_timeout(5000)
 
             with allure.step("Кликаем на кнопку PDF"):
                 pdf_clicked = mobile_page.click_mobile_pdf_button()

@@ -86,7 +86,6 @@ class AreaTour360Component:
                 if project_name == "mark" and device != "desktop":
                     # Мобильные локаторы
                     mobile_menu_selectors = {
-                        "rotation": '[data-test-id="nav-rotation-view-controls-list-tour-rotation"]',
                         "yard": '[data-test-id="nav-rotation-view-controls-list-tour-yard"]',
                         "lobby-k1": '[data-test-id="nav-rotation-view-controls-list-tour-lobby-k1"]',
                         "lobby-k2": '[data-test-id="nav-rotation-view-controls-list-tour-lobby-k2"]',
