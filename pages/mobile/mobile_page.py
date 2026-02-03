@@ -335,9 +335,16 @@ class MobilePage(BasePage):
         with allure.step("Кликаем на Download PDF"):
             self.browser.click(MOBILE_DOWNLOAD_PDF_BUTTON)
 
-    def find_and_click_available_apartment(self):
-        """Найти и кликнуть на первый доступный apartment."""
-        return self.mobile_navigation.find_and_click_available_apartment()
+    def find_and_click_available_apartment(self, project_name: str = None):
+        """
+        Найти и кликнуть на первый доступный apartment.
+
+        Args:
+            project_name: Название проекта (например, "arisha").
+        """
+        return self.mobile_navigation.find_and_click_available_apartment(
+            project_name=project_name
+        )
 
     def click_mobile_pdf_button(self):
         """Кликнуть по PDF кнопке на мобильном устройстве."""

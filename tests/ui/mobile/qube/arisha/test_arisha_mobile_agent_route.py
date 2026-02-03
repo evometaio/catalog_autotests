@@ -24,7 +24,9 @@ class TestArishaMobileAgentRoute:
                 )
 
             with allure.step("Ищем и кликаем на первый доступный апартамент"):
-                mobile_page.mobile_navigation.find_and_click_available_apartment()
+                mobile_page.mobile_navigation.find_and_click_available_apartment(
+                    project_name="arisha"
+                )
                 mobile_page.page.wait_for_timeout(5000)
 
             with allure.step("Кликаем на кнопку PDF"):

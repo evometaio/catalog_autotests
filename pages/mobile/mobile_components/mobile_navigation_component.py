@@ -461,8 +461,14 @@ class MobileNavigationComponent:
             )
             return False
 
-    def find_and_click_available_apartment(self):
-        """Найти и кликнуть на первый доступный apartment в каталоге."""
+    def find_and_click_available_apartment(self, project_name: str = None):
+        """
+        Найти и кликнуть на первый доступный apartment в каталоге.
+
+        Args:
+            project_name: Название проекта (например, "arisha").
+                         Если указан "arisha", используется оптимизированная логика проверки замков.
+        """
         with allure.step("Ищем свободный apartment"):
             self.page.wait_for_timeout(MOBILE_TIMEOUTS["apartment_load"])
 
@@ -473,6 +479,25 @@ class MobileNavigationComponent:
             if apartment_count == 0:
                 raise AssertionError("Apartments не найдены")
 
+            # Для Arisha используем оптимизированную логику (проверка замков рядом)
+            is_arisha = project_name and project_name.lower() == "arisha"
+
+            if is_arisha:
+                # Оптимизированная логика для Arisha: находим все замки заранее
+                all_lock_elements = self.page.locator(MOBILE_APARTMENT_LOCK_ICON)
+                lock_count = all_lock_elements.count()
+
+                # Сохраняем координаты всех замков
+                lock_positions = []
+                for j in range(lock_count):
+                    try:
+                        lock = all_lock_elements.nth(j)
+                        box = lock.bounding_box()
+                        if box:
+                            lock_positions.append({"x": box["x"], "y": box["y"]})
+                    except:
+                        pass
+
             # Ищем первый доступный apartment (без замка)
             for i in range(apartment_count):
                 apartment_title = apartment_titles.nth(i)
@@ -480,13 +505,47 @@ class MobileNavigationComponent:
                 if not apartment_title.is_visible():
                     continue
 
-                # Проверяем замок
-                parent_card = apartment_title.locator(
-                    'xpath=ancestor::div[contains(@class, "ant-card")]'
-                )
-                lock_icons = parent_card.locator(MOBILE_APARTMENT_LOCK_ICON).count()
+                has_lock = False
 
-                if lock_icons == 0:
+                if is_arisha:
+                    # Для Arisha: проверяем замки рядом с элементом (в радиусе 300px)
+                    try:
+                        apt_box = apartment_title.bounding_box()
+                        if apt_box:
+                            # Проверяем замки внутри элемента
+                            lock_icon_inside = apartment_title.locator(
+                                "xpath=.//span[@role='img' and @aria-label='lock']"
+                            )
+                            has_lock_inside = lock_icon_inside.count() > 0
+
+                            # Проверяем замки рядом
+                            has_lock_nearby = False
+                            for lock_pos in lock_positions:
+                                distance_x = abs(lock_pos["x"] - apt_box["x"])
+                                distance_y = abs(lock_pos["y"] - apt_box["y"])
+                                if distance_x < 300 and distance_y < 300:
+                                    has_lock_nearby = True
+                                    break
+
+                            has_lock = has_lock_inside or has_lock_nearby
+                    except:
+                        # Если не удалось проверить, используем стандартную логику
+                        parent_card = apartment_title.locator(
+                            'xpath=ancestor::div[contains(@class, "ant-card")]'
+                        )
+                        has_lock = (
+                            parent_card.locator(MOBILE_APARTMENT_LOCK_ICON).count() > 0
+                        )
+                else:
+                    # Стандартная логика для других проектов
+                    parent_card = apartment_title.locator(
+                        'xpath=ancestor::div[contains(@class, "ant-card")]'
+                    )
+                    has_lock = (
+                        parent_card.locator(MOBILE_APARTMENT_LOCK_ICON).count() > 0
+                    )
+
+                if not has_lock:
                     with allure.step(f"Кликаем на доступный apartment {i+1}"):
                         apartment_title.click()
                         self.page.wait_for_timeout(MOBILE_TIMEOUTS["medium"])
