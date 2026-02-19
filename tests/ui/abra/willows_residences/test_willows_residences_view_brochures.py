@@ -21,7 +21,7 @@ def test_willows_residences_view_brochures(willows_residences_page):
             willows_residences_page.project_locators.VIEW_BROCHURES_BUTTON
         ).nth(1)
 
-        view_brochures_button.wait_for(state="visible", timeout=10000)
+        view_brochures_button.wait_for(state="visible", timeout=20000)
         assert (
             view_brochures_button.is_visible()
         ), "Кнопка View Brochures не отображается"

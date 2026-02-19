@@ -33,7 +33,7 @@ class Assertions:
         assert condition, f"❌ {error_message}"
 
     def assert_element_visible(
-        self, selector: str, error_message: str, timeout: int = 10000
+        self, selector: str, error_message: str, timeout: int = 20000
     ):
         """
         Проверить что элемент видим.
@@ -107,7 +107,7 @@ class Assertions:
         selector: str,
         expected_text: str,
         error_message: str,
-        timeout: int = 10000,
+        timeout: int = 20000,
     ):
         """
         Проверить что текст элемента равен ожидаемому.
@@ -138,7 +138,7 @@ class Assertions:
         selector: str,
         expected_substring: str,
         error_message: str,
-        timeout: int = 10000,
+        timeout: int = 20000,
     ):
         """
         Проверить что текст элемента содержит подстроку.

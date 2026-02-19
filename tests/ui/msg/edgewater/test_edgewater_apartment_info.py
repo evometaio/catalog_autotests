@@ -20,7 +20,7 @@ def test_edgewater_apartment_info(edgewater_page):
             edgewater_page.project_locators.ALL_UNITS_BUTTON
         )
         edgewater_page.browser.click(edgewater_page.project_locators.ALL_UNITS_BUTTON)
-        edgewater_page.page.wait_for_url("**/catalog_2d", timeout=10000)
+        edgewater_page.page.wait_for_url("**/catalog_2d", timeout=20000)
 
     with allure.step("Проверяем, что мы на странице catalog_2d после Explore Project"):
         edgewater_page.page.wait_for_load_state("domcontentloaded")

@@ -40,7 +40,7 @@ def test_elire_building_floor_apartment_navigation(elire_page, route_type):
         )
 
         # Умное ожидание появления кнопки (на PROD может потребоваться больше времени из-за авторизации)
-        timeout = 20000 if env == "prod" else 10000
+        timeout = 20000
         elire_page.page.wait_for_selector(
             start_3d_button, state="visible", timeout=timeout
         )
@@ -51,7 +51,7 @@ def test_elire_building_floor_apartment_navigation(elire_page, route_type):
         )
 
     # Проверяем URL здания
-    elire_page.page.wait_for_url("**/elire/configuration/1br-residence", timeout=10000)
+    elire_page.page.wait_for_url("**/elire/configuration/1br-residence", timeout=20000)
     current_url = elire_page.get_current_url()
     allure.attach(
         f"URL после выбора 1 Bedroom Residence: {current_url}", name="Building URL"

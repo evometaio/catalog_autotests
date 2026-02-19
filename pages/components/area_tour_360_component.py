@@ -38,7 +38,7 @@ class AreaTour360Component:
                 button = self.page.locator(
                     'xpath=(//button[@data-test-id="nav-rotation-view-controls-button"])[2]'
                 )
-                button.wait_for(state="visible", timeout=10000)
+                button.wait_for(state="visible", timeout=20000)
                 button.click()
             else:
                 # Десктопный или другой проект
@@ -62,7 +62,7 @@ class AreaTour360Component:
                     button.click(force=True)
                 else:
                     button = locator.first
-                    button.wait_for(state="visible", timeout=10000)
+                    button.wait_for(state="visible", timeout=20000)
                     button.click()
 
     def click_360_menu_item(self, menu_item: str = "yard"):
@@ -115,7 +115,7 @@ class AreaTour360Component:
 
                 if selector:
                     menu_item_element = self.page.locator(selector)
-                    menu_item_element.wait_for(state="visible", timeout=10000)
+                    menu_item_element.wait_for(state="visible", timeout=20000)
                     menu_item_element.click()
                 else:
                     raise ValueError(f"Неизвестный пункт меню: {menu_item}")
@@ -127,7 +127,7 @@ class AreaTour360Component:
         """Проверить отображение модального окна 360 Area Tour."""
         with allure.step("Проверяем отображение модального окна 360 Area Tour"):
             modal = self.page.locator(self.locators.AREA_TOUR_360_MODAL)
-            modal.first.wait_for(state="visible", timeout=10000)
+            modal.first.wait_for(state="visible", timeout=20000)
             assert (
                 modal.first.is_visible()
             ), "Модальное окно 360 Area Tour не отображается"

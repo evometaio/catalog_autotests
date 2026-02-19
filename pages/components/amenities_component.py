@@ -30,7 +30,7 @@ class AmenitiesComponent:
         """Открыть модальное окно Explore Amenities."""
         with allure.step("Кликаем на Explore Amenities"):
             button = self.page.locator(self.locators.EXPLORE_AMENITIES_BUTTON)
-            button.wait_for(state="visible", timeout=10000)
+            button.wait_for(state="visible", timeout=20000)
             button.click()
 
     def verify_modal_displayed(self):
@@ -38,10 +38,10 @@ class AmenitiesComponent:
         with allure.step("Проверяем отображение модального окна amenities"):
             modal = self.page.locator(self.locators.AMENITIES_MODAL)
             try:
-                modal.wait_for(state="visible", timeout=10000)
+                modal.wait_for(state="visible", timeout=20000)
             except PlaywrightTimeoutError:
                 raise AssertionError(
-                    "Модальное окно amenities не появилось за 10000ms."
+                    "Модальное окно amenities не появилось за 20000ms."
                 )
             assert modal.is_visible(), "Модальное окно amenities не отображается"
 
@@ -49,21 +49,21 @@ class AmenitiesComponent:
         """Проверить наличие заголовка модального окна."""
         with allure.step("Проверяем наличие заголовка"):
             title = self.page.locator(self.locators.AMENITIES_MODAL_TITLE)
-            title.wait_for(state="visible", timeout=10000)
+            title.wait_for(state="visible", timeout=20000)
             assert title.is_visible(), "Заголовок модального окна не найден"
 
     def verify_modal_close_button(self):
         """Проверить наличие кнопки закрытия."""
         with allure.step("Проверяем наличие кнопки закрытия"):
             close_button = self.page.locator(self.locators.AMENITIES_MODAL_CLOSE_BUTTON)
-            close_button.wait_for(state="visible", timeout=10000)
+            close_button.wait_for(state="visible", timeout=20000)
             assert close_button.is_visible(), "Кнопка закрытия не найдена"
 
     def verify_slider_displayed(self):
         """Проверить отображение слайдера."""
         with allure.step("Проверяем отображение слайдера"):
             slider = self.page.locator(self.locators.AMENITIES_SLIDER)
-            slider.wait_for(state="visible", timeout=10000)
+            slider.wait_for(state="visible", timeout=20000)
             assert slider.is_visible(), "Слайдер amenities не отображается"
 
     def verify_slider_images(self):

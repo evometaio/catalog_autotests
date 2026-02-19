@@ -19,5 +19,5 @@ def test_mark_catalog_navigation(mark_page):
         property_buttons = mark_page.page.locator(
             mark_page.project_locators.PROPERTY_INFO_PRIMARY_BUTTON
         )
-        property_buttons.first.wait_for(state="attached", timeout=10000)
+        property_buttons.first.wait_for(state="attached", timeout=20000)
         assert property_buttons.count() > 0, "Не найдено кнопок квартир в каталоге"

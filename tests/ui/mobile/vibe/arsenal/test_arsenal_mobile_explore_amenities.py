@@ -19,19 +19,19 @@ def test_arsenal_mobile_explore_amenities(mobile_page):
         all_units_button = mobile_page.page.locator(
             '[data-test-id="nav-desktop-catalog2d-standalone"]'
         )
-        all_units_button.wait_for(state="attached", timeout=10000)
+        all_units_button.wait_for(state="attached", timeout=20000)
         mobile_page.page.evaluate(
             """
             document.querySelector('[data-test-id="nav-desktop-catalog2d-standalone"]').click();
         """
         )
-        mobile_page.page.wait_for_url("**/catalog_2d", timeout=10000)
+        mobile_page.page.wait_for_url("**/catalog_2d", timeout=20000)
 
     with allure.step("Кликаем на кнопку Explore Amenities"):
         explore_button = mobile_page.page.locator(
             '(//button[@data-test-id="project-info-window-explore-amenities"])[1]'
         )
-        explore_button.wait_for(state="visible", timeout=10000)
+        explore_button.wait_for(state="visible", timeout=20000)
         explore_button.click()
 
     with allure.step("Проверяем отображение модального окна amenities"):

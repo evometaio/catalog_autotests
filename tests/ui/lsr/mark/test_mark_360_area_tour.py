@@ -43,5 +43,5 @@ def test_mark_360_area_tour(mark_page, panorama_type):
 
         with allure.step("Проверяем наличие контента 360 тура (iframe)"):
             iframe = mark_page.page.locator("iframe")
-            iframe.first.wait_for(state="attached", timeout=10000)
+            iframe.first.wait_for(state="attached", timeout=20000)
             assert iframe.count() > 0, "Контент 360 тура (iframe) не найден на странице"

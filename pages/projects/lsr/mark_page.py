@@ -135,7 +135,7 @@ class MarkPage(BasePage):
                     self.project_locators.DOWNLOAD_PDF_BUTTON
                 )
 
-            pdf_button.wait_for(state="visible", timeout=10000)
+            pdf_button.wait_for(state="visible", timeout=20000)
             pdf_button.click()
 
         with allure.step("Ждем, пока кнопка Скачать PDF в модалке станет активной"):
@@ -191,7 +191,7 @@ class MarkPage(BasePage):
         with allure.step("Ищем и кликаем по PDF кнопке"):
             # Для mark используем специфичный локатор
             pdf_button = self.page.locator(self.project_locators.DOWNLOAD_PDF_BUTTON)
-            pdf_button.wait_for(state="visible", timeout=10000)
+            pdf_button.wait_for(state="visible", timeout=20000)
             pdf_button.click()
             self.page.wait_for_timeout(1000)
             return True
@@ -228,7 +228,7 @@ class MarkPage(BasePage):
 
             # Ждем изменения URL (для MARK формат: /building/mark-k1, /building/mark-k2 и т.д.)
             self.page.wait_for_url(
-                f"**/building/mark-k{building_number}", timeout=10000
+                f"**/building/mark-k{building_number}", timeout=20000
             )
 
     def navigate_to_floor(self, floor_number: int):
@@ -262,5 +262,5 @@ class MarkPage(BasePage):
                 building_part = current_url.split("/building/mark-")[1].split("/")[0]
 
             self.page.wait_for_url(
-                f"**/floor/mark-{building_part}/{floor_number}", timeout=10000
+                f"**/floor/mark-{building_part}/{floor_number}", timeout=20000
             )

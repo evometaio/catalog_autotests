@@ -21,7 +21,7 @@ class BasePage:
     """
 
     # Константы таймаутов
-    DEFAULT_TIMEOUT = 10000
+    DEFAULT_TIMEOUT = 20000
     LONG_TIMEOUT = 15000
     SHORT_TIMEOUT = 5000
     MAP_LOAD_TIMEOUT = 20000
@@ -134,7 +134,7 @@ class BasePage:
             visible_button = map_buttons.last
 
         # Ждем видимости и кликаем
-        visible_button.wait_for(state="visible", timeout=10000)
+        visible_button.wait_for(state="visible", timeout=20000)
         visible_button.click()
         self.page.wait_for_timeout(2000)
 

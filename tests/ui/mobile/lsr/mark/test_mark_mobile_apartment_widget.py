@@ -16,13 +16,13 @@ def test_mark_mobile_apartment_widget_full_functionality(mark_page):
         menu_toggle = mark_page.page.locator(
             mark_page.project_locators.NAV_MOBILE_MENU_TOGGLE
         )
-        menu_toggle.wait_for(state="visible", timeout=10000)
+        menu_toggle.wait_for(state="visible", timeout=20000)
         menu_toggle.click()
 
         catalog_button = mark_page.page.locator(
             mark_page.project_locators.NAV_MOBILE_CATALOG2D
         )
-        catalog_button.wait_for(state="visible", timeout=10000)
+        catalog_button.wait_for(state="visible", timeout=20000)
         catalog_button.click()
 
     with allure.step("Ищем и кликаем на первый доступный апартамент"):

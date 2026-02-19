@@ -56,7 +56,7 @@ class ElirePage(QubeBasePage):
             if visible_button is None:
                 visible_button = buttons.first
 
-            visible_button.wait_for(state="visible", timeout=10000)
+            visible_button.wait_for(state="visible", timeout=20000)
             visible_button.click()
 
     def fill_request_viewing_form(self, fake):

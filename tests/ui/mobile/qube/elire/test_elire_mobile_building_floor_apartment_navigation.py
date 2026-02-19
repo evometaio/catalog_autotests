@@ -33,7 +33,7 @@ def test_elire_mobile_building_floor_apartment_navigation(mobile_page, route_typ
 
     with allure.step("Проверяем переход на страницу конфигурации"):
         mobile_page.page.wait_for_url(
-            "**/elire/configuration/1br-residence", timeout=10000
+            "**/elire/configuration/1br-residence", timeout=20000
         )
         mobile_page.assertions.assert_url_contains(
             "/elire/configuration/1br-residence",

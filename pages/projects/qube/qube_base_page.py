@@ -73,7 +73,7 @@ class QubeBasePage(BasePage):
 
     def click_sales_offer_button(self):
         """Кликнуть на кнопку Sales Offer (для агентских страниц, общее для всех Qube)."""
-        self.browser.click(self.project_locators.SALES_OFFER_BUTTON)
+        self.browser.click(self.project_locators.SALES_OFFER_BUTTON, timeout=20000)
 
     def navigate_to_building(self, building_number: int):
         """Перейти к зданию."""

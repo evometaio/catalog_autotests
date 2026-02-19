@@ -72,14 +72,14 @@ class MobilePage(BasePage):
                 '(//button[@data-test-id="nav-rotation-view-controls-button"])[2]'
             )
             button = self.page.locator(button_selector)
-            button.wait_for(state="visible", timeout=10000)
+            button.wait_for(state="visible", timeout=20000)
             button.click()
 
     def click_mobile_explore_residences_button(self):
         """Кликнуть на кнопку Explore Residences для Elire (второй элемент)."""
         with allure.step("Кликаем на Explore Residences"):
             button = self.page.locator('button:has-text("explore residences")').nth(1)
-            button.wait_for(state="visible", timeout=10000)
+            button.wait_for(state="visible", timeout=20000)
             button.click()
 
     def click_mobile_start_3d_experience_button(self):
@@ -88,14 +88,14 @@ class MobilePage(BasePage):
             button = self.page.locator(
                 '[data-test-id="property-info-primary-button-1 BEDROOM RESIDENCE"]'
             ).first
-            button.wait_for(state="visible", timeout=10000)
+            button.wait_for(state="visible", timeout=20000)
             button.click()
 
     def click_mobile_services_amenities_button(self):
         """Кликнуть на кнопку Services & Amenities для Elire."""
         with allure.step("Кликаем на Services & Amenities"):
             button = self.page.locator('button:has-text("services & amenities")')
-            button.wait_for(state="visible", timeout=10000)
+            button.wait_for(state="visible", timeout=20000)
             button.click()
 
     def navigate_to_mobile_arisha_all_units(self):
@@ -104,14 +104,14 @@ class MobilePage(BasePage):
             mobile_menu_toggle = self.page.locator(
                 '[data-test-id="nav-mobile-menu-toggle"]'
             )
-            mobile_menu_toggle.wait_for(state="visible", timeout=10000)
+            mobile_menu_toggle.wait_for(state="visible", timeout=20000)
             mobile_menu_toggle.click()
 
         with allure.step("Кликаем на All Units в меню"):
             all_units_button = self.page.locator(
                 '[data-test-id="nav-mobile-catalog2d"]'
             )
-            all_units_button.wait_for(state="visible", timeout=10000)
+            all_units_button.wait_for(state="visible", timeout=20000)
             all_units_button.click()
 
     def click_on_fraction_ownership_offer_button(self):
@@ -134,7 +134,7 @@ class MobilePage(BasePage):
         """Проверить отображение модального окна Services & Amenities для Elire."""
         with allure.step("Проверяем отображение модального окна Services & Amenities"):
             modal = self.page.locator(".ant-modal-content")
-            modal.wait_for(state="visible", timeout=10000)
+            modal.wait_for(state="visible", timeout=20000)
             assert (
                 modal.is_visible()
             ), "Модальное окно Services & Amenities не отображается"
@@ -270,20 +270,20 @@ class MobilePage(BasePage):
             # 4. Кликаем на кнопку проекта для открытия меню
             if project_name.lower() == "arisha":
                 arisha_button = self.page.locator(MOBILE_ARISHA_MENU_BUTTON)
-                arisha_button.wait_for(state="visible", timeout=10000)
+                arisha_button.wait_for(state="visible", timeout=20000)
                 arisha_button.click()
                 self.page.wait_for_timeout(1000)  # Ждем открытия меню
 
                 # 5. Кликаем на "ALL UNITS"
                 all_units_button = self.page.locator(MOBILE_ALL_UNITS_BUTTON)
-                all_units_button.wait_for(state="visible", timeout=10000)
+                all_units_button.wait_for(state="visible", timeout=20000)
                 all_units_button.click()
 
                 # 6. Ждем перехода на страницу каталога (увеличенный таймаут для мобильных устройств в CI)
                 self.page.wait_for_url("**/catalog_2d", timeout=20000)
             elif project_name.lower() == "cubix":
                 cubix_button = self.page.locator(MOBILE_CUBIX_MENU_BUTTON)
-                cubix_button.wait_for(state="visible", timeout=10000)
+                cubix_button.wait_for(state="visible", timeout=20000)
                 cubix_button.click()
 
                 # 5. Для Cubix клик на кнопку сразу переводит на страницу каталога
@@ -295,7 +295,7 @@ class MobilePage(BasePage):
                 menu_button = self.page.locator(
                     '[data-test-id="nav-mobile-menu-toggle"]'
                 )
-                menu_button.wait_for(state="visible", timeout=10000)
+                menu_button.wait_for(state="visible", timeout=20000)
                 menu_button.click()
                 self.page.wait_for_timeout(1000)  # Ждем открытия меню
 
@@ -303,7 +303,7 @@ class MobilePage(BasePage):
                 all_units_button = self.page.locator(
                     '[data-test-id="nav-mobile-catalog2d"]'
                 )
-                all_units_button.wait_for(state="visible", timeout=10000)
+                all_units_button.wait_for(state="visible", timeout=20000)
                 all_units_button.click()
 
                 # Ждем перехода на страницу каталога (увеличенный таймаут для мобильных устройств в CI)

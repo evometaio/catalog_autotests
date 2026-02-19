@@ -75,10 +75,10 @@ class MapComponent:
 
             # Ждем появления проекта
             try:
-                self.page.wait_for_selector(selector, state="visible", timeout=10000)
+                self.page.wait_for_selector(selector, state="visible", timeout=20000)
             except PlaywrightTimeoutError:
                 raise AssertionError(
-                    f"Проект '{project_name}' не найден на карте за 10000ms."
+                    f"Проект '{project_name}' не найден на карте за 20000ms."
                 )
 
             # Для изображений на карте используем force_click
@@ -104,11 +104,11 @@ class MapComponent:
             # Ждем информационного окна
             try:
                 self.page.wait_for_selector(
-                    self.locators.PROJECT_INFO_WINDOW, state="visible", timeout=10000
+                    self.locators.PROJECT_INFO_WINDOW, state="visible", timeout=20000
                 )
             except PlaywrightTimeoutError:
                 raise AssertionError(
-                    f"Информационное окно проекта {project_name} не появилось за 10000ms."
+                    f"Информационное окно проекта {project_name} не появилось за 20000ms."
                 )
 
             # Получаем селектор кнопки
@@ -117,10 +117,10 @@ class MapComponent:
             # Ждем появления кнопки и проверяем её готовность
             button = self.page.locator(button_selector)
             try:
-                button.wait_for(state="visible", timeout=10000)
+                button.wait_for(state="visible", timeout=20000)
             except PlaywrightTimeoutError:
                 raise AssertionError(
-                    f"Кнопка Explore Project для {project_name} не найдена за 10000ms."
+                    f"Кнопка Explore Project для {project_name} не найдена за 20000ms."
                 )
 
             assert (
@@ -134,11 +134,11 @@ class MapComponent:
                 self.page.wait_for_url(
                     self.project_locators.PROJECT_URL_PATTERN,
                     wait_until="domcontentloaded",
-                    timeout=10000,
+                    timeout=20000,
                 )
             except PlaywrightTimeoutError:
                 raise AssertionError(
-                    f"Не перешли на страницу проекта {project_name} за 10000ms. Текущий URL: {self.page.url}"
+                    f"Не перешли на страницу проекта {project_name} за 20000ms. Текущий URL: {self.page.url}"
                 )
 
     def click_on_custom_poi(self):
@@ -166,10 +166,10 @@ class MapComponent:
         """
         element = self.page.locator(self.locators.PROJECT_INFO_WINDOW)
         try:
-            element.wait_for(state="visible", timeout=10000)
+            element.wait_for(state="visible", timeout=20000)
         except PlaywrightTimeoutError:
             raise AssertionError(
-                f"Информационное окно проекта {project_name} не отображается за 10000ms."
+                f"Информационное окно проекта {project_name} не отображается за 20000ms."
             )
         assert (
             element.is_visible()

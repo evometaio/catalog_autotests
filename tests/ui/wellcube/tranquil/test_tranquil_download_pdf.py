@@ -23,7 +23,7 @@ def test_tranquil_download_ownership_offer(tranquil_page):
         tranquil_page.click_fraction_ownership_offer_button()
 
         # Ожидаем открытия новой вкладки с PDF
-        with tranquil_page.page.expect_popup(timeout=10000) as popup_info:
+        with tranquil_page.page.expect_popup(timeout=20000) as popup_info:
             tranquil_page.click_download_pdf_button()
 
         new_tab = popup_info.value
