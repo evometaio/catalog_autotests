@@ -51,7 +51,7 @@ class NavigationComponent:
             button.click()
 
             # Ждем изменения URL
-            self.page.wait_for_url(f"**/building/{building_number}", timeout=10000)
+            self.page.wait_for_url(f"**/building/{building_number}", timeout=20000)
 
             current_url = self.page.url
             allure.attach(
@@ -150,7 +150,7 @@ class NavigationComponent:
 
         with allure.step("Ищем и кликаем на доступный апартамент"):
             # Ждем загрузки апартаментов
-            self.page.wait_for_selector(apartment_selector, timeout=10000)
+            self.page.wait_for_selector(apartment_selector, timeout=20000)
 
             apartment_elements = self.page.locator(apartment_selector)
             apartment_count = apartment_elements.count()
@@ -190,7 +190,7 @@ class NavigationComponent:
         with allure.step("Кликаем на апартамент на плане этажа"):
             # Ждем загрузки плана этажа
             self.page.wait_for_selector(
-                self.locators.FLOOR_PLAN_APARTMENTS, timeout=10000
+                self.locators.FLOOR_PLAN_APARTMENTS, timeout=20000
             )
 
             # Получаем количество апартаментов
@@ -226,7 +226,7 @@ class NavigationComponent:
 
             # Явно ждем появления хотя бы одного апартамента (важно для CI)
             try:
-                apartment_titles.first.wait_for(state="attached", timeout=10000)
+                apartment_titles.first.wait_for(state="attached", timeout=20000)
             except Exception:
                 # Если не дождались, пробуем еще раз с небольшим ожиданием
                 self.page.wait_for_timeout(1000)

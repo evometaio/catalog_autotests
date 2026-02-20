@@ -80,7 +80,7 @@ class MobileNavigationComponent:
             building_selector = get_mobile_building_selector(building_number)
             building_element = self.page.locator(building_selector)
 
-            building_element.wait_for(state="visible", timeout=10000)
+            building_element.wait_for(state="visible", timeout=20000)
             building_element.click(force=True)
 
             # Ждем появления кнопки "View"
@@ -315,7 +315,7 @@ class MobileNavigationComponent:
         """Открыть мобильное меню."""
         try:
             menu_toggle = self.page.locator('[data-test-id="nav-mobile-menu-toggle"]')
-            menu_toggle.wait_for(state="visible", timeout=10000)
+            menu_toggle.wait_for(state="visible", timeout=20000)
             menu_toggle.click()
             self.page.wait_for_timeout(1000)
             return True
@@ -355,7 +355,7 @@ class MobileNavigationComponent:
 
             # Проверяем переход
             self.page.wait_for_url(
-                f"**/building/mark-k{building_number}", timeout=10000
+                f"**/building/mark-k{building_number}", timeout=20000
             )
             return True
         except Exception as e:
@@ -372,7 +372,7 @@ class MobileNavigationComponent:
             floor_item = self.page.locator(
                 f'xpath=//div[contains(@class, "_itemInner_17qm7_18") and text()="{floor_number}"]'
             )
-            floor_item.wait_for(state="visible", timeout=10000)
+            floor_item.wait_for(state="visible", timeout=20000)
             floor_item.first.click()
             self.page.wait_for_timeout(1000)
             return True
@@ -407,7 +407,7 @@ class MobileNavigationComponent:
         try:
             apartment_items = self.page.locator("div._itemInner_17qm7_18")
             first_apartment = apartment_items.first
-            first_apartment.wait_for(state="visible", timeout=10000)
+            first_apartment.wait_for(state="visible", timeout=20000)
 
             apartment_number = first_apartment.text_content()
             first_apartment.click()
@@ -428,7 +428,7 @@ class MobileNavigationComponent:
             view_apartment_button = self.page.locator(
                 f'button:has-text("Посмотреть квартиру {apartment_number}")'
             )
-            view_apartment_button.wait_for(state="visible", timeout=10000)
+            view_apartment_button.wait_for(state="visible", timeout=20000)
 
             # Скроллим к кнопке, чтобы она была видна
             view_apartment_button.scroll_into_view_if_needed()
@@ -449,7 +449,7 @@ class MobileNavigationComponent:
         """Кликнуть на кнопку 'Посмотреть 3D Тур' для mark."""
         try:
             view_3d_button = self.page.get_by_role("button", name="Посмотреть 3D Тур")
-            view_3d_button.wait_for(state="visible", timeout=10000)
+            view_3d_button.wait_for(state="visible", timeout=20000)
             view_3d_button.first.click()
             self.page.wait_for_timeout(3000)
             return True

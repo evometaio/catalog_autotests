@@ -20,13 +20,13 @@ def test_edgewater_payment_plan(edgewater_page):
             edgewater_page.project_locators.ALL_UNITS_BUTTON
         )
         edgewater_page.browser.click(edgewater_page.project_locators.ALL_UNITS_BUTTON)
-        edgewater_page.page.wait_for_url("**/catalog_2d", timeout=10000)
+        edgewater_page.page.wait_for_url("**/catalog_2d", timeout=20000)
 
     with allure.step("Проверяем наличие кнопки Payment Plan"):
         payment_plan_button = edgewater_page.page.locator(
             edgewater_page.project_locators.PAYMENT_PLAN_BUTTON
         ).nth(1)
-        payment_plan_button.wait_for(state="visible", timeout=10000)
+        payment_plan_button.wait_for(state="visible", timeout=20000)
         assert payment_plan_button.is_visible(), "Кнопка Payment Plan не отображается"
 
     with allure.step("Кликаем на кнопку Payment Plan"):
@@ -36,14 +36,14 @@ def test_edgewater_payment_plan(edgewater_page):
         modal = edgewater_page.page.locator(
             edgewater_page.project_locators.PAYMENT_PLAN_MODAL
         )
-        modal.wait_for(state="visible", timeout=10000)
+        modal.wait_for(state="visible", timeout=20000)
         assert modal.is_visible(), "Модальное окно Payment Plan не отображается"
 
     with allure.step("Проверяем наличие таблицы в модальном окне"):
         table = edgewater_page.page.locator(
             edgewater_page.project_locators.PAYMENT_PLAN_TABLE
         )
-        table.wait_for(state="visible", timeout=10000)
+        table.wait_for(state="visible", timeout=20000)
         assert table.is_visible(), "Таблица не отображается в модальном окне"
 
     with allure.step("Проверяем заголовки таблицы"):

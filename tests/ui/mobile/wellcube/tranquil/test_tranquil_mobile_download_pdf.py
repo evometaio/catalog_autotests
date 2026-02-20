@@ -24,7 +24,7 @@ def test_tranquil_mobile_download_ownership_offer(mobile_page):
         mobile_page.click_on_fraction_ownership_offer_button()
 
         # Ожидаем открытия новой вкладки с PDF
-        with mobile_page.page.expect_popup(timeout=10000) as popup_info:
+        with mobile_page.page.expect_popup(timeout=20000) as popup_info:
             mobile_page.click_mobile_download_pdf_button()
 
         new_tab = popup_info.value

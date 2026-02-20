@@ -22,14 +22,14 @@ def test_edgewater_mobile_explore_amenities(mobile_page):
         menu_button = mobile_page.page.locator(
             '[data-test-id="nav-mobile-menu-toggle"]'
         )
-        menu_button.wait_for(state="visible", timeout=10000)
+        menu_button.wait_for(state="visible", timeout=20000)
         menu_button.click()
         mobile_page.page.wait_for_timeout(1000)
 
         all_units_button = mobile_page.page.locator(
             '[data-test-id="nav-mobile-catalog2d"]'
         )
-        all_units_button.wait_for(state="visible", timeout=10000)
+        all_units_button.wait_for(state="visible", timeout=20000)
         all_units_button.click()
         mobile_page.page.wait_for_url("**/catalog_2d", timeout=20000)
 

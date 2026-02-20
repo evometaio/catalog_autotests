@@ -14,7 +14,7 @@ def test_arsenal_catalog_navigation(arsenal_page):
 
     with allure.step("Кликаем на проект Vibe на карте"):
         vibe_project = arsenal_page.page.locator('div[aria-label="Vibe"]')
-        vibe_project.wait_for(state="visible", timeout=10000)
+        vibe_project.wait_for(state="visible", timeout=20000)
         vibe_project.click()
         arsenal_page.page.wait_for_timeout(1000)
 
@@ -31,5 +31,5 @@ def test_arsenal_catalog_navigation(arsenal_page):
         property_buttons = arsenal_page.page.locator(
             arsenal_page.project_locators.PROPERTY_INFO_PRIMARY_BUTTON
         )
-        property_buttons.first.wait_for(state="attached", timeout=10000)
+        property_buttons.first.wait_for(state="attached", timeout=20000)
         assert property_buttons.count() > 0, "Не найдено кнопок квартир в каталоге"

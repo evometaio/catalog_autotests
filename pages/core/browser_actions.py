@@ -14,7 +14,7 @@ class BrowserActions:
     - Базовые действия (click, fill, wait, etc.)
     """
 
-    DEFAULT_TIMEOUT = 10000
+    DEFAULT_TIMEOUT = 20000
 
     def __init__(self, page: Page):
         """

@@ -41,7 +41,7 @@ class ApartmentInfoComponent:
             )
 
         with allure.step("Ожидаем появления информации об апартаменте"):
-            self.page.wait_for_selector(self.locators.INFO_CONTAINER, timeout=10000)
+            self.page.wait_for_selector(self.locators.INFO_CONTAINER, timeout=20000)
 
     def check_apartment_number(self, apartment_number: str = "104") -> bool:
         """

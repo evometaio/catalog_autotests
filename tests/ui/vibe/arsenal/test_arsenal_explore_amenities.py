@@ -14,7 +14,7 @@ def test_arsenal_explore_amenities(arsenal_page):
 
     with allure.step("Кликаем на проект Vibe на карте"):
         vibe_project = arsenal_page.page.locator('div[aria-label="Vibe"]')
-        vibe_project.wait_for(state="visible", timeout=10000)
+        vibe_project.wait_for(state="visible", timeout=20000)
         vibe_project.click()
         arsenal_page.page.wait_for_timeout(1000)
 

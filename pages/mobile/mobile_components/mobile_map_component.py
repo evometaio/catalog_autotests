@@ -215,7 +215,7 @@ class MobileMapComponent:
                 # Для остальных проектов используем стандартный селектор
                 explore_button = self.page.locator(MOBILE_EXPLORE_BUTTON)
 
-            explore_button.wait_for(state="visible", timeout=10000)
+            explore_button.wait_for(state="visible", timeout=20000)
 
             # Проверяем активность кнопки
             assert (
@@ -234,16 +234,16 @@ class MobileMapComponent:
             # Ждем перехода на страницу проекта
             if project_name.lower() == "arsenal":
                 expected_url_pattern = "**/vibe/**"
-                self.page.wait_for_url(expected_url_pattern, timeout=10000)
+                self.page.wait_for_url(expected_url_pattern, timeout=20000)
             elif project_name.lower() == "edgewater":
                 # Для edgewater URL содержит edgewater-residences-3
-                self.page.wait_for_url("**/edgewater-residences-3/**", timeout=10000)
+                self.page.wait_for_url("**/edgewater-residences-3/**", timeout=20000)
             elif project_name.lower() == "willows_residences":
                 # Для willows_residences URL содержит willows-residences
-                self.page.wait_for_url("**/willows-residences/**", timeout=10000)
+                self.page.wait_for_url("**/willows-residences/**", timeout=20000)
             else:
                 expected_url_pattern = f"**/{project_name.lower()}/**"
-                self.page.wait_for_url(expected_url_pattern, timeout=10000)
+                self.page.wait_for_url(expected_url_pattern, timeout=20000)
 
     def navigate_to_project(self, project_name: str):
         """

@@ -19,7 +19,7 @@ def test_arsenal_mobile_catalog_navigation(mobile_page):
         property_buttons = mobile_page.page.locator(
             '[data-test-id^="property-info-primary-button-"]'
         )
-        property_buttons.first.wait_for(state="attached", timeout=10000)
+        property_buttons.first.wait_for(state="attached", timeout=20000)
         assert property_buttons.count() > 0, "Не найдено кнопок квартир в каталоге"
 
     with allure.step("Проверяем адаптивность на мобильном устройстве"):

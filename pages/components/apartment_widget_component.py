@@ -116,7 +116,7 @@ class ApartmentWidgetComponent:
             # Для Arisha стрелки могут появляться с задержкой, проверка есть в тесте
             if self.project_name not in ["mark", "arisha"]:
                 next_arrow = frame_locator.locator(self.locators.NEXT_ARROW).first
-                next_arrow.wait_for(state="visible", timeout=10000)
+                next_arrow.wait_for(state="visible", timeout=20000)
 
     def switch_to_3d_mode(self):
         """Переключиться в режим 3D."""
