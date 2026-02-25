@@ -1,0 +1,41 @@
+Ошибка при клике на квартиру: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("svg path").first
+    - locator resolved to <path fill="#EBEBEB" d="M14.1778 81.2395C12.9315 80.3143 11.3391 79.7939 8.90415 79.7939H4.09204V95.1281H8.90415C11.3275 95.1281 12.9315 94.6078 14.1778 93.6826C16.0588 92.2833 17.2128 90.0052 17.2128 87.461C17.2128 84.9169 16.0588 82.6387 14.1778 81.2395ZM13.1508 90.7916C12.2969 91.867 11.0506 92.503 9.2388 92.503H7.05777V82.4306H9.2388C11.0506 82.4306 12.2969 83.0666 13.1508 84.1421C13.8547 85.021 14.2702 86.2006 14.2702 87.4726C14.2702 88.7447 13.8547 89.9242 13.1508 90.8031V90.7916Z"></path>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <svg width="251" height="96" fill="none" viewBox="0 0 251 96" class="Loader_logo__bs2KT" xmlns="http://www.w3.org/2000/svg">…</svg> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <svg width="251" height="96" fill="none" viewBox="0 0 251 96" class="Loader_logo__bs2KT" xmlns="http://www.w3.org/2000/svg">…</svg> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <svg width="251" height="96" fill="none" viewBox="0 0 251 96" class="Loader_logo__bs2KT" xmlns="http://www.w3.org/2000/svg">…</svg> intercepts pointer events
+  12 × retrying click action
+       - waiting 500ms
+       - waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div class="_scaleWrapper_gwmm6_34">…</div> from <div class="pageWrapper">…</div> subtree intercepts pointer events
+  42 × retrying click action
+       - waiting 500ms
+       - waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div tabindex="-1" class="ant-modal-wrap">…</div> from <div>…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
