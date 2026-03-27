@@ -101,18 +101,17 @@ class MapComponent:
             project_name: Название проекта
         """
         with allure.step(f"Кликаем на Explore Project для {project_name.upper()}"):
-            # Ждем информационного окна
-            try:
-                self.page.wait_for_selector(
-                    self.locators.PROJECT_INFO_WINDOW, state="visible", timeout=20000
-                )
-            except PlaywrightTimeoutError:
-                raise AssertionError(
-                    f"Информационное окно проекта {project_name} не появилось за 20000ms."
-                )
-
             # Получаем селектор кнопки
             button_selector = self._get_explore_button_selector(project_name)
+
+            # Best-effort: on some maps (e.g. mobile layouts) project info window markup differs,
+            # so do not hard-fail on PROJECT_INFO_WINDOW. We only need Explore button to appear.
+            try:
+                self.page.wait_for_selector(
+                    self.locators.PROJECT_INFO_WINDOW, state="visible", timeout=5000
+                )
+            except PlaywrightTimeoutError:
+                pass
 
             # Ждем появления кнопки и проверяем её готовность
             button = self.page.locator(button_selector)

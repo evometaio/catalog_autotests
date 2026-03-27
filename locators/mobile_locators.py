@@ -52,8 +52,13 @@ MOBILE_EXPLORE_AMENITIES_BUTTON = (
 )
 
 # Слайдер Amenities - навигация для мобильных устройств
-MOBILE_AMENITIES_SLIDER_NEXT_BUTTON = '.ant-modal-content span[aria-label="right"]'
-MOBILE_AMENITIES_SLIDER_PREV_BUTTON = '.ant-modal-content span[aria-label="left"]'
+MOBILE_AMENITIES_MODAL_ROOT = '[data-test-id="public-zone-info-flow-modal"]'
+MOBILE_AMENITIES_SLIDER_NEXT_BUTTON = (
+    f"{MOBILE_AMENITIES_MODAL_ROOT} [aria-label='right']"
+)
+MOBILE_AMENITIES_SLIDER_PREV_BUTTON = (
+    f"{MOBILE_AMENITIES_MODAL_ROOT} [aria-label='left']"
+)
 
 # ==================== МОБИЛЬНЫЕ ЛОКАТОРЫ APARTMENTS ====================
 

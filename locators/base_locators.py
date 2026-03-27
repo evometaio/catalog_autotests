@@ -15,19 +15,25 @@ class BaseLocators:
     ALL_APARTMENT_TITLES = "//span[contains(text(), 'VIEW APARTMENT')]"
 
     # Локаторы для Explore Amenities (общие для всех проектов)
+    # Can be duplicated in DOM; keep selector scoped to the visible button.
     EXPLORE_AMENITIES_BUTTON = (
-        '(//button[@data-test-id="project-info-window-explore-amenities"])[2]'
+        'button[data-test-id="project-info-window-explore-amenities"]:visible'
     )
-    AMENITIES_MODAL = ".ant-modal-content"
-    AMENITIES_MODAL_TITLE = ".ant-modal-content h3"
-    AMENITIES_MODAL_CLOSE_BUTTON = ".ant-modal-close"
+    # Explore amenities modal was migrated from Ant Design modal to custom modal.
+    # Stable root:
+    AMENITIES_MODAL = '[data-test-id="public-zone-info-flow-modal"]'
+    # Title varies by project/slide; handled in component (best-effort).
+    AMENITIES_MODAL_TITLE = '[data-test-id="public-zone-info-flow-modal"] h1'
+    AMENITIES_MODAL_CLOSE_BUTTON = (
+        '[data-test-id="public-zone-info-flow-modal"] button:has([aria-label="close"])'
+    )
 
     # Локаторы для слайдера в модалке amenities
-    AMENITIES_SLIDER = ".slick-slider"
-    AMENITIES_SLIDER_IMAGES = ".slick-slider img"
-    AMENITIES_SLIDER_INDICATORS = ".slick-dots li"
-    AMENITIES_SLIDER_PREV_BUTTON = ".slick-prev"
-    AMENITIES_SLIDER_NEXT_BUTTON = ".slick-next"
+    AMENITIES_SLIDER = f"{AMENITIES_MODAL} .slick-slider"
+    AMENITIES_SLIDER_IMAGES = f"{AMENITIES_MODAL} .slick-slider img"
+    AMENITIES_SLIDER_INDICATORS = f"{AMENITIES_MODAL} .slick-dots li"
+    AMENITIES_SLIDER_PREV_BUTTON = f"{AMENITIES_MODAL} [aria-label='left']"
+    AMENITIES_SLIDER_NEXT_BUTTON = f"{AMENITIES_MODAL} [aria-label='right']"
 
     # 360 Area Tour - доступен на всех страницах проектов
     AREA_TOUR_360_BUTTON = '[data-test-id="nav-rotation-view-controls-button"]'

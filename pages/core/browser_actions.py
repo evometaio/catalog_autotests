@@ -42,11 +42,27 @@ class BrowserActions:
         if timeout is None:
             timeout = self.DEFAULT_TIMEOUT
 
-        element = self.page.locator(selector)
+        locator = self.page.locator(selector)
 
         try:
-            element.wait_for(state="visible", timeout=timeout)
-            return element
+            # If selector matches multiple elements, avoid strict-mode violations by waiting
+            # for *any* element to become visible, then pick the first visible.
+            self.page.wait_for_selector(selector, state="visible", timeout=timeout)
+
+            count = locator.count()
+            if count <= 1:
+                return locator
+
+            for i in range(count):
+                item = locator.nth(i)
+                try:
+                    if item.is_visible(timeout=500):
+                        return item
+                except Exception:
+                    continue
+
+            # Fallback: return first (at least one is visible due to wait_for_selector)
+            return locator.first
         except PlaywrightTimeoutError:
             raise AssertionError(f"Элемент '{selector}' не найден за {timeout}ms.")
 

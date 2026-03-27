@@ -133,7 +133,8 @@ class MobilePage(BasePage):
     def verify_elire_services_modal_displayed(self):
         """Проверить отображение модального окна Services & Amenities для Elire."""
         with allure.step("Проверяем отображение модального окна Services & Amenities"):
-            modal = self.page.locator(".ant-modal-content")
+            # Services & Amenities uses the same flow modal as Explore Amenities.
+            modal = self.page.locator(self.project_locators.AMENITIES_MODAL)
             modal.wait_for(state="visible", timeout=20000)
             assert (
                 modal.is_visible()
@@ -149,7 +150,7 @@ class MobilePage(BasePage):
         """Тестировать навигацию по слайдеру Services & Amenities."""
         with allure.step("Тестируем навигацию по слайдеру - кликаем вправо"):
             right_arrow = self.page.locator(
-                '.ant-modal-content span[aria-label="right"]'
+                self.project_locators.AMENITIES_SLIDER_NEXT_BUTTON
             )
             if right_arrow.count() > 0:
                 for i in range(3):
@@ -157,7 +158,9 @@ class MobilePage(BasePage):
                     self.page.wait_for_timeout(800)
 
         with allure.step("Тестируем навигацию по слайдеру - кликаем влево"):
-            left_arrow = self.page.locator('.ant-modal-content span[aria-label="left"]')
+            left_arrow = self.page.locator(
+                self.project_locators.AMENITIES_SLIDER_PREV_BUTTON
+            )
             if left_arrow.count() > 0:
                 for i in range(2):
                     left_arrow.first.click(force=True)
@@ -166,9 +169,11 @@ class MobilePage(BasePage):
     def close_elire_services_modal(self):
         """Закрыть модальное окно Services & Amenities."""
         with allure.step("Закрываем модальное окно"):
-            close_button = self.page.locator(".ant-modal-close")
+            close_button = self.page.locator(
+                self.project_locators.AMENITIES_MODAL_CLOSE_BUTTON
+            )
             close_button.click()
-            modal = self.page.locator(".ant-modal-content")
+            modal = self.page.locator(self.project_locators.AMENITIES_MODAL)
             modal.wait_for(state="hidden", timeout=5000)
 
     # ==================== МЕТОДЫ КАРТЫ - ДЕЛЕГАТЫ К MOBILE_MAP ====================
@@ -326,9 +331,10 @@ class MobilePage(BasePage):
 
     def click_mobile_amenities_next_button(self):
         """Кликнуть на стрелку 'вправо' в слайдере amenities на мобильном."""
-        next_button_selector = '.ant-modal-content span[aria-label="right"]'
-        next_button = self.page.locator(next_button_selector)
-        next_button.click()
+        next_button = self.page.locator(
+            self.project_locators.AMENITIES_SLIDER_NEXT_BUTTON
+        )
+        next_button.first.click()
 
     def click_mobile_download_pdf_button(self):
         """Кликнуть на кнопку Download PDF на мобильном устройстве."""

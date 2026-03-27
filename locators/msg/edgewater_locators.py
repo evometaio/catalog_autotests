@@ -18,16 +18,16 @@ class EdgewaterLocators(BaseLocators):
 
     # Payment Plan
     PAYMENT_PLAN_BUTTON = '[data-test-id="project-info-window-payment-plan-button"]'
-    PAYMENT_PLAN_MODAL = ".ant-modal-wrap.ant-modal-centered"
+    PAYMENT_PLAN_MODAL = ".ant-modal-wrap.ant-modal-centered, [role='dialog']"
     PAYMENT_PLAN_TABLE = ".ant-table-wrapper"
-    PAYMENT_PLAN_MODAL_CLOSE = ".ant-modal-close"
+    PAYMENT_PLAN_MODAL_CLOSE = ".ant-modal-close, button:has([aria-label='close'])"
 
     # Apartment Info Panel (виджет с информацией об аппарте)
     APARTMENT_INFO_PANEL = (
-        ".page_propertyCardCard__HXCkB, .page_propertyInfoWrapper__dGuHs"
+        ".page_propertyCardCard__HXCkB, [class*='propertyInfoWrapper']"
     )
-    APARTMENT_INFO_TITLE = ".page_propertyInfoTitle__u2pg_"
-    APARTMENT_INFO_WRAPPER = ".page_propertyInfoWrapper__dGuHs"
+    APARTMENT_INFO_TITLE = "[class*='propertyInfoTitle']"
+    APARTMENT_INFO_WRAPPER = "[class*='propertyInfoWrapper']"
 
     # Pagination
     PAGINATION_ITEM = "li.ant-pagination-item"
