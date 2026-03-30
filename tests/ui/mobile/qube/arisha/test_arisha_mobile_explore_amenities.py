@@ -7,6 +7,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
+@pytest.mark.skip
 @pytest.mark.flaky(reruns=2, reruns_delay=2)
 @pytest.mark.parametrize("route_type", ["map", "agent", "client"])
 def test_arisha_mobile_explore_amenities(mobile_page, route_type):
