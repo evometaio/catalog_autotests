@@ -369,9 +369,7 @@ class MobileNavigationComponent:
     def click_mark_floor_item(self, floor_number: int) -> bool:
         """Кликнуть на этаж внизу страницы для mark."""
         try:
-            floor_item = self.page.locator(
-                f'xpath=//div[contains(@class, "_itemInner_17qm7_18") and text()="{floor_number}"]'
-            )
+            floor_item = self.page.locator(f'xpath=//div[@data-key="{floor_number}"]')
             floor_item.wait_for(state="visible", timeout=20000)
             floor_item.first.click()
             self.page.wait_for_timeout(1000)
@@ -405,7 +403,7 @@ class MobileNavigationComponent:
     def click_mark_apartment_item(self) -> str:
         """Кликнуть на первый доступный апартамент внизу страницы для mark. Возвращает номер апартамента."""
         try:
-            apartment_items = self.page.locator("div._itemInner_17qm7_18")
+            apartment_items = self.page.locator("div._itemInner_sumlw_39")
             first_apartment = apartment_items.first
             first_apartment.wait_for(state="visible", timeout=20000)
 
