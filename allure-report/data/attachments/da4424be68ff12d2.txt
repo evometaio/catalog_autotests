@@ -1,3 +1,0 @@
-Ошибка при клике на этаж: Locator.wait_for: Timeout 20000ms exceeded.
-Call log:
-  - waiting for locator("//div[contains(@class, \"_itemInner_17qm7_18\") and text()=\"6\"]") to be visible
