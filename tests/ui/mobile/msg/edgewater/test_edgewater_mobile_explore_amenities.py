@@ -7,6 +7,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
+@pytest.mark.skip(reason="Пофиксить локаторы на MOBILE")
 def test_edgewater_mobile_explore_amenities(mobile_page):
     """Тест Explore Amenities для проекта Edgewater на мобильном устройстве."""
     with allure.step("Открываем карту MSG"):

@@ -7,7 +7,7 @@ import pytest
 @pytest.mark.smoke
 @pytest.mark.regression
 @pytest.mark.mobile
-@pytest.mark.skip
+@pytest.mark.skip(reason="Пофиксить локаторы на MOBILE")
 @pytest.mark.parametrize("route_type", ["map", "agent", "client"])
 def test_cubix_mobile_explore_amenities(mobile_page, route_type):
     """Тест Explore Amenities для проекта Cubix на мобильном устройстве на всех роутах."""
