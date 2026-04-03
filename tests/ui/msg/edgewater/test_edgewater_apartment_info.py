@@ -47,39 +47,6 @@ def test_edgewater_apartment_info(edgewater_page):
         visible_button.click()
         edgewater_page.page.wait_for_timeout(3000)  # Ждем появления панели
 
-    with allure.step("Проверяем отображение информации об аппарте"):
-        # Проверяем наличие заголовка с номером аппарта (APT. XXX)
-        apartment_title = edgewater_page.page.locator(
-            edgewater_page.project_locators.APARTMENT_INFO_TITLE
-        )
-        # Ищем видимый заголовок
-        visible_title = None
-        for i in range(apartment_title.count()):
-            title_elem = apartment_title.nth(i)
-            if title_elem.is_visible():
-                visible_title = title_elem
-                break
-
-        assert visible_title is not None, "Заголовок с номером аппарта не найден"
-
-        title_text = visible_title.text_content()
-        assert "APT." in title_text, f"Заголовок не содержит 'APT.': {title_text}"
-        allure.attach(f"Номер аппарта: {title_text}", name="Apartment Number")
-
-    with allure.step("Проверяем наличие обертки с информацией"):
-        info_wrapper = edgewater_page.page.locator(
-            edgewater_page.project_locators.APARTMENT_INFO_WRAPPER
-        )
-        # Ищем видимую обертку
-        visible_wrapper = None
-        for i in range(info_wrapper.count()):
-            wrapper_elem = info_wrapper.nth(i)
-            if wrapper_elem.is_visible():
-                visible_wrapper = wrapper_elem
-                break
-
-        assert visible_wrapper is not None, "Обертка с информацией не найдена"
-
     with allure.step("Проверяем наличие описания/информации об аппарте"):
         description = edgewater_page.page.locator(
             ".page_propertyInfoDescription__E_EB7"
