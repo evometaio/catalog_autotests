@@ -1,0 +1,6 @@
+Ошибка при ожидании загрузки карты: Page.wait_for_selector: Timeout 20000ms exceeded.
+Call log:
+  - waiting for locator("[data-testid=\"map\"]") to be visible
+    4 × locator resolved to hidden <div data-testid="map" class="_map_16uux_1"></div>
+    40 × locator resolved to hidden <div data-testid="map" class="_map_16uux_1">…</div>
+
