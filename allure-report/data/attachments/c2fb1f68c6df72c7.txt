@@ -1,3 +1,0 @@
-Ошибка при клике на здание: Locator.wait_for: Timeout 5000ms exceeded.
-Call log:
-  - waiting for locator("button:has-text(\"Choose the floor\")") to be visible
