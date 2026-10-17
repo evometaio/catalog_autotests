@@ -1,4 +1,0 @@
-Ошибка при ожидании загрузки карты: Page.wait_for_selector: Timeout 20000ms exceeded.
-Call log:
-  - waiting for locator("[data-testid=\"map\"]") to be visible
-
