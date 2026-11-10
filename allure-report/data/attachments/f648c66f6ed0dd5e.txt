@@ -1,0 +1,3 @@
+Ошибка при клике на корпус: Locator.wait_for: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("[data-test-id=\"nav-mobile-building-item-mark-k1\"]") to be visible
