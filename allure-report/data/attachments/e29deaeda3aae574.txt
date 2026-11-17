@@ -1,0 +1,3 @@
+Ошибка при клике на здание: Locator.wait_for: Timeout 20000ms exceeded.
+Call log:
+  - waiting for locator("path[class*=\"_building_1lxa9_1\"][id=\"building-1\"]") to be visible
